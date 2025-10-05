@@ -5,10 +5,12 @@ import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Progress } from '@/components/ui/progress'
-import { CalendarBlank, MapPin, Clock, TrendUp, Plus } from '@phosphor-icons/react'
+import { CalendarBlank, MapPin, Clock, TrendUp, Plus, Bell, Envelope } from '@phosphor-icons/react'
 import { BookingRequest, SAMPLE_AGENTS, SHOOT_COMPLEXITIES } from '@/lib/types'
 import { formatDate, formatDateTime } from '@/lib/date-utils'
 import { BookingForm } from '@/components/booking/BookingForm'
+import { CalendarExportButton } from '@/components/calendar/CalendarExportButton'
+import { useNotifications } from '@/hooks/useNotifications'
 
 interface AgentDashboardProps {
   currentUserId: string
@@ -17,12 +19,34 @@ interface AgentDashboardProps {
 export function AgentDashboard({ currentUserId }: AgentDashboardProps) {
   const [bookings] = useKV<BookingRequest[]>('bookings', [])
   const [activeTab, setActiveTab] = useState('overview')
+  const { getNotificationHistory } = useNotifications()
   
   const currentAgent = SAMPLE_AGENTS.find(a => a.id === currentUserId) || SAMPLE_AGENTS[0]
   const myBookings = (bookings || []).filter(b => b.agent_id === currentUserId)
   const pendingBookings = myBookings.filter(b => b.status === 'pending')
   const approvedBookings = myBookings.filter(b => b.status === 'approved')
   const completedBookings = myBookings.filter(b => b.status === 'completed')
+
+  const getNotificationStatusBadge = (bookingId: string, status: string) => {
+    const history = getNotificationHistory(bookingId)
+    if (status === 'approved') {
+      const approvalNotification = history.find(h => h.type === 'booking_approved')
+      if (approvalNotification) {
+        return approvalNotification.sent ? (
+          <Badge variant="outline" className="text-xs border-green-300 text-green-700">
+            <Envelope className="w-3 h-3 mr-1" />
+            Notified
+          </Badge>
+        ) : (
+          <Badge variant="outline" className="text-xs border-red-300 text-red-700">
+            <Bell className="w-3 h-3 mr-1" />
+            Notification Failed
+          </Badge>
+        )
+      }
+    }
+    return null
+  }
 
   const getStatusBadge = (status: string) => {
     switch (status) {
@@ -85,10 +109,13 @@ export function AgentDashboard({ currentUserId }: AgentDashboardProps) {
               {currentAgent.tier.charAt(0).toUpperCase() + currentAgent.tier.slice(1)} Agent • Performance Score: {currentAgent.performance_score}/100
             </p>
           </div>
-          <Button onClick={() => setActiveTab('new-booking')} className="flex items-center gap-2">
-            <Plus className="w-4 h-4" />
-            New Booking
-          </Button>
+          <div className="flex items-center gap-2">
+            <CalendarExportButton bookings={approvedBookings} />
+            <Button onClick={() => setActiveTab('new-booking')} className="flex items-center gap-2">
+              <Plus className="w-4 h-4" />
+              New Booking
+            </Button>
+          </div>
         </div>
       </div>
 
@@ -309,6 +336,7 @@ export function AgentDashboard({ currentUserId }: AgentDashboardProps) {
                         <MapPin className="w-4 h-4 text-muted-foreground" />
                         <span className="font-medium">{booking.property_address}</span>
                         {getComplexityBadge(booking.shoot_complexity)}
+                        {getNotificationStatusBadge(booking.id, booking.status)}
                       </div>
                       <div className="grid grid-cols-2 gap-4 text-sm text-muted-foreground">
                         <div>
@@ -321,6 +349,7 @@ export function AgentDashboard({ currentUserId }: AgentDashboardProps) {
                     </div>
                     <div className="flex flex-col items-end gap-2">
                       {getStatusBadge(booking.status)}
+                      <CalendarExportButton booking={booking} />
                     </div>
                   </div>
                 </CardContent>

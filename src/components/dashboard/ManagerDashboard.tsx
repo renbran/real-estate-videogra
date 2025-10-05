@@ -4,10 +4,13 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { CheckCircle, XCircle, MapPin, Clock, Users } from '@phosphor-icons/react'
+import { CheckCircle, XCircle, MapPin, Clock, Users, Bell } from '@phosphor-icons/react'
 import { toast } from 'sonner'
 import { BookingRequest, SAMPLE_AGENTS, SHOOT_COMPLEXITIES } from '@/lib/types'
 import { formatDate, formatDateTime } from '@/lib/date-utils'
+import { NotificationCenter } from '@/components/notifications/NotificationCenter'
+import { CalendarExportButton } from '@/components/calendar/CalendarExportButton'
+import { NotificationTest } from '@/components/notifications/NotificationTest'
 
 export function ManagerDashboard() {
   const [bookings, setBookings] = useKV<BookingRequest[]>('bookings', [])
@@ -17,22 +20,34 @@ export function ManagerDashboard() {
   const approvedBookings = (bookings || []).filter(b => b.status === 'approved')
   const allBookings = bookings || []
 
-  const handleApprove = (bookingId: string) => {
+  const handleApprove = (bookingId: string, notes?: string) => {
     setBookings(current => 
       (current || []).map(booking => 
         booking.id === bookingId 
-          ? { ...booking, status: 'approved', updated_at: new Date().toISOString() }
+          ? { 
+              ...booking, 
+              status: 'approved',
+              updated_at: new Date().toISOString(),
+              manager_notes: notes,
+              scheduled_date: booking.scheduled_date || booking.preferred_date,
+              scheduled_time: booking.scheduled_time || '09:00'
+            }
           : booking
       )
     )
     toast.success('Booking approved successfully')
   }
 
-  const handleDecline = (bookingId: string) => {
+  const handleDecline = (bookingId: string, notes?: string) => {
     setBookings(current => 
       (current || []).map(booking => 
         booking.id === bookingId 
-          ? { ...booking, status: 'declined', updated_at: new Date().toISOString() }
+          ? { 
+              ...booking, 
+              status: 'declined', 
+              updated_at: new Date().toISOString(),
+              manager_notes: notes
+            }
           : booking
       )
     )
@@ -77,10 +92,15 @@ export function ManagerDashboard() {
     <div className="p-6 max-w-7xl mx-auto">
       {/* Header */}
       <div className="mb-8">
-        <h1 className="text-3xl font-bold text-foreground">Manager Dashboard</h1>
-        <p className="text-muted-foreground mt-1">
-          Manage videography bookings and optimize schedules
-        </p>
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-3xl font-bold text-foreground">Manager Dashboard</h1>
+            <p className="text-muted-foreground mt-1">
+              Manage videography bookings and optimize schedules
+            </p>
+          </div>
+          <CalendarExportButton bookings={approvedBookings} />
+        </div>
       </div>
 
       {/* Stats Cards */}
@@ -134,6 +154,10 @@ export function ManagerDashboard() {
           </TabsTrigger>
           <TabsTrigger value="approved">Approved ({approvedBookings.length})</TabsTrigger>
           <TabsTrigger value="all">All Bookings ({allBookings.length})</TabsTrigger>
+          <TabsTrigger value="notifications">
+            <Bell className="w-4 h-4 mr-1" />
+            Notifications
+          </TabsTrigger>
           <TabsTrigger value="optimization">Route Optimization</TabsTrigger>
         </TabsList>
 
@@ -321,6 +345,17 @@ export function ManagerDashboard() {
                 </CardContent>
               </Card>
             )}
+          </div>
+        </TabsContent>
+
+        <TabsContent value="notifications">
+          <div className="space-y-6">
+            <NotificationTest />
+            <NotificationCenter 
+              bookings={allBookings}
+              onApproveBooking={handleApprove}
+              onDeclineBooking={handleDecline}
+            />
           </div>
         </TabsContent>
 
