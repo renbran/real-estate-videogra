@@ -22,11 +22,11 @@ Real estate videography booking platform that optimizes scheduling through geogr
 - Success criteria: 90% of bookings have complete information; priority score accurately predicts approval
 
 **Geographic Clustering & Route Optimization**
-- Functionality: Automatically detect nearby shoots and suggest batching opportunities
-- Purpose: Minimize travel time and maximize daily productivity
-- Trigger: New booking submitted or manager reviews weekly schedule
-- Progression: Address geocoding → Radius search → Travel time calculation → Batching suggestions → Route optimization
-- Success criteria: 40% reduction in travel time; 25% increase in daily capacity utilization
+- Functionality: Google Maps integration for real-time address validation, geocoding, and optimized routing
+- Purpose: Minimize travel time and maximize daily productivity with accurate location data
+- Trigger: New booking submitted with address validation, or manager reviews weekly schedule for route optimization
+- Progression: Real-time address autocomplete → Google Maps geocoding → Travel time calculation → Proximity clustering → Route optimization with live traffic
+- Success criteria: 40% reduction in travel time; 25% increase in daily capacity utilization; 95% address accuracy
 
 **Dynamic Scheduling Engine**
 - Functionality: Flexible time-based scheduling with capacity management and buffer allocation

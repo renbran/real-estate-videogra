@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { useKV } from '@github/spark/hooks'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
+import { AddressInput } from '@/components/ui/address-input'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
@@ -21,6 +22,7 @@ import {
   Agent 
 } from '@/lib/types'
 import { calculatePriorityScore, getApprovalStatus, getScoreBreakdown } from '@/lib/priority-scoring'
+import { googleMapsService } from '@/lib/google-maps'
 
 interface BookingFormProps {
   currentUserId: string
@@ -40,7 +42,12 @@ export function BookingForm({ currentUserId, onSubmit }: BookingFormProps) {
     preferred_date: '',
     backup_dates: ['', '', ''],
     is_flexible: false,
-    special_requirements: ''
+    special_requirements: '',
+    // Address validation fields
+    formatted_address: '',
+    place_id: '',
+    coordinates: undefined as { lat: number; lng: number } | undefined,
+    geographic_zone: 'central' as any
   })
 
   const currentAgent = SAMPLE_AGENTS.find(a => a.id === currentUserId) || SAMPLE_AGENTS[0]
@@ -52,6 +59,25 @@ export function BookingForm({ currentUserId, onSubmit }: BookingFormProps) {
 
   const handleInputChange = (field: keyof typeof formData, value: any) => {
     setFormData(prev => ({ ...prev, [field]: value }))
+  }
+
+  const handleAddressChange = (address: string, placeDetails?: {
+    coordinates: { lat: number; lng: number }
+    formatted_address: string
+    place_id: string
+  }) => {
+    const updates: Partial<typeof formData> = {
+      property_address: address
+    }
+
+    if (placeDetails) {
+      updates.formatted_address = placeDetails.formatted_address
+      updates.place_id = placeDetails.place_id
+      updates.coordinates = placeDetails.coordinates
+      updates.geographic_zone = googleMapsService.determineGeographicZone(placeDetails.coordinates) as any
+    }
+
+    setFormData(prev => ({ ...prev, ...updates }))
   }
 
   const handleBackupDateChange = (index: number, value: string) => {
@@ -72,7 +98,7 @@ export function BookingForm({ currentUserId, onSubmit }: BookingFormProps) {
         property_address: formData.property_address,
         property_value: formData.property_value,
         shoot_complexity: formData.shoot_complexity,
-        geographic_zone: 'central', // Would be auto-detected from address
+        geographic_zone: formData.geographic_zone,
         property_access: formData.property_access,
         preferred_date: formData.preferred_date,
         backup_dates: formData.backup_dates?.filter(Boolean) || [],
@@ -82,7 +108,11 @@ export function BookingForm({ currentUserId, onSubmit }: BookingFormProps) {
         status: approvalStatus === 'auto_approve' ? 'approved' : 'pending',
         created_at: new Date().toISOString(),
         updated_at: new Date().toISOString(),
-        estimated_duration: SHOOT_COMPLEXITIES[formData.shoot_complexity].duration
+        estimated_duration: SHOOT_COMPLEXITIES[formData.shoot_complexity].duration,
+        // Google Maps integration fields
+        formatted_address: formData.formatted_address,
+        place_id: formData.place_id,
+        coordinates: formData.coordinates
       }
 
       setBookings(current => [...(current || []), newBooking])
@@ -111,7 +141,11 @@ export function BookingForm({ currentUserId, onSubmit }: BookingFormProps) {
         preferred_date: '',
         backup_dates: ['', '', ''],
         is_flexible: false,
-        special_requirements: ''
+        special_requirements: '',
+        formatted_address: '',
+        place_id: '',
+        coordinates: undefined,
+        geographic_zone: 'central' as any
       })
 
       onSubmit?.()
@@ -154,13 +188,17 @@ export function BookingForm({ currentUserId, onSubmit }: BookingFormProps) {
                     <MapPin className="w-4 h-4" />
                     Property Address
                   </Label>
-                  <Input
-                    id="address"
+                  <AddressInput
                     value={formData.property_address}
-                    onChange={(e) => handleInputChange('property_address', e.target.value)}
+                    onChange={handleAddressChange}
                     placeholder="Enter full property address"
                     required
                   />
+                  {formData.formatted_address && formData.formatted_address !== formData.property_address && (
+                    <div className="text-xs text-muted-foreground">
+                      Validated: {formData.formatted_address}
+                    </div>
+                  )}
                 </div>
 
                 {/* Property Value & Shoot Complexity */}

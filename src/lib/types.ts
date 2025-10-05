@@ -56,6 +56,42 @@ export interface BookingRequest {
   scheduled_time?: string
   manager_notes?: string
   coordinates?: { lat: number; lng: number }
+  formatted_address?: string
+  place_id?: string
+  address_components?: GoogleAddressComponent[]
+}
+
+export interface GoogleAddressComponent {
+  long_name: string
+  short_name: string
+  types: string[]
+}
+
+export interface GooglePlacePrediction {
+  description: string
+  place_id: string
+  matched_substrings: Array<{
+    length: number
+    offset: number
+  }>
+  structured_formatting: {
+    main_text: string
+    secondary_text: string
+  }
+  types: string[]
+}
+
+export interface RouteOptimizationResult {
+  optimized_order: string[]
+  total_distance: number
+  total_duration: number
+  waypoints: Array<{
+    booking_id: string
+    coordinates: { lat: number; lng: number }
+    address: string
+    duration_minutes: number
+  }>
+  traffic_aware: boolean
 }
 
 export interface ScheduleSlot {

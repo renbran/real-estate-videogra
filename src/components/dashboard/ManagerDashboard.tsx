@@ -3,6 +3,8 @@ import { useKV } from '@github/spark/hooks'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { CheckCircle, XCircle, MapPin, Clock, Users, Bell } from '@phosphor-icons/react'
 import { toast } from 'sonner'
@@ -11,10 +13,14 @@ import { formatDate, formatDateTime } from '@/lib/date-utils'
 import { NotificationCenter } from '@/components/notifications/NotificationCenter'
 import { CalendarExportButton } from '@/components/calendar/CalendarExportButton'
 import { NotificationTest } from '@/components/notifications/NotificationTest'
+import { RouteOptimizer } from './RouteOptimizer'
 
 export function ManagerDashboard() {
   const [bookings, setBookings] = useKV<BookingRequest[]>('bookings', [])
   const [activeTab, setActiveTab] = useState('pending')
+  const [selectedOptimizationDate, setSelectedOptimizationDate] = useState(
+    new Date().toISOString().split('T')[0]
+  )
   
   const pendingBookings = (bookings || []).filter(b => b.status === 'pending')
   const approvedBookings = (bookings || []).filter(b => b.status === 'approved')
@@ -360,18 +366,34 @@ export function ManagerDashboard() {
         </TabsContent>
 
         <TabsContent value="optimization">
-          <Card>
-            <CardHeader>
-              <CardTitle>Route Optimization</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="text-center py-8 text-muted-foreground">
-                <MapPin className="w-12 h-12 mx-auto mb-3 opacity-50" />
-                <p>Route optimization features coming soon</p>
-                <p className="text-sm mt-1">This will include geographic clustering and travel time optimization</p>
-              </div>
-            </CardContent>
-          </Card>
+          <div className="space-y-6">
+            <Card>
+              <CardHeader>
+                <CardTitle>Select Date for Route Optimization</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="max-w-xs">
+                  <Label htmlFor="optimization-date">Date</Label>
+                  <Input
+                    id="optimization-date"
+                    type="date"
+                    value={selectedOptimizationDate}
+                    onChange={(e) => setSelectedOptimizationDate(e.target.value)}
+                    min={new Date().toISOString().split('T')[0]}
+                  />
+                </div>
+              </CardContent>
+            </Card>
+            
+            <RouteOptimizer 
+              selectedDate={selectedOptimizationDate}
+              onOptimizationComplete={(result) => {
+                toast.success('Route optimization completed!', {
+                  description: `Optimized ${result.waypoints.length} properties`
+                })
+              }}
+            />
+          </div>
         </TabsContent>
       </Tabs>
     </div>
