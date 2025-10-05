@@ -3,11 +3,24 @@ import { GooglePlacePrediction, GoogleAddressComponent, RouteOptimizationResult 
 
 const getApiKey = (): string => {
   // @ts-ignore
-  const apiKey = window.GOOGLE_MAPS_API_KEY || 'YOUR_API_KEY_HERE'
-  if (apiKey === 'YOUR_API_KEY_HERE') {
-    console.warn('Google Maps API key not configured. Please set GOOGLE_MAPS_API_KEY in index.html')
+  const apiKey = window.GOOGLE_MAPS_API_KEY?.trim() || 'YOUR_API_KEY_HERE'
+  if (!apiKey || apiKey === 'YOUR_API_KEY_HERE') {
+    console.warn('⚠️ Google Maps API key not configured. Please set GOOGLE_MAPS_API_KEY in index.html')
+    console.info('To enable address validation and route optimization:')
+    console.info('1. Get an API key from Google Cloud Console')
+    console.info('2. Enable Places API and Directions API')
+    console.info('3. Replace YOUR_API_KEY_HERE with your key in index.html')
   }
   return apiKey
+}
+
+const getConfig = () => {
+  // @ts-ignore
+  return window.GOOGLE_MAPS_CONFIG || {
+    libraries: ['places', 'directions', 'geometry'],
+    region: 'US',
+    language: 'en'
+  }
 }
 
 export class GoogleMapsService {
@@ -50,18 +63,28 @@ export class GoogleMapsService {
         return
       }
       
+      const apiKey = getApiKey()
+      const config = getConfig()
+      
+      if (!apiKey || apiKey === 'YOUR_API_KEY_HERE') {
+        reject(new Error('Google Maps API key is required'))
+        return
+      }
+      
       const script = document.createElement('script')
-      script.src = `https://maps.googleapis.com/maps/api/js?key=${getApiKey()}&libraries=places&callback=initGoogleMaps`
+      const libraries = config.libraries.join(',')
+      script.src = `https://maps.googleapis.com/maps/api/js?key=${apiKey}&libraries=${libraries}&region=${config.region}&language=${config.language}&callback=initGoogleMaps`
       script.async = true
       script.defer = true
       
       // @ts-ignore
       window.initGoogleMaps = () => {
+        console.log('✅ Google Maps API loaded successfully')
         resolve()
       }
       
       script.onerror = () => {
-        reject(new Error('Failed to load Google Maps script'))
+        reject(new Error('Failed to load Google Maps API. Check your API key and network connection.'))
       }
       
       document.head.appendChild(script)
@@ -308,6 +331,109 @@ export class GoogleMapsService {
     if (lng < -74.0059) return 'west'
     
     return 'central'
+  }
+
+  /**
+   * Batch validate multiple addresses for efficiency
+   */
+  async batchValidateAddresses(addresses: string[]): Promise<Array<{
+    input_address: string
+    validated: boolean
+    result?: {
+      coordinates: { lat: number; lng: number }
+      formatted_address: string
+      address_components: GoogleAddressComponent[]
+    }
+  }>> {
+    const results: Array<{
+      input_address: string
+      validated: boolean
+      result?: {
+        coordinates: { lat: number; lng: number }
+        formatted_address: string
+        address_components: GoogleAddressComponent[]
+      }
+    }> = []
+    
+    for (const address of addresses) {
+      try {
+        const result = await this.geocodeAddress(address)
+        results.push({
+          input_address: address,
+          validated: !!result,
+          result: result || undefined
+        })
+        
+        // Small delay to respect rate limits
+        await new Promise(resolve => setTimeout(resolve, 100))
+      } catch (error) {
+        results.push({
+          input_address: address,
+          validated: false
+        })
+      }
+    }
+    
+    return results
+  }
+
+  /**
+   * Validate if an address is within a serviceable area
+   */
+  async isAddressServiceable(address: string, serviceArea?: {
+    center: { lat: number; lng: number }
+    radius_miles: number
+  }): Promise<boolean> {
+    if (!serviceArea) return true
+    
+    const geocoded = await this.geocodeAddress(address)
+    if (!geocoded) return false
+    
+    const distance = this.calculateDistance(serviceArea.center, geocoded.coordinates)
+    return distance <= serviceArea.radius_miles
+  }
+
+  /**
+   * Get estimated travel time between two points
+   */
+  async getEstimatedTravelTime(
+    origin: { lat: number; lng: number },
+    destination: { lat: number; lng: number },
+    departureTime?: Date
+  ): Promise<{ duration_minutes: number; distance_miles: number } | null> {
+    if (!this.directionsService) {
+      await this.initializeServices()
+    }
+
+    return new Promise((resolve) => {
+      if (!this.directionsService) {
+        resolve(null)
+        return
+      }
+
+      this.directionsService.route(
+        {
+          origin: new google.maps.LatLng(origin.lat, origin.lng),
+          destination: new google.maps.LatLng(destination.lat, destination.lng),
+          travelMode: google.maps.TravelMode.DRIVING,
+          drivingOptions: departureTime ? {
+            departureTime,
+            trafficModel: google.maps.TrafficModel.BEST_GUESS
+          } : undefined
+        },
+        (result, status) => {
+          if (status === google.maps.DirectionsStatus.OK && result) {
+            const leg = result.routes[0].legs[0]
+            resolve({
+              duration_minutes: Math.round((leg.duration?.value || 0) / 60),
+              distance_miles: Math.round((leg.distance?.value || 0) / 1609.34 * 10) / 10
+            })
+          } else {
+            resolve(null)
+          }
+        }
+      )
+    })
   }
 }
 

@@ -30,6 +30,10 @@ declare namespace google {
       center?: LatLng
       zoom?: number
       mapTypeId?: MapTypeId
+      mapTypeControl?: boolean
+      streetViewControl?: boolean
+      fullscreenControl?: boolean
+      zoomControl?: boolean
     }
 
     class Map {
@@ -37,6 +41,12 @@ declare namespace google {
       fitBounds(bounds: LatLngBounds): void
       setCenter(latlng: LatLng): void
       setZoom(zoom: number): void
+      getZoom(): number
+    }
+
+    namespace event {
+      function addListener(instance: any, eventName: string, handler: () => void): any
+      function removeListener(listener: any): void
     }
 
     interface MarkerLabel {
@@ -153,6 +163,21 @@ declare namespace google {
         request: DirectionsRequest,
         callback: (result: DirectionsResult | null, status: DirectionsStatus) => void
       ): void
+    }
+
+    interface DirectionsRendererOptions {
+      suppressMarkers?: boolean
+      polylineOptions?: {
+        strokeColor?: string
+        strokeWeight?: number
+        strokeOpacity?: number
+      }
+    }
+
+    class DirectionsRenderer {
+      constructor(options?: DirectionsRendererOptions)
+      setMap(map: Map | null): void
+      setDirections(directions: DirectionsResult): void
     }
 
     interface GeocoderRequest {

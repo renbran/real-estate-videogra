@@ -14,6 +14,7 @@ import { NotificationCenter } from '@/components/notifications/NotificationCente
 import { CalendarExportButton } from '@/components/calendar/CalendarExportButton'
 import { NotificationTest } from '@/components/notifications/NotificationTest'
 import { RouteOptimizer } from './RouteOptimizer'
+import { AddressBatchValidator } from '@/components/maps/AddressBatchValidator'
 
 export function ManagerDashboard() {
   const [bookings, setBookings] = useKV<BookingRequest[]>('bookings', [])
@@ -165,6 +166,7 @@ export function ManagerDashboard() {
             Notifications
           </TabsTrigger>
           <TabsTrigger value="optimization">Route Optimization</TabsTrigger>
+          <TabsTrigger value="address-validation">Address Validation</TabsTrigger>
         </TabsList>
 
         <TabsContent value="pending">
@@ -390,6 +392,19 @@ export function ManagerDashboard() {
               onOptimizationComplete={(result) => {
                 toast.success('Route optimization completed!', {
                   description: `Optimized ${result.waypoints.length} properties`
+                })
+              }}
+            />
+          </div>
+        </TabsContent>
+
+        <TabsContent value="address-validation">
+          <div className="space-y-6">
+            <AddressBatchValidator 
+              onValidationComplete={(updatedBookings) => {
+                // The validator updates the bookings automatically via useKV
+                toast.success('Address validation completed!', {
+                  description: `Validated ${updatedBookings.filter(b => b.coordinates).length} addresses`
                 })
               }}
             />

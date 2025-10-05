@@ -142,7 +142,11 @@ export function RouteOptimizer({ selectedDate, onOptimizationComplete }: RouteOp
   return (
     <div className="space-y-6">
       {/* Map Visualization */}
-      <MapVisualization bookings={dayBookings} />
+      <MapVisualization 
+        bookings={dayBookings} 
+        routeOptimization={currentOptimization || undefined}
+        showRoute={!!currentOptimization}
+      />
       
       {/* Optimization Stats */}
       <Card>

@@ -10,9 +10,19 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link href="/src/main.css" rel="stylesheet" />
     
-    <!-- Note: Replace YOUR_API_KEY_HERE with actual Google Maps API Key -->
+    <!-- Google Maps API Configuration -->
     <script>
+      // Configure Google Maps API Key
+      // For development: Replace 'YOUR_API_KEY_HERE' with your actual Google Maps API key
+      // For production: Use environment variables or secure key management
       window.GOOGLE_MAPS_API_KEY = 'YOUR_API_KEY_HERE';
+      
+      // Optional: Configure Google Maps parameters
+      window.GOOGLE_MAPS_CONFIG = {
+        libraries: ['places', 'directions', 'geometry'],
+        region: 'US', // Bias results to US
+        language: 'en' // Set language
+      };
     </script>
 </head>
 
