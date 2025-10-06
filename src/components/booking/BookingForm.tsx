@@ -15,7 +15,8 @@ import { CalendarBlank, MapPin, Clock, TrendUp, Camera, Users, Confetti, Video, 
 import { 
   BookingRequest, 
   ShootCategory,
-  PropertyValue, 
+  PropertyValue,
+  PropertyType, 
   ShootComplexity, 
   PropertyAccess,
   PersonalShootType,
@@ -33,6 +34,7 @@ import {
   SHOOT_CATEGORIES,
   SHOOT_COMPLEXITIES,
   PROPERTY_VALUES,
+  PROPERTY_TYPES,
   PERSONAL_SHOOT_TYPES,
   PERSONAL_SHOOT_SIZES,
   PERSONAL_SHOOT_LOCATIONS,
@@ -81,6 +83,8 @@ export function BookingForm({ currentUserId, onSubmit }: BookingFormProps) {
     
     // Property shoot fields
     property_value: '' as PropertyValue,
+    property_type: '' as PropertyType,
+    bedrooms: '',
     shoot_complexity: '' as ShootComplexity,
     property_access: '' as PropertyAccess,
     property_status: '' as 'vacant' | 'occupied',
@@ -210,6 +214,8 @@ export function BookingForm({ currentUserId, onSubmit }: BookingFormProps) {
         // Property fields (if applicable)
         ...(formData.shoot_category === 'property' && {
           property_value: formData.property_value,
+          property_type: formData.property_type,
+          bedrooms: parseInt(formData.bedrooms) || undefined,
           shoot_complexity: formData.shoot_complexity,
           property_access: formData.property_access,
           property_status: formData.property_status,
@@ -290,6 +296,8 @@ export function BookingForm({ currentUserId, onSubmit }: BookingFormProps) {
         is_flexible: false,
         special_requirements: '',
         property_value: '' as PropertyValue,
+        property_type: '' as PropertyType,
+        bedrooms: '',
         shoot_complexity: '' as ShootComplexity,
         property_access: '' as PropertyAccess,
         property_status: '' as 'vacant' | 'occupied',
@@ -349,7 +357,21 @@ export function BookingForm({ currentUserId, onSubmit }: BookingFormProps) {
             <div className="space-y-4">
               <h3 className="text-sm font-medium text-muted-foreground">Property Shoot Details</h3>
               
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div className="space-y-2">
+                  <Label>Property Type</Label>
+                  <Select value={formData.property_type} onValueChange={(value) => handleInputChange('property_type', value)}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select property type" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {Object.entries(PROPERTY_TYPES).map(([key, { label }]) => (
+                        <SelectItem key={key} value={key}>{label}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+
                 <div className="space-y-2">
                   <Label>Property Value Range</Label>
                   <Select value={formData.property_value} onValueChange={(value) => handleInputChange('property_value', value)}>
@@ -364,6 +386,26 @@ export function BookingForm({ currentUserId, onSubmit }: BookingFormProps) {
                   </Select>
                 </div>
 
+                <div className="space-y-2">
+                  <Label htmlFor="bedrooms">Number of Bedrooms</Label>
+                  <Select value={formData.bedrooms} onValueChange={(value) => handleInputChange('bedrooms', value)}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Bedrooms" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="0">Studio</SelectItem>
+                      <SelectItem value="1">1 Bedroom</SelectItem>
+                      <SelectItem value="2">2 Bedrooms</SelectItem>
+                      <SelectItem value="3">3 Bedrooms</SelectItem>
+                      <SelectItem value="4">4 Bedrooms</SelectItem>
+                      <SelectItem value="5">5 Bedrooms</SelectItem>
+                      <SelectItem value="6">6+ Bedrooms</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label className="flex items-center gap-2">
                     <Clock className="w-4 h-4" />
@@ -385,9 +427,7 @@ export function BookingForm({ currentUserId, onSubmit }: BookingFormProps) {
                     </SelectContent>
                   </Select>
                 </div>
-              </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label>Property Status</Label>
                   <Select value={formData.property_status} onValueChange={(value) => handleInputChange('property_status', value)}>
@@ -400,20 +440,27 @@ export function BookingForm({ currentUserId, onSubmit }: BookingFormProps) {
                     </SelectContent>
                   </Select>
                 </div>
+              </div>
 
-                <div className="space-y-2">
-                  <Label>Property Access</Label>
-                  <Select value={formData.property_access} onValueChange={(value) => handleInputChange('property_access', value)}>
-                    <SelectTrigger>
-                      <SelectValue placeholder="How will videographer access?" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="vacant_lockbox">Vacant - Lockbox Available</SelectItem>
-                      <SelectItem value="vacant_key">Vacant - Key Pickup Required</SelectItem>
-                      <SelectItem value="occupied_agent">Occupied - Agent Must Be Present</SelectItem>
-                      <SelectItem value="occupied_key">Occupied - Tenant Has Key</SelectItem>
-                    </SelectContent>
-                  </Select>
+              <div className="space-y-2">
+                <Label>Property Access</Label>
+                <Select value={formData.property_access} onValueChange={(value) => handleInputChange('property_access', value)}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="How will videographer access?" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="vacant_lockbox">Vacant - Lockbox Available</SelectItem>
+                    <SelectItem value="vacant_key">Vacant - Key Pickup Required</SelectItem>
+                    <SelectItem value="occupied_agent">Occupied - Agent Must Be Present</SelectItem>
+                    <SelectItem value="occupied_key">Occupied - Tenant Has Key</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              
+              <div className="p-3 bg-blue-50 border border-blue-200 rounded-lg">
+                <div className="text-sm font-medium text-blue-900 mb-1">First Come, First Serve</div>
+                <div className="text-xs text-blue-700">
+                  Property shoots are scheduled on a first-come, first-serve basis. Submit your request early to secure your preferred time slot.
                 </div>
               </div>
             </div>
@@ -742,7 +789,7 @@ export function BookingForm({ currentUserId, onSubmit }: BookingFormProps) {
 
     switch (formData.shoot_category) {
       case 'property':
-        return !!(formData.property_value && formData.shoot_complexity && formData.property_access)
+        return !!(formData.property_type && formData.property_value && formData.bedrooms && formData.shoot_complexity && formData.property_access)
       case 'personal':
         return !!(formData.personal_shoot_type && formData.personal_shoot_size && formData.personal_shoot_duration)
       case 'company_event':

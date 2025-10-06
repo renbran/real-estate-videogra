@@ -34,6 +34,8 @@ export type GeographicZone = 'north' | 'south' | 'east' | 'west' | 'central'
 
 export type PropertyAccess = 'vacant_lockbox' | 'vacant_key' | 'occupied_agent' | 'occupied_key'
 
+export type PropertyType = 'single_family' | 'condo' | 'townhouse' | 'multi_family' | 'land' | 'commercial'
+
 export type BookingStatus = 'pending' | 'approved' | 'declined' | 'completed' | 'cancelled'
 
 export interface User {
@@ -73,6 +75,8 @@ export interface BookingRequest {
   
   // Property shoot specific fields
   property_value?: PropertyValue
+  property_type?: PropertyType
+  bedrooms?: number
   shoot_complexity?: ShootComplexity
   geographic_zone?: GeographicZone
   property_access?: PropertyAccess
@@ -339,6 +343,15 @@ export const AGENT_TIERS: Record<string, {
   standard: { label: 'Standard', priority_points: 5, monthly_quota: 2 },
   premium: { label: 'Premium', priority_points: 10, monthly_quota: 4 },
   elite: { label: 'Elite', priority_points: 15, monthly_quota: 8 }
+}
+
+export const PROPERTY_TYPES: Record<PropertyType, { label: string }> = {
+  single_family: { label: 'Single Family Home' },
+  condo: { label: 'Condo/Apartment' },
+  townhouse: { label: 'Townhouse' },
+  multi_family: { label: 'Multi-Family' },
+  land: { label: 'Land/Lot' },
+  commercial: { label: 'Commercial Property' }
 }
 
 export const SAMPLE_AGENTS: Agent[] = [

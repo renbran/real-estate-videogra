@@ -81,6 +81,28 @@ function calculatePropertyScore(booking: Partial<BookingRequest>): number {
     score += PROPERTY_VALUES[booking.property_value].priority_points
   }
   
+  // First-come-first-serve bonus for property shoots (20 points max)
+  // This gives priority based on when the booking was created
+  if (booking.created_at) {
+    const createdTime = new Date(booking.created_at).getTime()
+    const now = new Date().getTime()
+    const hoursSinceCreation = (now - createdTime) / (1000 * 60 * 60)
+    
+    // Earlier bookings get more points (reverse chronological bonus)
+    // Maximum 20 points for bookings created within the first hour
+    // Gradually decreasing to 5 points for bookings older than 24 hours
+    if (hoursSinceCreation <= 1) {
+      score += 20
+    } else if (hoursSinceCreation <= 6) {
+      score += 15
+    } else if (hoursSinceCreation <= 12) {
+      score += 10
+    } else if (hoursSinceCreation <= 24) {
+      score += 5
+    }
+    // No bonus points for bookings older than 24 hours
+  }
+  
   // Urgency/complexity bonus
   if (booking.shoot_complexity === 'complex') {
     score += 10 // Complex shoots get priority
