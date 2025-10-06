@@ -11,6 +11,7 @@ import { Switch } from '@/components/ui/switch'
 import { Badge } from '@/components/ui/badge'
 import { CalendarBlank, MapPin, Clock, TrendUp } from '@phosphor-icons/react'
 import { toast } from 'sonner'
+import { AddressInput } from './AddressInput'
 import {
   BookingRequest,
   ShootCategory,
@@ -50,11 +51,12 @@ export function BookingForm({ currentUserId, onSubmit }: BookingFormProps) {
     shoot_complexity: '' as ShootComplexity,
     property_status: 'vacant' as 'vacant' | 'occupied',
     
-    // Address validation fields
+    // Google Maps integration fields
     formatted_address: '',
     place_id: '',
     latitude: undefined as number | undefined,
-    longitude: undefined as number | undefined
+    longitude: undefined as number | undefined,
+    geographic_zone: '' as string
   })
 
   const currentAgent = SAMPLE_AGENTS.find(a => a.id === currentUserId)
@@ -125,6 +127,7 @@ export function BookingForm({ currentUserId, onSubmit }: BookingFormProps) {
         backup_dates: (formData.backup_dates || []).filter(date => date.length > 0),
         is_flexible: formData.is_flexible,
         location: formData.location,
+        property_address: formData.location, // For backward compatibility
         special_requirements: formData.special_requirements,
         
         // Property shoot fields
@@ -133,16 +136,23 @@ export function BookingForm({ currentUserId, onSubmit }: BookingFormProps) {
         bedrooms: parseInt(formData.bedrooms) || undefined,
         shoot_complexity: formData.shoot_complexity,
         property_status: formData.property_status,
+        geographic_zone: formData.geographic_zone as any,
         
         // System fields
         status: approvalStatus === 'auto_approve' ? 'approved' : 'pending',
         priority_score: priorityScore,
         created_at: new Date().toISOString(),
         updated_at: new Date().toISOString(),
+        
+        // Google Maps integration fields
         formatted_address: formData.formatted_address,
         place_id: formData.place_id,
         latitude: formData.latitude,
-        longitude: formData.longitude
+        longitude: formData.longitude,
+        coordinates: formData.latitude && formData.longitude ? {
+          lat: formData.latitude,
+          lng: formData.longitude
+        } : undefined
       }
       
       setBookings(current => [...(current || []), newBooking])
@@ -174,7 +184,8 @@ export function BookingForm({ currentUserId, onSubmit }: BookingFormProps) {
         formatted_address: '',
         place_id: '',
         latitude: undefined,
-        longitude: undefined
+        longitude: undefined,
+        geographic_zone: ''
       })
       
       onSubmit?.()
@@ -225,20 +236,25 @@ export function BookingForm({ currentUserId, onSubmit }: BookingFormProps) {
           <CardContent>
             <form onSubmit={handleSubmit} className="space-y-6">
               
-              {/* Property Address */}
-              <div className="space-y-2">
-                <Label className="flex items-center gap-2">
-                  <MapPin size={16} />
-                  Property Address
-                </Label>
-                <Input
-                  type="text"
-                  value={formData.location}
-                  onChange={(e) => handleInputChange('location', e.target.value)}
-                  placeholder="Enter full property address"
-                  required
-                />
-              </div>
+              {/* Property Address with Google Maps Integration */}
+              <AddressInput
+                value={formData.location}
+                onChange={(value) => handleInputChange('location', value)}
+                onAddressValidated={(data) => {
+                  setFormData(prev => ({
+                    ...prev,
+                    formatted_address: data.formatted_address,
+                    place_id: data.place_id,
+                    latitude: data.coordinates.lat,
+                    longitude: data.coordinates.lng,
+                    geographic_zone: data.geographic_zone
+                  }))
+                }}
+                placeholder="Enter full property address"
+                required
+                label="Property Address"
+                showValidationStatus={true}
+              />
 
               {/* Property Details */}
               <div className="space-y-6">

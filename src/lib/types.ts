@@ -45,7 +45,8 @@ export interface User {
   name: string
   email: string
   role: UserRole
-  agent_tier?: AgentTier
+  tier?: AgentTier // For agents
+  agent_tier?: AgentTier // For backward compatibility
   monthly_quota?: number
   monthly_used?: number
   performance_score?: number
@@ -59,7 +60,8 @@ export interface BookingRequest {
   preferred_date: string
   backup_dates: string[]
   is_flexible: boolean
-  location: string
+  location: string // Generic location for all categories
+  property_address?: string // For backward compatibility and property shoots
   special_requirements?: string
   
   // Property shoot specific fields
@@ -102,6 +104,7 @@ export interface BookingRequest {
   created_at: string
   updated_at: string
   scheduled_date?: string
+  scheduled_time?: string // Additional time field for scheduling
   manager_notes?: string
   
   // Google Maps integration fields
@@ -110,6 +113,14 @@ export interface BookingRequest {
   place_id?: string
   latitude?: number
   longitude?: number
+  coordinates?: { lat: number; lng: number } // For easier access
+  
+  // Additional fields that are referenced in components
+  agent_name?: string // Computed/joined field
+  estimated_duration?: number // Duration in minutes
+  actual_duration?: number // Actual time taken
+  videographer_id?: string // Assigned videographer
+  property_access?: PropertyAccess // Access method for property
 }
 
 export interface GoogleAddressComponent {
@@ -144,6 +155,9 @@ export interface RouteOptimization {
     longitude: number
   }>
 }
+
+// Alias for backward compatibility
+export type RouteOptimizationResult = RouteOptimization
 
 export interface ScheduleBlock {
   id: string
