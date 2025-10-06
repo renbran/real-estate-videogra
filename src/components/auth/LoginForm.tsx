@@ -3,7 +3,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { authenticateUser, setCurrentUser } from '@/lib/auth'
+import { useAuth } from '@/hooks/useClientAPI'
 import { User } from '@/lib/types'
 
 interface LoginFormProps {
@@ -14,6 +14,7 @@ export function LoginForm({ onLogin }: LoginFormProps) {
   const [email, setEmail] = useState('')
   const [error, setError] = useState('')
   const [isLoading, setIsLoading] = useState(false)
+  const { login } = useAuth()
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -21,15 +22,11 @@ export function LoginForm({ onLogin }: LoginFormProps) {
     setError('')
 
     try {
-      const user = authenticateUser(email)
-      if (user) {
-        setCurrentUser(user)
-        onLogin(user)
-      } else {
-        setError('User not found. Try one of the demo accounts.')
-      }
+      const { user } = await login(email)
+      onLogin(user)
     } catch (err) {
       setError('Login failed. Please try again.')
+      console.error('Login error:', err)
     } finally {
       setIsLoading(false)
     }

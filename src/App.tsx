@@ -6,17 +6,18 @@ import { AgentDashboard } from '@/components/dashboard/AgentDashboard'
 import { ManagerDashboard } from '@/components/dashboard/ManagerDashboard'
 import { VideographerDashboard } from '@/components/dashboard/VideographerDashboard'
 import { User } from '@/lib/types'
-import { getCurrentUser } from '@/lib/auth'
+import { useAuth } from '@/hooks/useClientAPI'
 
 function App() {
   const [currentUser, setCurrentUser] = useState<User | null>(null)
   const [isLoading, setIsLoading] = useState(true)
+  const { getCurrentUser } = useAuth()
 
   useEffect(() => {
     const user = getCurrentUser()
     setCurrentUser(user)
     setIsLoading(false)
-  }, [])
+  }, [getCurrentUser])
 
   const handleLogin = (user: User) => {
     setCurrentUser(user)

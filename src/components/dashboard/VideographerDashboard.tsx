@@ -1,4 +1,4 @@
-import { useKV } from '@github/spark/hooks'
+import { useBookings } from '@/hooks/useClientAPI'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { CalendarBlank, MapPin, Clock, CheckCircle } from '@phosphor-icons/react'
@@ -6,7 +6,7 @@ import { BookingRequest, SHOOT_COMPLEXITIES } from '@/lib/types'
 import { formatDate, formatDateTime } from '@/lib/date-utils'
 
 export function VideographerDashboard() {
-  const [bookings] = useKV<BookingRequest[]>('bookings', [])
+  const { bookings, loading } = useBookings({ status: 'approved' })
   
   const approvedBookings = (bookings || []).filter(b => b.status === 'approved')
   const todayBookings = approvedBookings.filter(b => {

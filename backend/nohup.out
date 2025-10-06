@@ -1,0 +1,10 @@
+🗄️  Database: SQLite (Development)
+📁 SQLite database initialized at: D:\Booking System\real-estate-videogra\backend\data\videography_booking.db
+🚀 VideoPro Backend Server running on port 3001
+🌍 Environment: development
+🔗 Health check: http://localhost:3001/health
+🏗️  Creating SQLite database tables...
+✅ Database tables created successfully!
+🌱 Seeding database with demo data...
+📊 Database already has data, skipping seed...
+🎉 Development database ready!

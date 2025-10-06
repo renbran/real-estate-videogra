@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { useKV } from '@github/spark/hooks'
+import { useBookings } from '@/hooks/useClientAPI'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -30,7 +30,7 @@ interface BookingFormProps {
 }
 
 export function BookingForm({ currentUserId, onSubmit }: BookingFormProps) {
-  const [bookings, setBookings] = useKV<BookingRequest[]>('bookings', [])
+  const { addBooking } = useBookings()
   const [isSubmitting, setIsSubmitting] = useState(false)
 
   const [formData, setFormData] = useState({
@@ -117,8 +117,7 @@ export function BookingForm({ currentUserId, onSubmit }: BookingFormProps) {
       const priorityScore = calculatePriorityScore()
       const approvalStatus = getApprovalStatus()
       
-      const newBooking: BookingRequest = {
-        id: Date.now().toString(),
+      const newBookingData = {
         agent_id: currentUserId,
         shoot_category: formData.shoot_category,
         preferred_date: formData.preferred_date,
@@ -137,15 +136,13 @@ export function BookingForm({ currentUserId, onSubmit }: BookingFormProps) {
         // System fields
         status: approvalStatus === 'auto_approve' ? 'approved' : 'pending',
         priority_score: priorityScore,
-        created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString(),
         formatted_address: formData.formatted_address,
         place_id: formData.place_id,
         latitude: formData.latitude,
         longitude: formData.longitude
-      }
+      } as Omit<BookingRequest, 'id'>
       
-      setBookings(current => [...(current || []), newBooking])
+      await addBooking(newBookingData)
       
       if (approvalStatus === 'auto_approve') {
         toast.success('Booking automatically approved!', {

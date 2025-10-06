@@ -1,12 +1,13 @@
 import { useState } from 'react'
-import { useKV } from '@github/spark/hooks'
+import { useBookings } from '@/hooks/useClientAPI'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { CheckCircle, XCircle, MapPin, Clock, Users, Bell } from '@phosphor-icons/react'
+import { Progress } from '@/components/ui/progress'
+import { CheckCircle, XCircle, MapPin, Clock, Users, Bell, TrendUp, CurrencyDollar, Star, Calendar } from '@phosphor-icons/react'
 import { toast } from 'sonner'
 import { BookingRequest, SAMPLE_AGENTS, SHOOT_COMPLEXITIES } from '@/lib/types'
 import { formatDate, formatDateTime } from '@/lib/date-utils'
@@ -15,50 +16,57 @@ import { CalendarExportButton } from '@/components/calendar/CalendarExportButton
 import { NotificationTest } from '@/components/notifications/NotificationTest'
 import { RouteOptimizer } from './RouteOptimizer'
 import { AddressBatchValidator } from '@/components/maps/AddressBatchValidator'
+import { DEMO_ANALYTICS } from '@/lib/demo-data'
 
 export function ManagerDashboard() {
-  const [bookings, setBookings] = useKV<BookingRequest[]>('bookings', [])
+  const { bookings, loading, updateBooking } = useBookings()
   const [activeTab, setActiveTab] = useState('pending')
   const [selectedOptimizationDate, setSelectedOptimizationDate] = useState(
     new Date().toISOString().split('T')[0]
   )
+
+  const approveBooking = async (id: string) => {
+    await updateBooking(id, { status: 'approved' as const })
+    toast.success('Booking approved successfully')
+  }
+
+  const declineBooking = async (id: string) => {
+    await updateBooking(id, { status: 'declined' as const })
+    toast.success('Booking declined')
+  }
   
   const pendingBookings = (bookings || []).filter(b => b.status === 'pending')
   const approvedBookings = (bookings || []).filter(b => b.status === 'approved')
   const allBookings = bookings || []
 
-  const handleApprove = (bookingId: string, notes?: string) => {
-    setBookings(current => 
-      (current || []).map(booking => 
-        booking.id === bookingId 
-          ? { 
-              ...booking, 
-              status: 'approved',
-              updated_at: new Date().toISOString(),
-              manager_notes: notes,
-              scheduled_date: booking.scheduled_date || booking.preferred_date,
-              scheduled_time: booking.scheduled_time || '09:00'
-            }
-          : booking
-      )
+  if (loading) {
+    return (
+      <div className="p-6 max-w-7xl mx-auto">
+        <div className="text-center py-12">
+          <div className="text-lg">Loading bookings...</div>
+        </div>
+      </div>
     )
-    toast.success('Booking approved successfully')
   }
 
-  const handleDecline = (bookingId: string, notes?: string) => {
-    setBookings(current => 
-      (current || []).map(booking => 
-        booking.id === bookingId 
-          ? { 
-              ...booking, 
-              status: 'declined', 
-              updated_at: new Date().toISOString(),
-              manager_notes: notes
-            }
-          : booking
-      )
-    )
-    toast.success('Booking declined')
+  const handleApprove = async (bookingId: string, notes?: string) => {
+    try {
+      await approveBooking(bookingId, notes)
+      toast.success('Booking approved successfully')
+    } catch (error) {
+      toast.error('Failed to approve booking')
+      console.error('Approve booking error:', error)
+    }
+  }
+
+  const handleDecline = async (bookingId: string, notes?: string) => {
+    try {
+      await declineBooking(bookingId, notes)
+      toast.success('Booking declined')
+    } catch (error) {
+      toast.error('Failed to decline booking')
+      console.error('Decline booking error:', error)
+    }
   }
 
   const getStatusBadge = (status: string) => {

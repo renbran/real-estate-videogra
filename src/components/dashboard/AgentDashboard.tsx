@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { useKV } from '@github/spark/hooks'
+import { useBookings } from '@/hooks/useClientAPI'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -17,7 +17,7 @@ interface AgentDashboardProps {
 }
 
 export function AgentDashboard({ currentUserId }: AgentDashboardProps) {
-  const [bookings] = useKV<BookingRequest[]>('bookings', [])
+  const { bookings, loading } = useBookings({ agent_id: currentUserId })
   const [activeTab, setActiveTab] = useState('overview')
   const { getNotificationHistory } = useNotifications()
   
@@ -65,7 +65,8 @@ export function AgentDashboard({ currentUserId }: AgentDashboardProps) {
     }
   }
 
-  const getComplexityBadge = (complexity: string) => {
+  const getComplexityBadge = (complexity?: string) => {
+    if (!complexity) return null
     switch (complexity) {
       case 'quick':
         return <Badge className="bg-green-100 text-green-800">Quick</Badge>
@@ -194,7 +195,7 @@ export function AgentDashboard({ currentUserId }: AgentDashboardProps) {
                       <div className="flex-1">
                         <div className="flex items-center gap-2 mb-1">
                           <MapPin className="w-4 h-4 text-muted-foreground" />
-                          <span className="font-medium text-sm">{booking.property_address}</span>
+                          <span className="font-medium text-sm">{booking.location}</span>
                         </div>
                         <div className="flex items-center gap-3 text-sm text-muted-foreground">
                           <span className="flex items-center gap-1">
@@ -203,7 +204,10 @@ export function AgentDashboard({ currentUserId }: AgentDashboardProps) {
                           </span>
                           <span className="flex items-center gap-1">
                             <Clock className="w-3 h-3" />
-                            {SHOOT_COMPLEXITIES[booking.shoot_complexity].duration}min
+                            {booking.shoot_complexity && SHOOT_COMPLEXITIES[booking.shoot_complexity] ? 
+                              SHOOT_COMPLEXITIES[booking.shoot_complexity].duration + 'min' : 
+                              booking.estimated_duration ? booking.estimated_duration + 'min' : 'N/A'
+                            }
                           </span>
                         </div>
                       </div>
@@ -282,8 +286,8 @@ export function AgentDashboard({ currentUserId }: AgentDashboardProps) {
                     <div className="flex-1">
                       <div className="flex items-center gap-2 mb-2">
                         <MapPin className="w-4 h-4 text-muted-foreground" />
-                        <span className="font-medium">{booking.property_address}</span>
-                        {getComplexityBadge(booking.shoot_complexity)}
+                        <span className="font-medium">{booking.location}</span>
+                        {booking.shoot_complexity && getComplexityBadge(booking.shoot_complexity)}
                       </div>
                       <div className="grid grid-cols-2 gap-4 text-sm text-muted-foreground">
                         <div>
