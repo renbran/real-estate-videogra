@@ -1,10 +1,11 @@
 import { useState, useEffect, useRef } from 'react'
 import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
 import { Button } from '@/components/ui/button'
+import { Label } from '@/components/ui/label'
 import { Badge } from '@/components/ui/badge'
-import { MapPin, CheckCircle, XCircle, Spinner } from '@phosphor-icons/react'
 import { googleMapsService } from '@/lib/google-maps'
+import { MapPin, CheckCircle, XCircle } from '@phosphor-icons/react'
+import { Loader2 } from 'lucide-react'
 import { GooglePlacePrediction } from '@/lib/types'
 import { cn } from '@/lib/utils'
 
@@ -46,7 +47,6 @@ export function AddressInput({
   const timeoutRef = useRef<NodeJS.Timeout | null>(null)
 
   useEffect(() => {
-    // Close dropdown when clicking outside
     const handleClickOutside = (event: MouseEvent) => {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node) &&
           inputRef.current && !inputRef.current.contains(event.target as Node)) {
@@ -59,7 +59,6 @@ export function AddressInput({
   }, [])
 
   useEffect(() => {
-    // Clear predictions when value is empty
     if (!value.trim()) {
       setPredictions([])
       setShowDropdown(false)
@@ -68,25 +67,23 @@ export function AddressInput({
       return
     }
 
-    // Debounce API calls
     if (timeoutRef.current) {
       clearTimeout(timeoutRef.current)
     }
 
     timeoutRef.current = setTimeout(async () => {
-      if (value.length >= 3) {
+      try {
         setIsLoading(true)
-        try {
-          const results = await googleMapsService.getAddressPredictions(value)
-          setPredictions(results)
-          setShowDropdown(results.length > 0)
-        } catch (error) {
-          console.error('Address prediction error:', error)
-          setPredictions([])
-          setShowDropdown(false)
-        } finally {
-          setIsLoading(false)
-        }
+        const results = await googleMapsService.getAddressPredictions(value)
+        setPredictions(results)
+        setShowDropdown(results.length > 0)
+        setValidationError(null)
+      } catch (error) {
+        console.error('Address prediction error:', error)
+        setPredictions([])
+        setShowDropdown(false)
+      } finally {
+        setIsLoading(false)
       }
     }, 300)
 
@@ -103,7 +100,6 @@ export function AddressInput({
     setIsValidated(false)
     setValidationError(null)
     
-    // Show dropdown if there are predictions
     if (predictions.length > 0) {
       setShowDropdown(true)
     }
@@ -123,7 +119,6 @@ export function AddressInput({
         setIsValidated(true)
         setValidationError(null)
         
-        // Notify parent component
         onAddressValidated?.({
           formatted_address: details.formatted_address,
           place_id: prediction.place_id,
@@ -142,9 +137,8 @@ export function AddressInput({
   }
 
   const handleManualValidation = async () => {
-    if (!value.trim()) return
-    
     setIsValidating(true)
+    
     try {
       const result = await googleMapsService.geocodeAddress(value)
       
@@ -157,7 +151,7 @@ export function AddressInput({
         
         onAddressValidated?.({
           formatted_address: result.formatted_address,
-          place_id: '', // No place ID from geocoding
+          place_id: '',
           coordinates: result.coordinates,
           geographic_zone: zone
         })
@@ -176,7 +170,7 @@ export function AddressInput({
 
   const getValidationIcon = () => {
     if (isValidating) {
-      return <Spinner className="w-4 h-4 animate-spin text-blue-500" />
+      return <Loader2 className="w-4 h-4 animate-spin text-blue-500" />
     }
     if (isValidated) {
       return <CheckCircle className="w-4 h-4 text-green-500" />
@@ -196,53 +190,50 @@ export function AddressInput({
       </Label>
       
       <div className="relative">
-        <div className="relative">
-          <Input
-            ref={inputRef}
-            type="text"
-            value={value}
-            onChange={handleInputChange}
-            onFocus={() => predictions.length > 0 && setShowDropdown(true)}
-            placeholder={placeholder}
-            required={required}
-            className={cn(
-              "pr-20",
-              isValidated && "border-green-500",
-              validationError && "border-red-500"
-            )}
-          />
+        <Input
+          ref={inputRef}
+          type="text"
+          value={value}
+          onChange={handleInputChange}
+          onFocus={() => predictions.length > 0 && setShowDropdown(true)}
+          placeholder={placeholder}
+          required={required}
+          className={cn(
+            "pr-20",
+            isValidated && "border-green-500",
+            validationError && "border-red-500"
+          )}
+        />
+        
+        <div className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center gap-2">
+          {showValidationStatus && getValidationIcon()}
           
-          <div className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center gap-2">
-            {showValidationStatus && getValidationIcon()}
-            
-            {value && !isValidated && !isValidating && (
-              <Button
-                type="button"
-                variant="ghost"
-                size="sm"
-                onClick={handleManualValidation}
-                className="h-6 px-2 text-xs"
-              >
-                Validate
-              </Button>
-            )}
-          </div>
+          {value && !isValidated && !isValidating && (
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              onClick={handleManualValidation}
+              className="h-6 px-2 text-xs"
+            >
+              Validate
+            </Button>
+          )}
         </div>
 
-        {/* Dropdown with predictions */}
-        {showDropdown && predictions.length > 0 && (
+        {showDropdown && (
           <div
             ref={dropdownRef}
             className="absolute z-50 w-full mt-1 bg-white border border-gray-200 rounded-md shadow-lg max-h-60 overflow-y-auto"
           >
             {isLoading && (
-              <div className="p-3 text-center text-muted-foreground">
-                <Spinner className="w-4 h-4 animate-spin mx-auto mb-2" />
+              <div className="p-4 text-center text-sm text-muted-foreground">
+                <Loader2 className="w-4 h-4 animate-spin mx-auto mb-2" />
                 Searching addresses...
               </div>
             )}
             
-            {!isLoading && predictions.map((prediction, index) => (
+            {!isLoading && predictions.map((prediction) => (
               <button
                 key={prediction.place_id}
                 type="button"
@@ -266,7 +257,6 @@ export function AddressInput({
         )}
       </div>
 
-      {/* Validation status */}
       {showValidationStatus && (
         <div className="flex items-center gap-2 min-h-[20px]">
           {isValidated && (
