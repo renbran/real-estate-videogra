@@ -8,10 +8,37 @@ Root directory: /
 Node.js version: 18
 ```
 
-## Environment Variables (Optional)
+## Environment Variables (Recommended)
 ```
+NODE_VERSION=18
 NODE_ENV=production
 ```
+
+## Troubleshooting Deployment Issues
+
+### Common Problems & Solutions
+
+1. **Build Failing?**
+   - ✅ Framework preset: Must select **"Vite"** (not "None")
+   - ✅ Build command: Must be exactly **"npm run build"**
+   - ✅ Build output directory: Must be exactly **"dist"**
+   - ✅ Add environment variables: NODE_VERSION=18
+
+2. **404 Errors After Deployment?**
+   - ✅ Ensure `_redirects` file is in your `public/` folder
+   - ✅ Content should be: `/*    /index.html   200`
+
+3. **Build Timeout or Memory Issues?**
+   - ✅ Add environment variable: NODE_OPTIONS=--max-old-space-size=4096
+
+4. **TypeScript Errors?**
+   - ✅ Your build command already handles this: `tsc -b --noCheck && vite build`
+
+### Debug Steps
+1. Check build logs in Cloudflare Pages dashboard
+2. Verify your GitHub repository is connected properly
+3. Try "Retry deployment" button
+4. Clear build cache in Cloudflare settings
 
 ## Custom Domain Setup (After Deployment)
 1. Go to Cloudflare Pages dashboard
