@@ -18,7 +18,7 @@ import {
   TrendUp
 } from '@phosphor-icons/react'
 import { useNotifications } from '@/hooks/useNotifications'
-import { BookingRequest, SAMPLE_AGENTS } from '@/lib/types'
+import { BookingRequest } from '@/lib/types'
 import { formatDate, formatDateTime } from '@/lib/date-utils'
 import { EmailPreview } from './EmailPreview'
 
@@ -204,7 +204,7 @@ export function NotificationCenter({ bookings, onApproveBooking, onDeclineBookin
                 </div>
               ) : (
                 pendingBookings.map((booking) => {
-                  const agent = SAMPLE_AGENTS.find(a => a.id === booking.agent_id)
+                  const agent = { name: 'Agent', email: 'agent@osus.com' } // Production will use real agent data
                   return (
                     <Card key={booking.id} className="border-l-4 border-l-yellow-400">
                       <CardContent className="p-4">
@@ -357,7 +357,7 @@ export function NotificationCenter({ bookings, onApproveBooking, onDeclineBookin
                 </div>
               ) : (
                 upcomingBookings.map((booking) => {
-                  const agent = SAMPLE_AGENTS.find(a => a.id === booking.agent_id)
+                  const agent = { name: 'Agent', email: 'agent@osus.com' } // Production will use real agent data
                   const bookingDate = new Date(booking.scheduled_date || booking.preferred_date)
                   const today = new Date()
                   const daysUntil = Math.ceil((bookingDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24))
@@ -413,7 +413,7 @@ export function NotificationCenter({ bookings, onApproveBooking, onDeclineBookin
                     .sort((a, b) => new Date(b.sentAt || b.bookingId).getTime() - new Date(a.sentAt || a.bookingId).getTime())
                     .map((log) => {
                       const booking = bookings.find(b => b.id === log.bookingId)
-                      const agent = booking ? SAMPLE_AGENTS.find(a => a.id === booking.agent_id) : null
+                      const agent = booking ? { name: 'Agent', email: 'agent@osus.com' } : null // Production will use real agent data
                       
                       return (
                         <Card key={log.id} className="border-l-4 border-l-blue-400">

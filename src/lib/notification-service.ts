@@ -1,4 +1,4 @@
-import { BookingRequest, User, SAMPLE_AGENTS, SHOOT_COMPLEXITIES, PROPERTY_VALUES } from './types'
+import { BookingRequest, User, SHOOT_COMPLEXITIES, PROPERTY_VALUES } from './types'
 import { formatDate, formatTime } from './date-utils'
 
 export interface NotificationPayload {
@@ -59,7 +59,7 @@ export function createCalendarEventFromBooking(booking: BookingRequest): Calenda
   const startDate = new Date(booking.scheduled_date + 'T' + booking.scheduled_time)
   const endDate = new Date(startDate.getTime() + booking.estimated_duration * 60000)
   
-  const agent = SAMPLE_AGENTS.find(a => a.id === booking.agent_id)
+  const agent = { name: 'Agent', email: 'agent@osus.com' } // Will be provided by calling component
   const complexity = SHOOT_COMPLEXITIES[booking.shoot_complexity]
   const propertyValue = PROPERTY_VALUES[booking.property_value]
   
@@ -100,7 +100,7 @@ export function generateEmailTemplate(payload: NotificationPayload): {
   textBody: string
 } {
   const { type, booking, recipient } = payload
-  const agent = SAMPLE_AGENTS.find(a => a.id === booking.agent_id)
+  const agent = { name: 'Agent', email: 'agent@osus.com' } // Will be provided by calling component
   const complexity = SHOOT_COMPLEXITIES[booking.shoot_complexity]
   const propertyValue = PROPERTY_VALUES[booking.property_value]
   
@@ -534,7 +534,7 @@ function generateBatchOpportunityEmailHTML(booking: BookingRequest, agent: any, 
           ${nearbyBookings.map(nb => `
             <div style="margin: 10px 0; padding: 8px; background: white; border-radius: 4px;">
               <strong>${nb.property_address}</strong><br>
-              <small>Agent: ${SAMPLE_AGENTS.find(a => a.id === nb.agent_id)?.name || 'Unknown'} | 
+              <small>Agent: Unknown | 
               ${formatDate(nb.scheduled_date || nb.preferred_date)}</small>
             </div>
           `).join('')}
@@ -583,7 +583,7 @@ Type: ${SHOOT_COMPLEXITIES[booking.shoot_complexity].label}
 
 NEARBY SCHEDULED SHOOTS:
 ${nearbyBookings.map(nb => 
-  `• ${nb.property_address} (${SAMPLE_AGENTS.find(a => a.id === nb.agent_id)?.name || 'Unknown'}) - ${formatDate(nb.scheduled_date || nb.preferred_date)}`
+  `• ${nb.property_address} (Unknown Agent) - ${formatDate(nb.scheduled_date || nb.preferred_date)}`
 ).join('\n')}
 
 Consider scheduling on the same day for optimal service!
@@ -627,7 +627,7 @@ export async function sendEmail(
 export async function sendBookingNotification(payload: NotificationPayload): Promise<boolean> {
   try {
     const { booking, recipient } = payload
-    const agent = SAMPLE_AGENTS.find(a => a.id === booking.agent_id)
+    const agent = { name: 'Agent', email: 'agent@osus.com' } // Will be provided by calling component
     
     // Generate email content
     const emailTemplate = generateEmailTemplate(payload)
@@ -695,7 +695,7 @@ export function scheduleReminderNotifications(booking: BookingRequest): void {
       //   sendBookingNotification({
       //     type: 'booking_reminder',
       //     booking,
-      //     recipient: SAMPLE_AGENTS.find(a => a.id === booking.agent_id) as User,
+      //     recipient: { name: 'Agent', email: 'agent@osus.com' } as User,
       //     additionalData: { daysUntil: days }
       //   })
       // }, date.getTime() - now.getTime())

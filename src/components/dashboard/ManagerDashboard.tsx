@@ -9,7 +9,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Progress } from '@/components/ui/progress'
 import { CheckCircle, XCircle, MapPin, Clock, Users, Bell, TrendUp, CurrencyDollar, Star, Calendar, BarChart3, FileText, Settings, Route, Lightning, Sparkle, Target, Crown } from '@phosphor-icons/react'
 import { toast } from 'sonner'
-import { BookingRequest, SAMPLE_AGENTS, SHOOT_COMPLEXITIES } from '@/lib/types'
+import { BookingRequest, SHOOT_COMPLEXITIES, User } from '@/lib/types'
 import { formatDate, formatDateTime } from '@/lib/date-utils'
 import { NotificationCenter } from '@/components/notifications/NotificationCenter'
 import { CalendarExportButton } from '@/components/calendar/CalendarExportButton'
@@ -177,7 +177,7 @@ export function ManagerDashboard() {
             <CardTitle className="text-sm font-medium text-muted-foreground">Active Agents</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{SAMPLE_AGENTS.length}</div>
+            <div className="text-2xl font-bold">{getUsers().filter(u => u.role === 'agent').length}</div>
             <p className="text-xs text-muted-foreground mt-1">In system</p>
           </CardContent>
         </Card>
@@ -233,7 +233,7 @@ export function ManagerDashboard() {
             {pendingBookings
               .sort((a, b) => b.priority_score - a.priority_score)
               .map((booking) => {
-                const agent = SAMPLE_AGENTS.find(a => a.id === booking.agent_id)
+                const agent = getUsers().find(a => a.id === booking.agent_id)
                 return (
                   <Card key={booking.id}>
                     <CardContent className="p-6">

@@ -1,9 +1,10 @@
 import { useState, useEffect } from 'react'
 import { useKV } from '@github/spark/hooks'
 import { BookingRequest, User, AgentTier } from '@/lib/types'
+import { productionAPI, useProductionAPI } from '@/lib/production-api'
 
-// Sample booking data with proper types
-const SAMPLE_BOOKINGS: BookingRequest[] = [
+// Fallback booking data for development/testing
+const FALLBACK_BOOKINGS: BookingRequest[] = [
   // COMPLETED BOOKINGS
   {
     id: 'VB-001',
@@ -155,8 +156,8 @@ const SAMPLE_BOOKINGS: BookingRequest[] = [
   }
 ]
 
-// Sample users data
-const SAMPLE_USERS: User[] = [
+// Fallback users data for development/testing
+const FALLBACK_USERS: User[] = [
   { id: '1', name: 'Sarah Johnson', email: 'sarah@realestate.com', role: 'agent', agent_tier: 'elite' as AgentTier, monthly_quota: 6, monthly_used: 2, performance_score: 95, created_at: '2024-01-01' },
   { id: '2', name: 'Mike Chen', email: 'mike@realestate.com', role: 'agent', agent_tier: 'premium' as AgentTier, monthly_quota: 4, monthly_used: 1, performance_score: 88, created_at: '2024-01-01' },
   { id: '3', name: 'Lisa Rodriguez', email: 'lisa@realestate.com', role: 'agent', agent_tier: 'standard' as AgentTier, monthly_quota: 2, monthly_used: 0, performance_score: 82, created_at: '2024-01-01' },
@@ -168,28 +169,91 @@ const SAMPLE_USERS: User[] = [
   { id: '9', name: 'Maria Gonzalez', email: 'maria@videopro.com', role: 'videographer', created_at: '2024-01-01' }
 ]
 
-// Mock authentication hook
+// Production-ready authentication hook
 export function useAuth() {
   const [currentUser, setCurrentUser] = useKV<User | null>('current-user', null)
+  const [isLoading, setIsLoading] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+  const isProduction = useProductionAPI()
 
   useEffect(() => {
-    if (!currentUser) {
-      // Auto-login as Sarah Johnson (agent) for demo
-      setCurrentUser(SAMPLE_USERS[0])
+    if (isProduction && !currentUser) {
+      // In production, try to get current user from token
+      getCurrentUserFromAPI()
+    } else if (!isProduction && !currentUser) {
+      // In development, auto-login as first fallback user
+      setCurrentUser(FALLBACK_USERS[0])
     }
-  }, [currentUser, setCurrentUser])
+  }, [currentUser, setCurrentUser, isProduction])
 
-  const login = (email: string, password: string): User | null => {
-    const user = SAMPLE_USERS.find(u => u.email === email)
-    if (user) {
-      setCurrentUser(user)
-      return user
+  const getCurrentUserFromAPI = async () => {
+    setIsLoading(true)
+    setError(null)
+    
+    try {
+      const response = await productionAPI.getCurrentUser()
+      if (response.success && response.data) {
+        setCurrentUser(response.data)
+      }
+    } catch (err) {
+      console.warn('Failed to get current user from API')
+    } finally {
+      setIsLoading(false)
     }
-    return null
   }
 
-  const logout = () => {
-    setCurrentUser(null)
+  const login = async (email: string, password: string): Promise<User | null> => {
+    setIsLoading(true)
+    setError(null)
+    
+    try {
+      if (isProduction) {
+        const response = await productionAPI.login(email, password)
+        if (response.success && response.data) {
+          const { user, token } = response.data
+          if (token) {
+            localStorage.setItem('auth_token', token)
+          }
+          setCurrentUser(user)
+          return user
+        } else {
+          setError(response.error || 'Login failed')
+          return null
+        }
+      } else {
+        // Fallback for development
+        const user = FALLBACK_USERS.find(u => u.email === email)
+        if (user) {
+          setCurrentUser(user)
+          return user
+        } else {
+          setError('Invalid credentials')
+          return null
+        }
+      }
+    } catch (err) {
+      setError('Login failed - network error')
+      return null
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
+  const logout = async () => {
+    setIsLoading(true)
+    
+    try {
+      if (isProduction) {
+        await productionAPI.logout()
+        localStorage.removeItem('auth_token')
+      }
+      setCurrentUser(null)
+    } catch (err) {
+      console.warn('Logout API call failed, but user logged out locally')
+      setCurrentUser(null)
+    } finally {
+      setIsLoading(false)
+    }
   }
 
   const getCurrentUser = () => currentUser
@@ -198,14 +262,53 @@ export function useAuth() {
     currentUser,
     login,
     logout,
-    getCurrentUser
+    getCurrentUser,
+    isLoading,
+    error,
+    isProduction
   }
 }
 
-// Mock booking API
+// Production-ready booking API
 export function useBookingAPI() {
-  const [bookings, setBookings] = useKV<BookingRequest[]>('bookings', SAMPLE_BOOKINGS)
-  const [users] = useState<User[]>(SAMPLE_USERS)
+  const [bookings, setBookings] = useKV<BookingRequest[]>('bookings', FALLBACK_BOOKINGS)
+  const [users, setUsers] = useState<User[]>(FALLBACK_USERS)
+  const [isLoading, setIsLoading] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+  const isProduction = useProductionAPI()
+
+  // Load data from API in production
+  useEffect(() => {
+    if (isProduction) {
+      loadBookingsFromAPI()
+      loadUsersFromAPI()
+    }
+  }, [isProduction])
+
+  const loadBookingsFromAPI = async () => {
+    setIsLoading(true)
+    try {
+      const response = await productionAPI.getBookings()
+      if (response.success && response.data) {
+        setBookings(response.data)
+      }
+    } catch (err) {
+      console.warn('Failed to load bookings from API, using fallback data')
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
+  const loadUsersFromAPI = async () => {
+    try {
+      const response = await productionAPI.getUsers()
+      if (response.success && response.data) {
+        setUsers(response.data)
+      }
+    } catch (err) {
+      console.warn('Failed to load users from API, using fallback data')
+    }
+  }
 
   const getBookings = () => bookings || []
 
@@ -224,24 +327,71 @@ export function useBookingAPI() {
     return allBookings.filter(b => b.status === status)
   }
 
-  const createBooking = (booking: Omit<BookingRequest, 'id' | 'created_at' | 'updated_at'>) => {
-    const newBooking: BookingRequest = {
-      ...booking,
-      id: `VB-${String(Date.now()).slice(-6)}`,
-      created_at: new Date().toISOString(),
-      updated_at: new Date().toISOString()
-    }
+  const createBooking = async (booking: Omit<BookingRequest, 'id' | 'created_at' | 'updated_at'>) => {
+    setIsLoading(true)
+    setError(null)
     
-    setBookings(prev => [...(prev || []), newBooking])
-    return newBooking
+    try {
+      if (isProduction) {
+        const response = await productionAPI.createBooking(booking)
+        if (response.success && response.data) {
+          setBookings(prev => [...(prev || []), response.data!])
+          return response.data
+        } else {
+          setError(response.error || 'Failed to create booking')
+          return null
+        }
+      } else {
+        // Fallback for development
+        const newBooking: BookingRequest = {
+          ...booking,
+          id: `VB-${String(Date.now()).slice(-6)}`,
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString()
+        }
+        
+        setBookings(prev => [...(prev || []), newBooking])
+        return newBooking
+      }
+    } catch (err) {
+      setError('Network error creating booking')
+      return null
+    } finally {
+      setIsLoading(false)
+    }
   }
 
-  const updateBooking = (id: string, updates: Partial<BookingRequest>) => {
-    setBookings(prev => (prev || []).map(booking =>
-      booking.id === id
-        ? { ...booking, ...updates, updated_at: new Date().toISOString() }
-        : booking
-    ))
+  const updateBooking = async (id: string, updates: Partial<BookingRequest>) => {
+    setIsLoading(true)
+    setError(null)
+    
+    try {
+      if (isProduction) {
+        const response = await productionAPI.updateBooking(id, updates)
+        if (response.success && response.data) {
+          setBookings(prev => (prev || []).map(booking =>
+            booking.id === id ? response.data! : booking
+          ))
+          return response.data
+        } else {
+          setError(response.error || 'Failed to update booking')
+          return null
+        }
+      } else {
+        // Fallback for development
+        setBookings(prev => (prev || []).map(booking =>
+          booking.id === id
+            ? { ...booking, ...updates, updated_at: new Date().toISOString() }
+            : booking
+        ))
+        return (bookings || []).find(b => b.id === id) || null
+      }
+    } catch (err) {
+      setError('Network error updating booking')
+      return null
+    } finally {
+      setIsLoading(false)
+    }
   }
 
   const deleteBooking = (id: string) => {
@@ -262,6 +412,46 @@ export function useBookingAPI() {
     return users.filter(u => u.role === 'videographer')
   }
 
+  // Convenience methods for backward compatibility
+  const addBooking = createBooking
+  const approveBooking = async (id: string, scheduledDate?: string, scheduledTime?: string, videographerId?: string) => {
+    if (isProduction) {
+      const response = await productionAPI.approveBooking(id, scheduledDate, scheduledTime, videographerId)
+      if (response.success && response.data) {
+        setBookings(prev => (prev || []).map(booking =>
+          booking.id === id ? response.data! : booking
+        ))
+        return response.data
+      }
+      return null
+    } else {
+      return updateBooking(id, { 
+        status: 'approved', 
+        scheduled_date: scheduledDate,
+        scheduled_time: scheduledTime,
+        videographer_id: videographerId
+      })
+    }
+  }
+
+  const declineBooking = async (id: string, reason?: string) => {
+    if (isProduction) {
+      const response = await productionAPI.declineBooking(id, reason)
+      if (response.success && response.data) {
+        setBookings(prev => (prev || []).map(booking =>
+          booking.id === id ? response.data! : booking
+        ))
+        return response.data
+      }
+      return null
+    } else {
+      return updateBooking(id, { 
+        status: 'declined',
+        manager_notes: reason
+      })
+    }
+  }
+
   return {
     bookings,
     getBookings,
@@ -269,12 +459,24 @@ export function useBookingAPI() {
     getBookingsByAgent,
     getBookingsByStatus,
     createBooking,
+    addBooking, // Alias for compatibility
     updateBooking,
+    approveBooking,
+    declineBooking,
     deleteBooking,
     users,
     getUsers,
     getUserById,
     getAgents,
-    getVideographers
+    getVideographers,
+    isLoading,
+    error,
+    isProduction,
+    refreshData: () => {
+      if (isProduction) {
+        loadBookingsFromAPI()
+        loadUsersFromAPI()
+      }
+    }
   }
 }

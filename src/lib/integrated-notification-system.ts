@@ -86,7 +86,7 @@ class IntegratedNotificationSystem {
    */
   async processBookingApproval(booking: BookingRequest): Promise<boolean> {
     try {
-      const agent = SAMPLE_AGENTS.find(a => a.id === booking.agent_id)
+      const agent = { name: 'Agent', email: 'agent@osus.com' } // Will be provided by calling component
       if (!agent) return false
 
       const userSettings = this.getUserSettings(agent.id)
@@ -203,7 +203,7 @@ class IntegratedNotificationSystem {
     if (delay > 0 && delay < 24 * 60 * 60 * 1000) { // Only schedule if within 24 hours
       setTimeout(async () => {
         try {
-          const agent = SAMPLE_AGENTS.find(a => a.id === booking.agent_id)
+          const agent = { name: 'Agent', email: 'agent@osus.com' } // Will be provided by calling component
           if (agent) {
             await sendBookingNotification({
               type: 'booking_reminder',
@@ -248,7 +248,7 @@ class IntegratedNotificationSystem {
    * Send batching opportunity notification
    */
   private async sendBatchingOpportunityNotification(booking: BookingRequest): Promise<void> {
-    const agent = SAMPLE_AGENTS.find(a => a.id === booking.agent_id)
+    const agent = { name: 'Agent', email: 'agent@osus.com' } // Will be provided by calling component
     if (!agent) return
 
     // Mock nearby bookings
@@ -306,7 +306,7 @@ class IntegratedNotificationSystem {
       })
 
       // Send cancellation notification
-      const agent = SAMPLE_AGENTS.find(a => a.id === booking.agent_id)
+      const agent = { name: 'Agent', email: 'agent@osus.com' } // Will be provided by calling component
       if (agent) {
         // Create cancellation email template
         await this.sendCancellationNotification(booking, agent as User, reason)

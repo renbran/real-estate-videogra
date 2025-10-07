@@ -6,7 +6,7 @@ import {
   scheduleReminderNotifications,
   NotificationPayload 
 } from '@/lib/notification-service'
-import { BookingRequest, SAMPLE_AGENTS } from '@/lib/types'
+import { BookingRequest } from '@/lib/types'
 
 export interface NotificationLog {
   id: string
@@ -32,7 +32,7 @@ export function useNotifications() {
   }, [setNotificationLogs])
 
   const sendApprovalNotification = useCallback(async (booking: BookingRequest): Promise<boolean> => {
-    const agent = SAMPLE_AGENTS.find(a => a.id === booking.agent_id)
+    const agent = { name: 'Agent', email: 'agent@osus.com' } // Will be provided by calling component
     if (!agent) {
       toast.error('Cannot send notification - agent not found')
       return false
@@ -81,7 +81,7 @@ export function useNotifications() {
   }, [logNotification])
 
   const sendDeclineNotification = useCallback(async (booking: BookingRequest, managerNotes?: string): Promise<boolean> => {
-    const agent = SAMPLE_AGENTS.find(a => a.id === booking.agent_id)
+    const agent = { name: 'Agent', email: 'agent@osus.com' } // Will be provided by calling component
     if (!agent) {
       toast.error('Cannot send notification - agent not found')
       return false
@@ -133,7 +133,7 @@ export function useNotifications() {
     booking: BookingRequest, 
     nearbyBookings: BookingRequest[]
   ): Promise<boolean> => {
-    const agent = SAMPLE_AGENTS.find(a => a.id === booking.agent_id)
+    const agent = { name: 'Agent', email: 'agent@osus.com' } // Will be provided by calling component
     if (!agent) return false
 
     const payload: NotificationPayload = {
@@ -178,7 +178,7 @@ export function useNotifications() {
     booking: BookingRequest, 
     daysUntil: number
   ): Promise<boolean> => {
-    const agent = SAMPLE_AGENTS.find(a => a.id === booking.agent_id)
+    const agent = { name: 'Agent', email: 'agent@osus.com' } // Will be provided by calling component
     if (!agent) return false
 
     const payload: NotificationPayload = {

@@ -15,7 +15,7 @@ import {
   Lightbulb
 } from '@phosphor-icons/react'
 import { OSUS_BRAND } from '@/lib/osus-brand'
-import { BookingRequest, SAMPLE_AGENTS } from '@/lib/types'
+import { BookingRequest, User } from '@/lib/types'
 
 interface DailyAIInsightsProps {
   bookings?: BookingRequest[]
@@ -116,7 +116,14 @@ export function DailyAIInsights({ bookings = [], currentUser, userRole = 'agent'
 
     // Market opportunity alert
     if (userRole === 'manager') {
-      const agentUtilization = SAMPLE_AGENTS.map(agent => ({
+      const agents = currentUser?.role === 'manager' ? 
+        (bookings || []).reduce((acc, booking) => {
+          const agent = { id: booking.agent_id, name: 'Agent', role: 'agent' }
+          if (!acc.find(a => a.id === agent.id)) acc.push(agent as User)
+          return acc
+        }, [] as User[]) : []
+      
+      const agentUtilization = agents.map(agent => ({
         ...agent,
         utilization: ((agent.monthly_used || 0) / (agent.monthly_quota || 1)) * 100
       }))
