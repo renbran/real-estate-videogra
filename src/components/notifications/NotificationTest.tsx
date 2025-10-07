@@ -5,7 +5,7 @@ import { Badge } from '@/components/ui/badge'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { toast } from 'sonner'
 import { TestTube, Envelope, Calendar, Users } from '@phosphor-icons/react'
-import { BookingRequest, SAMPLE_AGENTS } from '@/lib/types'
+import { BookingRequest } from '@/lib/types'
 import { useNotifications } from '@/hooks/useNotifications'
 import { EmailPreview } from './EmailPreview'
 import { CalendarExportButton } from '@/components/calendar/CalendarExportButton'
@@ -155,7 +155,7 @@ export function NotificationTest() {
           <div className="bg-muted p-3 rounded text-sm">
             <div className="font-medium mb-2">Test Data:</div>
             <div className="space-y-1 text-muted-foreground">
-              <div><strong>Agent:</strong> {SAMPLE_AGENTS[0].name} ({SAMPLE_AGENTS[0].email})</div>
+              <div><strong>Agent:</strong> Test Agent (agent@osus.com)</div>
               <div><strong>Property:</strong> {SAMPLE_BOOKING.property_address}</div>
               <div><strong>Date:</strong> {SAMPLE_BOOKING.scheduled_date} at {SAMPLE_BOOKING.scheduled_time}</div>
               <div><strong>Type:</strong> {getTypeLabel(selectedType)}</div>

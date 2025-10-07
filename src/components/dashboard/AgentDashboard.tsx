@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Progress } from '@/components/ui/progress'
 import { CalendarBlank, MapPin, Clock, TrendUp, Plus, Bell, Envelope, Lightning, Sparkle, Target } from '@phosphor-icons/react'
-import { BookingRequest, SAMPLE_AGENTS, SHOOT_COMPLEXITIES } from '@/lib/types'
+import { BookingRequest, SHOOT_COMPLEXITIES, User } from '@/lib/types'
 import { formatDate, formatDateTime } from '@/lib/date-utils'
 import { BookingForm } from '@/components/booking/BookingForm'
 import { CalendarExportButton } from '@/components/calendar/CalendarExportButton'
@@ -22,11 +22,14 @@ interface AgentDashboardProps {
 }
 
 export function AgentDashboard({ currentUserId }: AgentDashboardProps) {
-  const { getBookings, getBookingsByAgent } = useBookingAPI()
+  const { getBookings, getBookingsByAgent, getUsers } = useBookingAPI()
+  const users = getUsers()
   const [activeTab, setActiveTab] = useState('overview')
   const { getNotificationHistory } = useNotifications()
   
-  const currentAgent = SAMPLE_AGENTS.find(a => a.id === currentUserId) || SAMPLE_AGENTS[0]
+  const currentAgent = users.find(a => a.id === currentUserId && a.role === 'agent') || 
+                       users.find(a => a.role === 'agent') || 
+                       { id: currentUserId, name: 'User', email: '', role: 'agent', agent_tier: 'standard', monthly_quota: 0, monthly_used: 0, performance_score: 0, created_at: new Date().toISOString() } as User
   const myBookings = getBookingsByAgent(currentUserId)
   const pendingBookings = myBookings.filter(b => b.status === 'pending')
   const approvedBookings = myBookings.filter(b => b.status === 'approved')
@@ -205,7 +208,7 @@ export function AgentDashboard({ currentUserId }: AgentDashboardProps) {
 
       {/* Tabs */}
       <Tabs value={activeTab} onValueChange={setActiveTab}>
-        <TabsList className="mb-6 bg-osus-primary-100/50 border border-osus-primary-200/50">
+        <TabsList className="mb-6 bg-white border-2 border-osus-primary-300 shadow-sm">
           <TabsTrigger value="overview">Overview</TabsTrigger>
           <TabsTrigger value="pending">Pending ({pendingBookings.length})</TabsTrigger>
           <TabsTrigger value="approved">Approved ({approvedBookings.length})</TabsTrigger>
@@ -226,9 +229,9 @@ export function AgentDashboard({ currentUserId }: AgentDashboardProps) {
           
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             {/* Recent Bookings */}
-            <Card className="border-osus-primary-200/50 shadow-lg">
-              <CardHeader className="bg-gradient-to-r from-osus-primary-50 to-osus-secondary-50 border-b border-osus-primary-200/30">
-                <CardTitle className="text-osus-primary-800 flex items-center gap-2">
+            <Card className="border-osus-primary-200/50 shadow-lg bg-white">
+              <CardHeader className="bg-osus-primary-100 border-b border-osus-primary-200">
+                <CardTitle className="text-osus-primary-900 font-semibold flex items-center gap-2">
                   <CalendarBlank className="w-5 h-5" />
                   Recent Bookings
                 </CardTitle>
@@ -280,9 +283,9 @@ export function AgentDashboard({ currentUserId }: AgentDashboardProps) {
             </Card>
 
             {/* Performance Insights */}
-            <Card className="border-osus-primary-200/50 shadow-lg">
-              <CardHeader className="bg-gradient-to-r from-osus-primary-50 to-osus-secondary-50 border-b border-osus-primary-200/30">
-                <CardTitle className="text-osus-primary-800 flex items-center gap-2">
+            <Card className="border-osus-primary-200/50 shadow-lg bg-white">
+              <CardHeader className="bg-osus-primary-100 border-b border-osus-primary-200">
+                <CardTitle className="text-osus-primary-900 font-semibold flex items-center gap-2">
                   <TrendUp className="w-5 h-5" />
                   Performance Insights
                 </CardTitle>

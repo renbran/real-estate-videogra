@@ -12,6 +12,8 @@ import { Badge } from '@/components/ui/badge'
 import { CalendarBlank, MapPin, Clock, TrendUp, Sparkle } from '@phosphor-icons/react'
 import { toast } from 'sonner'
 import { SmartBookingSuggestions } from './SmartBookingSuggestions'
+import { GooglePlacePicker } from '@/components/maps/GooglePlacePicker'
+import { ShootLocationMap } from '@/components/maps/ShootLocationMap'
 import { OSUS_BRAND } from '@/lib/osus-brand'
 import {
   BookingRequest,
@@ -23,8 +25,9 @@ import {
   PROPERTY_VALUES,
   PROPERTY_TYPES,
   SHOOT_COMPLEXITIES,
-  SAMPLE_AGENTS
+  User
 } from '@/lib/types'
+import { useBookingAPI } from '@/hooks/useClientAPI'
 
 interface BookingFormProps {
   currentUserId: string
@@ -32,7 +35,8 @@ interface BookingFormProps {
 }
 
 export function BookingForm({ currentUserId, onSubmit }: BookingFormProps) {
-  const { addBooking } = useBookingAPI()
+  const { createBooking, getUsers } = useBookingAPI()
+  const users = getUsers()
   const [isSubmitting, setIsSubmitting] = useState(false)
 
   const [formData, setFormData] = useState({
@@ -65,7 +69,7 @@ export function BookingForm({ currentUserId, onSubmit }: BookingFormProps) {
     longitude: undefined as number | undefined
   })
 
-  const currentAgent = SAMPLE_AGENTS.find(a => a.id === currentUserId)
+  const currentAgent = users.find(a => a.id === currentUserId && a.role === 'agent')
 
   const calculatePriorityScore = (): number => {
     let score = 0
@@ -158,7 +162,11 @@ export function BookingForm({ currentUserId, onSubmit }: BookingFormProps) {
         longitude: formData.longitude
       } as Omit<BookingRequest, 'id'>
       
-      await addBooking(newBookingData)
+      const result = await createBooking(newBookingData)
+      
+      if (!result) {
+        throw new Error('Failed to create booking')
+      }
       
       if (approvalStatus === 'auto_approve') {
         toast.success('Booking automatically approved!', {
@@ -242,9 +250,9 @@ export function BookingForm({ currentUserId, onSubmit }: BookingFormProps) {
   return (
     <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
       <div className="lg:col-span-2">
-        <Card className="border-osus-primary-200/50 shadow-lg bg-white">
-          <CardHeader className="bg-gradient-to-r from-osus-primary-50 to-osus-secondary-50 border-b border-osus-primary-200/30">
-            <CardTitle className="text-osus-burgundy flex items-center gap-2">
+        <Card className="border-osus-primary-300 shadow-lg bg-white">
+          <CardHeader className="bg-osus-primary-100 border-b-2 border-osus-primary-300">
+            <CardTitle className="text-osus-primary-900 font-bold text-lg flex items-center gap-2">
               <CalendarBlank size={20} className="text-osus-gold" />
               New Videography Booking
               <Sparkle className="w-5 h-5 text-osus-gold animate-pulse" />
@@ -273,20 +281,26 @@ export function BookingForm({ currentUserId, onSubmit }: BookingFormProps) {
                 </Select>
               </div>
               
-              {/* Location */}
-              <div className="space-y-2">
-                <Label className="flex items-center gap-2">
-                  <MapPin size={16} />
-                  {formData.shoot_category === 'property' ? 'Property Address' : 'Shoot Location'}
-                </Label>
-                <Input
-                  type="text"
-                  value={formData.location}
-                  onChange={(e) => handleInputChange('location', e.target.value)}
-                  placeholder={formData.shoot_category === 'property' ? 'Enter full property address' : 'Enter shoot location'}
-                  required
-                />
-              </div>
+              {/* Location with Google Places */}
+              <GooglePlacePicker
+                label={formData.shoot_category === 'property' ? 'Property Address' : 'Shoot Location'}
+                placeholder={formData.shoot_category === 'property' ? 'Enter full property address' : 'Enter shoot location'}
+                value={formData.location}
+                onAddressChange={(address) => handleInputChange('location', address)}
+                onChange={(place) => {
+                  if (place) {
+                    handleInputChange('formatted_address', place.formatted_address)
+                    handleInputChange('place_id', place.place_id)
+                    handleInputChange('latitude', place.geometry.location.lat)
+                    handleInputChange('longitude', place.geometry.location.lng)
+                  } else {
+                    handleInputChange('formatted_address', '')
+                    handleInputChange('place_id', '')
+                    handleInputChange('latitude', undefined)
+                    handleInputChange('longitude', undefined)
+                  }
+                }}
+              />
 
               {/* Category-Specific Details */}
               <div className="space-y-6">
@@ -609,9 +623,20 @@ export function BookingForm({ currentUserId, onSubmit }: BookingFormProps) {
       {/* Priority Assessment Sidebar */}
       {formData.preferred_date && (
         <div className="space-y-4">
-          <Card>
+          {/* Location Map */}
+          {formData.latitude && formData.longitude && formData.formatted_address && (
+            <ShootLocationMap
+              latitude={formData.latitude}
+              longitude={formData.longitude}
+              address={formData.formatted_address}
+              title="Shoot Location"
+              height="250px"
+            />
+          )}
+          
+          <Card className="border-osus-primary-300 bg-white">
             <CardHeader>
-              <CardTitle className="flex items-center gap-2">
+              <CardTitle className="flex items-center gap-2 text-osus-primary-900 font-semibold">
                 <TrendUp size={16} />
                 Priority Assessment
               </CardTitle>

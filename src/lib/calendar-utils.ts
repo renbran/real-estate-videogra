@@ -1,4 +1,4 @@
-import { BookingRequest, SAMPLE_AGENTS, SHOOT_COMPLEXITIES, PROPERTY_VALUES } from './types'
+import { BookingRequest, SHOOT_COMPLEXITIES, PROPERTY_VALUES } from './types'
 import { generateICalEvent, createCalendarEventFromBooking } from './notification-service'
 
 /**
@@ -144,7 +144,7 @@ export function createUpcomingBookingsReminder(bookings: BookingRequest[]): stri
     '=' .repeat(30),
     '',
     ...upcomingBookings.map(booking => {
-      const agent = SAMPLE_AGENTS.find(a => a.id === booking.agent_id)
+      const agent = { name: 'Agent', email: 'agent@osus.com' } // Will be provided by calling component
       const complexity = SHOOT_COMPLEXITIES[booking.shoot_complexity]
       
       return [

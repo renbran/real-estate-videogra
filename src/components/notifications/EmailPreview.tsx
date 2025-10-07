@@ -12,7 +12,7 @@ import {
 } from '@/components/ui/dialog'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Eye, Code, Envelope } from '@phosphor-icons/react'
-import { BookingRequest, SAMPLE_AGENTS } from '@/lib/types'
+import { BookingRequest } from '@/lib/types'
 import { generateEmailTemplate, NotificationPayload } from '@/lib/notification-service'
 
 interface EmailPreviewProps {
@@ -24,7 +24,7 @@ interface EmailPreviewProps {
 export function EmailPreview({ booking, type, additionalData }: EmailPreviewProps) {
   const [activeTab, setActiveTab] = useState('preview')
   
-  const agent = SAMPLE_AGENTS.find(a => a.id === booking.agent_id)
+  const agent = { name: 'Agent', email: 'agent@osus.com' } // Production will use real agent data
   if (!agent) return null
 
   const payload: NotificationPayload = {
