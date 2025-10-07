@@ -1,13 +1,13 @@
 import { BookingRequest, User } from './types'
 import { formatDate, formatTime } from './date-utils'
 
-export interface PushNotificationPayload {
+export interface NotificationPayload {
   title: string
   body: string
-  icon?: string
   badge?: string
-  image?: string
   data?: any
+  icon?: string
+  image?: string
   tag?: string
   requireInteraction?: boolean
   silent?: boolean
@@ -22,40 +22,34 @@ export interface NotificationAction {
 }
 
 export interface PushNotificationOptions {
-  urgent?: boolean
-  silent?: boolean
-  vibrate?: number[]
-  sound?: string
-  category?: string
   tag?: string
+  silent?: boolean
+  badge?: string
 }
 
-export type PushNotificationType = 
+export type PushNotificationType =
   | 'booking_approved'
-  | 'booking_declined' 
-  | 'booking_pending_approval'
+  | 'booking_declined'
+  | 'booking_pending'
   | 'booking_reminder_24h'
   | 'booking_reminder_2h'
-  | 'booking_reminder_30min'
   | 'schedule_change'
   | 'cancellation'
-  | 'optimization_opportunity'
-  | 'urgent_approval_needed'
-  | 'capacity_alert'
-  | 'batch_opportunity'
+  | 'batch_optimization'
+  | 'urgent_approval'
+  | 'capacity_warning'
   | 'route_optimization'
   | 'emergency_booking'
+  | 'general_update'
 
 /**
- * Mobile Push Notification Service for VideoPro
- * Handles time-sensitive booking updates and system notifications
+ * Service for handling push notifications in the VideoPro app
  */
 export class PushNotificationService {
-  private static instance: PushNotificationService
-  private registration: ServiceWorkerRegistration | null = null
+  private static instance: PushNotificationService | null = null
   private subscription: PushSubscription | null = null
-  private isSupported: boolean = false
   private isPermissionGranted: boolean = false
+  private registration: ServiceWorkerRegistration | null = null
 
   private constructor() {
     this.checkSupport()
@@ -71,18 +65,19 @@ export class PushNotificationService {
   /**
    * Check if push notifications are supported
    */
-  private checkSupport(): void {
-    this.isSupported = 'serviceWorker' in navigator && 
-                     'PushManager' in window && 
-                     'Notification' in window
+  private checkSupport(): boolean {
+    if (!('serviceWorker' in navigator) || !('PushManager' in window)) {
+      console.warn('Push notifications are not supported')
+      return false
+    }
+    return true
   }
 
   /**
-   * Initialize push notification service
+   * Initialize push notifications
    */
   async initialize(): Promise<boolean> {
-    if (!this.isSupported) {
-      console.warn('Push notifications not supported in this browser')
+    if (!this.checkSupport()) {
       return false
     }
 
@@ -92,14 +87,14 @@ export class PushNotificationService {
       console.log('Service Worker registered:', this.registration)
 
       // Request permission
-      const permission = await this.requestPermission()
+      const permission = await Notification.requestPermission()
       if (permission !== 'granted') {
         console.warn('Push notification permission denied')
         return false
       }
 
-      // Subscribe to push notifications
-      await this.subscribe()
+      this.isPermissionGranted = true
+      await this.subscribeToNotifications()
       return true
     } catch (error) {
       console.error('Failed to initialize push notifications:', error)
@@ -108,35 +103,31 @@ export class PushNotificationService {
   }
 
   /**
-   * Request notification permission
-   */
-  async requestPermission(): Promise<NotificationPermission> {
-    if (!this.isSupported) {
-      return 'denied'
-    }
-
-    const permission = await Notification.requestPermission()
-    this.isPermissionGranted = permission === 'granted'
-    return permission
-  }
-
-  /**
    * Subscribe to push notifications
    */
-  private async subscribe(): Promise<void> {
-    if (!this.registration || !this.isPermissionGranted) {
-      throw new Error('Cannot subscribe: service worker not registered or permission denied')
+  private async subscribeToNotifications(): Promise<void> {
+    if (!this.registration) {
+      throw new Error('Cannot subscribe without service worker registration')
     }
 
-    // For demo purposes, skip VAPID key subscription
-    // In production, you would implement proper VAPID key handling
-    console.log('Push notifications enabled (demo mode)')
+    try {
+      const vapidPublicKey = 'YOUR_VAPID_PUBLIC_KEY_HERE' // Replace with actual key
+      this.subscription = await this.registration.pushManager.subscribe({
+        userVisibleOnly: true,
+        applicationServerKey: vapidPublicKey
+      })
+
+      // Send subscription to server
+      await this.sendSubscriptionToServer(this.subscription)
+    } catch (error) {
+      console.error('Failed to subscribe to push notifications:', error)
+    }
   }
 
   /**
    * Convert VAPID key to Uint8Array
    */
-  private urlB64ToUint8Array(base64String: string): Uint8Array {
+  private urlBase64ToUint8Array(base64String: string): Uint8Array {
     const padding = '='.repeat((4 - base64String.length % 4) % 4)
     const base64 = (base64String + padding)
       .replace(/-/g, '+')
@@ -155,15 +146,15 @@ export class PushNotificationService {
    * Send subscription to server
    */
   private async sendSubscriptionToServer(subscription: PushSubscription): Promise<void> {
-    // In a real implementation, send to your backend server
-    console.log('Subscription to send to server:', JSON.stringify(subscription))
+    // In production, you would send this to your backend server
+    console.log('Subscription to send to server:', subscription)
     
     // Store locally for demo purposes
     localStorage.setItem('push-subscription', JSON.stringify(subscription))
   }
 
   /**
-   * Create and display a local notification
+   * Show a notification
    */
   async showNotification(
     type: PushNotificationType,
@@ -172,91 +163,80 @@ export class PushNotificationService {
     options: PushNotificationOptions = {}
   ): Promise<void> {
     if (!this.isPermissionGranted) {
-      console.warn('Cannot show notification: permission not granted')
+      console.warn('Push notification permission not granted')
       return
     }
 
-    const payload = this.generateNotificationPayload(type, booking, user, options)
-    
+    const payload = this.createNotificationPayload(type, booking, user)
+
     if (this.registration) {
-      // Show via service worker (persistent)
+      // Show via service worker (persistent notification)
       await this.registration.showNotification(payload.title, {
         body: payload.body,
-        icon: payload.icon || '/icons/icon-192x192.png',
-        badge: payload.badge || '/icons/badge-72x72.png',
+        badge: payload.badge,
+        icon: payload.icon,
+        tag: payload.tag || options.tag,
         data: payload.data,
-        tag: payload.tag || `booking-${booking.id}`,
-        requireInteraction: payload.requireInteraction || options.urgent,
+        requireInteraction: payload.requireInteraction,
         silent: payload.silent || options.silent
       })
     } else {
       // Fallback to basic notification
-      const notification = new Notification(payload.title, {
+      new Notification(payload.title, {
         body: payload.body,
-        icon: payload.icon || '/icons/icon-192x192.png',
-        tag: payload.tag || `booking-${booking.id}`,
-        requireInteraction: payload.requireInteraction || options.urgent,
-        silent: payload.silent || options.silent,
-        data: payload.data
+        icon: payload.icon,
+        tag: payload.tag || options.tag
       })
-
-      // Auto-close non-urgent notifications after 5 seconds
-      if (!options.urgent) {
-        setTimeout(() => notification.close(), 5000)
-      }
     }
   }
 
   /**
-   * Generate notification payload based on type
+   * Create notification payload based on type
    */
-  private generateNotificationPayload(
+  private createNotificationPayload(
     type: PushNotificationType,
     booking: BookingRequest,
-    user: User,
-    options: PushNotificationOptions
-  ): PushNotificationPayload {
-    const shootDate = formatDate(booking.scheduled_date || booking.preferred_date)
-    const shootTime = booking.scheduled_time ? formatTime(booking.scheduled_time) : ''
-    const location = booking.formatted_address || booking.location
-    
+    user: User
+  ): NotificationPayload {
+    const shootTime = `${formatDate(booking.preferred_date)} at ${booking.scheduled_time ? formatTime(booking.scheduled_time) : 'TBD'}`
     const baseActions: NotificationAction[] = [
-      { action: 'view', title: 'View Details', icon: '/icons/view.png' },
-      { action: 'dismiss', title: 'Dismiss', icon: '/icons/dismiss.png' }
+      { action: 'view', title: 'View Details', icon: '/icons/view.png' }
     ]
 
     switch (type) {
       case 'booking_approved':
         return {
-          title: '✅ Booking Approved!',
-          body: `Your ${booking.shoot_category} shoot for ${shootDate} has been confirmed at ${location}`,
+          title: '✅ Booking Confirmed',
+          body: `Your ${booking.shoot_category} shoot is confirmed for ${shootTime}`,
           icon: '/icons/approved.png',
-          requireInteraction: true,
+          tag: `booking_${booking.id}`,
           data: { bookingId: booking.id, type, userId: user.id },
+          requireInteraction: true,
           actions: [
-            { action: 'view', title: 'View Details', icon: '/icons/view.png' },
-            { action: 'calendar', title: 'Add to Calendar', icon: '/icons/calendar.png' }
+            ...baseActions,
+            { action: 'directions', title: 'Get Directions', icon: '/icons/directions.png' }
           ]
         }
 
       case 'booking_declined':
         return {
           title: '❌ Booking Declined',
-          body: `Your ${booking.shoot_category} shoot request for ${shootDate} was declined. ${booking.manager_notes || 'Please try alternative dates.'}`,
+          body: `Your ${booking.shoot_category} shoot request was declined. Tap to rebook.`,
           icon: '/icons/declined.png',
-          requireInteraction: true,
+          tag: `booking_${booking.id}`,
           data: { bookingId: booking.id, type, userId: user.id },
           actions: [
-            { action: 'view', title: 'View Details', icon: '/icons/view.png' },
+            ...baseActions,
             { action: 'rebook', title: 'Book Again', icon: '/icons/rebook.png' }
           ]
         }
 
-      case 'booking_pending_approval':
+      case 'booking_pending':
         return {
-          title: '⏳ Booking Pending Review',
-          body: `Your ${booking.shoot_category} shoot request for ${shootDate} is awaiting manager approval`,
+          title: '⏳ Booking Pending',
+          body: `Your ${booking.shoot_category} shoot request is being reviewed`,
           icon: '/icons/pending.png',
+          tag: `booking_${booking.id}`,
           data: { bookingId: booking.id, type, userId: user.id },
           actions: baseActions
         }
@@ -264,51 +244,41 @@ export class PushNotificationService {
       case 'booking_reminder_24h':
         return {
           title: '📅 Shoot Tomorrow',
-          body: `Reminder: ${booking.shoot_category} shoot tomorrow at ${shootTime || 'TBD'} - ${location}`,
+          body: `Your ${booking.shoot_category} shoot is scheduled for tomorrow at ${booking.scheduled_time ? formatTime(booking.scheduled_time) : 'TBD'}`,
           icon: '/icons/reminder.png',
+          tag: `reminder_${booking.id}`,
           data: { bookingId: booking.id, type, userId: user.id },
           actions: [
-            { action: 'view', title: 'View Details', icon: '/icons/view.png' },
+            ...baseActions,
             { action: 'directions', title: 'Get Directions', icon: '/icons/directions.png' }
           ]
         }
 
       case 'booking_reminder_2h':
         return {
-          title: '🎬 Shoot in 2 Hours',
-          body: `${booking.shoot_category} shoot at ${shootTime} - ${location}. Please arrive 10 minutes early.`,
-          icon: '/icons/reminder-urgent.png',
+          title: '🎬 Shoot Starting Soon',
+          body: `Your ${booking.shoot_category} shoot starts in 2 hours`,
+          icon: '/icons/reminder.png',
+          tag: `reminder_${booking.id}`,
           requireInteraction: true,
           data: { bookingId: booking.id, type, userId: user.id },
           actions: [
-            { action: 'directions', title: 'Get Directions', icon: '/icons/directions.png' },
-            { action: 'contact', title: 'Contact Videographer', icon: '/icons/contact.png' }
-          ]
-        }
-
-      case 'booking_reminder_30min':
-        return {
-          title: '🚨 Shoot Starting Soon!',
-          body: `Your ${booking.shoot_category} shoot starts in 30 minutes at ${location}`,
-          icon: '/icons/urgent.png',
-          requireInteraction: true,
-          data: { bookingId: booking.id, type, userId: user.id },
-          actions: [
-            { action: 'directions', title: 'Get Directions', icon: '/icons/directions.png' },
-            { action: 'checklist', title: 'Pre-Shoot Checklist', icon: '/icons/checklist.png' }
+            ...baseActions,
+            { action: 'directions', title: 'Get Directions', icon: '/icons/directions.png' }
           ]
         }
 
       case 'schedule_change':
         return {
           title: '📝 Schedule Updated',
-          body: `Your ${booking.shoot_category} shoot has been rescheduled to ${shootDate} at ${shootTime || 'TBD'}`,
-          icon: '/icons/schedule-change.png',
+          body: `Your ${booking.shoot_category} shoot has been rescheduled to ${shootTime}`,
+          icon: '/icons/schedule.png',
+          tag: `schedule_${booking.id}`,
           requireInteraction: true,
           data: { bookingId: booking.id, type, userId: user.id },
           actions: [
-            { action: 'view', title: 'View Changes', icon: '/icons/view.png' },
-            { action: 'accept', title: 'Accept', icon: '/icons/accept.png' },
+            ...baseActions,
+            { action: 'approve', title: 'Accept Changes', icon: '/icons/approve.png' },
             { action: 'decline', title: 'Request Different Time', icon: '/icons/decline.png' }
           ]
         }
@@ -316,88 +286,87 @@ export class PushNotificationService {
       case 'cancellation':
         return {
           title: '🚫 Booking Cancelled',
-          body: `Your ${booking.shoot_category} shoot for ${shootDate} has been cancelled. ${booking.manager_notes || ''}`,
+          body: `Your ${booking.shoot_category} shoot has been cancelled`,
           icon: '/icons/cancelled.png',
-          requireInteraction: true,
+          tag: `cancel_${booking.id}`,
           data: { bookingId: booking.id, type, userId: user.id },
           actions: [
-            { action: 'view', title: 'View Details', icon: '/icons/view.png' },
+            ...baseActions,
             { action: 'rebook', title: 'Book Again', icon: '/icons/rebook.png' }
           ]
         }
 
-      case 'optimization_opportunity':
+      case 'batch_optimization':
         return {
-          title: '🚀 Optimization Opportunity',
-          body: `We can batch your ${booking.shoot_category} shoot with 2 others in the same area on ${shootDate}. Faster service!`,
-          icon: '/icons/optimization.png',
+          title: '🎯 Batch Opportunity',
+          body: `We can batch your shoot with others nearby for a discount`,
+          icon: '/icons/batch.png',
+          tag: `batch_${booking.id}`,
           data: { bookingId: booking.id, type, userId: user.id },
           actions: [
-            { action: 'accept', title: 'Accept Optimization', icon: '/icons/accept.png' },
-            { action: 'decline', title: 'Keep Original', icon: '/icons/decline.png' }
+            ...baseActions,
+            { action: 'accept', title: 'Accept Batch', icon: '/icons/accept.png' }
           ]
         }
 
-      case 'urgent_approval_needed':
+      case 'urgent_approval':
         return {
-          title: '🚨 Urgent: Approval Needed',
-          body: `High-priority ${booking.shoot_category} shoot request requires immediate manager review`,
-          icon: '/icons/urgent-approval.png',
+          title: '🚨 Urgent Approval',
+          body: `High-priority ${booking.shoot_category} shoot request needs approval`,
+          icon: '/icons/urgent.png',
+          tag: `urgent_${booking.id}`,
           requireInteraction: true,
           data: { bookingId: booking.id, type, userId: user.id },
           actions: [
-            { action: 'approve', title: 'Quick Approve', icon: '/icons/approve.png' },
-            { action: 'view', title: 'Review Details', icon: '/icons/view.png' }
+            { action: 'approve', title: 'Approve', icon: '/icons/approve.png' },
+            { action: 'decline', title: 'Decline', icon: '/icons/decline.png' }
           ]
         }
 
-      case 'capacity_alert':
+      case 'capacity_warning':
         return {
           title: '⚠️ Capacity Alert',
-          body: `${shootDate} is at 90% capacity. Consider booking alternative dates for faster approval.`,
+          body: `Multiple shoots scheduled in your area. Consider optimization.`,
           icon: '/icons/capacity-warning.png',
+          tag: 'capacity_warning',
           data: { bookingId: booking.id, type, userId: user.id },
           actions: baseActions
-        }
-
-      case 'batch_opportunity':
-        return {
-          title: '📍 Batching Opportunity',
-          body: `2 other shoots scheduled in your area on ${shootDate}. Consider joining for optimized scheduling!`,
-          icon: '/icons/batch.png',
-          data: { bookingId: booking.id, type, userId: user.id },
-          actions: [
-            { action: 'join', title: 'Join Batch', icon: '/icons/join.png' },
-            { action: 'view', title: 'View Details', icon: '/icons/view.png' }
-          ]
         }
 
       case 'route_optimization':
         return {
           title: '🗺️ Route Optimized',
-          body: `Your shoot schedule has been optimized. Total travel time reduced by 45 minutes!`,
+          body: `2 other shoots scheduled in your area on ${formatDate(booking.preferred_date)}`,
           icon: '/icons/route.png',
+          tag: `route_${booking.id}`,
           data: { bookingId: booking.id, type, userId: user.id },
-          actions: baseActions
+          actions: [
+            ...baseActions,
+            { action: 'join', title: 'Join Route', icon: '/icons/join.png' }
+          ]
         }
 
       case 'emergency_booking':
         return {
           title: '🚨 Emergency Booking',
-          body: `Urgent ${booking.shoot_category} shoot request needs immediate attention - same day service required`,
+          body: `Emergency ${booking.shoot_category} shoot request - immediate response needed`,
           icon: '/icons/emergency.png',
+          tag: `emergency_${booking.id}`,
           requireInteraction: true,
           data: { bookingId: booking.id, type, userId: user.id },
           actions: [
             { action: 'accept', title: 'Accept Emergency', icon: '/icons/accept.png' },
-            { action: 'view', title: 'View Details', icon: '/icons/view.png' }
+            { action: 'decline', title: 'Decline', icon: '/icons/decline.png' }
           ]
         }
 
+      case 'general_update':
       default:
         return {
-          title: 'VideoPro Update',
+          title: '📢 VideoPro Update',
           body: `Update for your ${booking.shoot_category} shoot`,
+          icon: '/icons/update.png',
+          tag: 'general_update',
           data: { bookingId: booking.id, type, userId: user.id },
           actions: baseActions
         }
@@ -405,30 +374,22 @@ export class PushNotificationService {
   }
 
   /**
-   * Schedule automated notifications
+   * Schedule automated notifications for a booking
    */
   async scheduleAutomatedNotifications(booking: BookingRequest, user: User): Promise<void> {
-    if (!booking.scheduled_date) return
-
-    const shootDate = new Date(booking.scheduled_date)
+    const shootDate = new Date(`${booking.preferred_date}T${booking.scheduled_time || '09:00'}`)
     const now = new Date()
 
-    // Schedule 24-hour reminder
+    // 24-hour reminder
     const reminder24h = new Date(shootDate.getTime() - 24 * 60 * 60 * 1000)
     if (reminder24h > now) {
       this.scheduleDelayedNotification('booking_reminder_24h', booking, user, reminder24h)
     }
 
-    // Schedule 2-hour reminder
+    // 2-hour reminder
     const reminder2h = new Date(shootDate.getTime() - 2 * 60 * 60 * 1000)
     if (reminder2h > now) {
       this.scheduleDelayedNotification('booking_reminder_2h', booking, user, reminder2h)
-    }
-
-    // Schedule 30-minute reminder
-    const reminder30min = new Date(shootDate.getTime() - 30 * 60 * 1000)
-    if (reminder30min > now) {
-      this.scheduleDelayedNotification('booking_reminder_30min', booking, user, reminder30min)
     }
   }
 
@@ -442,10 +403,9 @@ export class PushNotificationService {
     scheduledTime: Date
   ): void {
     const delay = scheduledTime.getTime() - Date.now()
-    
     if (delay > 0) {
       setTimeout(() => {
-        this.showNotification(type, booking, user, { urgent: type.includes('30min') })
+        this.showNotification(type, booking, user)
       }, delay)
     }
   }
@@ -453,18 +413,10 @@ export class PushNotificationService {
   /**
    * Handle notification clicks
    */
-  handleNotificationClick(data: any): void {
-    const { bookingId, type, action } = data
-
+  handleNotificationClick(action: string, bookingId: string): void {
     switch (action) {
       case 'view':
-        window.open(`/#/booking/${bookingId}`, '_blank')
-        break
-      case 'calendar':
-        this.addToCalendar(bookingId)
-        break
-      case 'directions':
-        this.openDirections(bookingId)
+        this.openBookingDetails(bookingId)
         break
       case 'approve':
         this.quickApprove(bookingId)
@@ -472,43 +424,46 @@ export class PushNotificationService {
       case 'decline':
         this.quickDecline(bookingId)
         break
-      case 'accept':
-        this.acceptOptimization(bookingId)
+      case 'directions':
+        this.openDirections(bookingId)
         break
       case 'rebook':
-        window.open('/#/booking/new', '_blank')
+        this.openRebookFlow(bookingId)
+        break
+      case 'accept':
+        this.acceptOffer(bookingId)
         break
       default:
-        window.open('/#/dashboard', '_blank')
+        this.openBookingDetails(bookingId)
     }
   }
 
-  /**
-   * Helper methods for notification actions
-   */
-  private addToCalendar(bookingId: string): void {
-    // Implementation would integrate with calendar system
-    console.log('Adding to calendar:', bookingId)
-  }
-
-  private openDirections(bookingId: string): void {
-    // Implementation would open Google Maps with directions
-    console.log('Opening directions for:', bookingId)
+  private openBookingDetails(bookingId: string): void {
+    window.open(`/booking/${bookingId}`, '_blank')
   }
 
   private quickApprove(bookingId: string): void {
-    // Implementation would call approval API
     console.log('Quick approving:', bookingId)
+    // Implementation would call approval API
   }
 
   private quickDecline(bookingId: string): void {
-    // Implementation would call decline API
     console.log('Quick declining:', bookingId)
+    // Implementation would call decline API
   }
 
-  private acceptOptimization(bookingId: string): void {
-    // Implementation would accept optimization suggestion
-    console.log('Accepting optimization for:', bookingId)
+  private openDirections(bookingId: string): void {
+    console.log('Opening directions for:', bookingId)
+    // Implementation would open maps with booking location
+  }
+
+  private openRebookFlow(bookingId: string): void {
+    window.open(`/rebook/${bookingId}`, '_blank')
+  }
+
+  private acceptOffer(bookingId: string): void {
+    console.log('Accepting offer:', bookingId)
+    // Implementation would call accept API
   }
 
   /**
@@ -518,90 +473,79 @@ export class PushNotificationService {
     if (this.subscription) {
       await this.subscription.unsubscribe()
       this.subscription = null
+      localStorage.removeItem('push-subscription')
     }
   }
 
   /**
-   * Get notification settings
+   * Get notification status
    */
-  getNotificationSettings(): {
-    isSupported: boolean
-    isPermissionGranted: boolean
-    isSubscribed: boolean
-  } {
+  getStatus() {
+    const isSupported = this.checkSupport()
+    const permission = 'Notification' in window ? Notification.permission : 'default'
+
     return {
-      isSupported: this.isSupported,
+      isSupported,
       isPermissionGranted: this.isPermissionGranted,
-      isSubscribed: !!this.subscription
+      permission,
+      hasSubscription: !!this.subscription
     }
   }
 }
 
 /**
- * Utility functions for push notifications
+ * Utility functions for notification customization
  */
-export const pushNotificationUtils = {
+export class NotificationUtils {
   /**
-   * Create vibration patterns for different notification types
+   * Get vibration pattern based on notification type
    */
-  getVibrationPattern(type: PushNotificationType): number[] {
+  static getVibrationPattern(type: PushNotificationType): number[] {
     switch (type) {
-      case 'booking_reminder_30min':
-      case 'urgent_approval_needed':
+      case 'urgent_approval':
       case 'emergency_booking':
         return [200, 100, 200, 100, 200] // Urgent pattern
-      case 'booking_approved':
-      case 'booking_declined':
-        return [300, 200, 300] // Important pattern
-      case 'booking_reminder_24h':
+      
       case 'booking_reminder_2h':
-        return [200, 100, 200] // Standard reminder
+        return [100, 50, 100] // Gentle reminder
+      
       default:
         return [200] // Single vibration
     }
-  },
+  }
 
   /**
-   * Get notification priority level
+   * Get notification priority
    */
-  getPriority(type: PushNotificationType): 'low' | 'normal' | 'high' {
+  static getPriority(type: PushNotificationType): 'high' | 'normal' | 'low' {
     const highPriority: PushNotificationType[] = [
-      'booking_reminder_30min',
-      'urgent_approval_needed',
+      'urgent_approval',
       'emergency_booking',
       'cancellation'
     ]
     
-    const normalPriority: PushNotificationType[] = [
-      'booking_approved',
-      'booking_declined',
-      'schedule_change',
-      'booking_reminder_2h'
+    const lowPriority: PushNotificationType[] = [
+      'batch_optimization',
+      'route_optimization',
+      'general_update'
     ]
 
     if (highPriority.includes(type)) return 'high'
-    if (normalPriority.includes(type)) return 'normal'
-    return 'low'
-  },
+    if (lowPriority.includes(type)) return 'low'
+    return 'normal'
+  }
 
   /**
    * Check if notification should be persistent
    */
-  shouldRequireInteraction(type: PushNotificationType): boolean {
+  static shouldRequireInteraction(type: PushNotificationType): boolean {
     const persistentTypes: PushNotificationType[] = [
       'booking_approved',
-      'booking_declined',
       'schedule_change',
-      'cancellation',
-      'urgent_approval_needed',
+      'urgent_approval',
       'emergency_booking',
-      'booking_reminder_2h',
-      'booking_reminder_30min'
+      'booking_reminder_2h'
     ]
-    
     return persistentTypes.includes(type)
   }
 }
-
-// Export singleton instance
-export const pushNotificationService = PushNotificationService.getInstance()
