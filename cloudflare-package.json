@@ -1,0 +1,19 @@
+{
+  "name": "spark-template",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "engines": {
+    "node": ">=18.0.0",
+    "npm": ">=8.0.0"
+  },
+  "scripts": {
+    "dev": "vite",
+    "kill": "fuser -k 5000/tcp",
+    "build": "npm install --legacy-peer-deps && tsc -b --noCheck && vite build",
+    "build:cf": "npm install --legacy-peer-deps && tsc -b --noCheck && vite build",
+    "lint": "eslint .",
+    "optimize": "vite optimize",
+    "preview": "vite preview"
+  }
+}

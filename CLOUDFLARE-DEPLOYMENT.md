@@ -8,10 +8,12 @@ Root directory: /
 Node.js version: 18
 ```
 
-## Environment Variables (Recommended)
+## Environment Variables (REQUIRED)
 ```
 NODE_VERSION=18
 NODE_ENV=production
+NODE_OPTIONS=--max-old-space-size=4096
+SKIP_PREFLIGHT_CHECK=true
 ```
 
 ## Troubleshooting Deployment Issues

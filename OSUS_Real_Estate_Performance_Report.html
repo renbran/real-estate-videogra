@@ -1,0 +1,1490 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OSUS Real Estate Brokerage LLC - Department Performance Analysis</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2"></script>
+    <style>
+        :root {
+            --burgundy-primary: #800020;
+            --burgundy-dark: #5c0016;
+            --burgundy-light: #a6002a;
+            --burgundy-accent: #cc003f;
+            --gold-accent: #d4af37;
+            --white: #ffffff;
+            --gray-light: #f8f9fa;
+            --gray-medium: #e9ecef;
+            --gray-dark: #495057;
+            --success: #28a745;
+            --warning: #ffc107;
+            --danger: #dc3545;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: var(--gray-dark);
+            background: linear-gradient(135deg, var(--gray-light) 0%, var(--white) 100%);
+        }
+
+        /* Print Styles for A4 */
+        @media print {
+            body {
+                background: white;
+                font-size: 12px;
+                line-height: 1.4;
+            }
+            
+            @page {
+                size: A4;
+                margin: 15mm;
+            }
+            
+            .page-break {
+                page-break-before: always;
+            }
+            
+            .no-print {
+                display: none !important;
+            }
+            
+            .chart-container {
+                break-inside: avoid;
+                height: 300px !important;
+            }
+            
+            h1 { font-size: 24px; }
+            h2 { font-size: 20px; }
+            h3 { font-size: 16px; }
+            
+            .section {
+                break-inside: avoid;
+                margin-bottom: 20px;
+            }
+        }
+
+        /* Responsive Design */
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 15px;
+            }
+            
+            .grid-2 {
+                grid-template-columns: 1fr !important;
+            }
+            
+            .grid-3 {
+                grid-template-columns: 1fr !important;
+            }
+            
+            .grid-4 {
+                grid-template-columns: repeat(2, 1fr) !important;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .grid-4 {
+                grid-template-columns: 1fr !important;
+            }
+        }
+
+        /* Header */
+        .header {
+            background: linear-gradient(135deg, var(--burgundy-primary) 0%, var(--burgundy-dark) 100%);
+            color: var(--white);
+            padding: 40px 0;
+            text-align: center;
+            box-shadow: 0 4px 20px rgba(128, 0, 32, 0.3);
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .header h2 {
+            font-size: 1.4rem;
+            font-weight: 300;
+            opacity: 0.9;
+            margin-bottom: 20px;
+        }
+
+        .report-meta {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-top: 30px;
+            max-width: 800px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .meta-item {
+            background: rgba(255,255,255,0.1);
+            padding: 15px;
+            border-radius: 8px;
+            backdrop-filter: blur(10px);
+        }
+
+        .meta-label {
+            font-size: 0.9rem;
+            opacity: 0.8;
+            margin-bottom: 5px;
+        }
+
+        .meta-value {
+            font-size: 1.1rem;
+            font-weight: 600;
+        }
+
+        /* Sections */
+        .section {
+            background: var(--white);
+            margin: 30px 0;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 8px 25px rgba(128, 0, 32, 0.1);
+            border-left: 5px solid var(--burgundy-primary);
+        }
+
+        .section-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 25px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid var(--gray-medium);
+        }
+
+        .section-title {
+            font-size: 1.8rem;
+            color: var(--burgundy-primary);
+            font-weight: 700;
+            margin: 0;
+        }
+
+        .section-subtitle {
+            font-size: 1.1rem;
+            color: var(--gray-dark);
+            margin: 10px 0;
+            font-weight: 500;
+        }
+
+        /* Grid Layouts */
+        .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+        .grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }
+        .grid-4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; }
+
+        /* Cards */
+        .card {
+            background: var(--white);
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 15px rgba(128, 0, 32, 0.08);
+            border: 1px solid var(--gray-medium);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(128, 0, 32, 0.15);
+        }
+
+        .card-header {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: var(--burgundy-primary);
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid var(--gray-medium);
+        }
+
+        /* Metrics */
+        .metric {
+            text-align: center;
+            padding: 20px;
+            background: linear-gradient(135deg, var(--gray-light) 0%, var(--white) 100%);
+            border-radius: 10px;
+            border: 2px solid var(--burgundy-light);
+        }
+
+        .metric-value {
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--burgundy-primary);
+            margin-bottom: 5px;
+        }
+
+        .metric-label {
+            font-size: 0.9rem;
+            color: var(--gray-dark);
+            font-weight: 500;
+        }
+
+        .metric-change {
+            font-size: 0.8rem;
+            margin-top: 5px;
+            padding: 3px 8px;
+            border-radius: 15px;
+            font-weight: 600;
+        }
+
+        .metric-positive {
+            background: var(--success);
+            color: white;
+        }
+
+        .metric-negative {
+            background: var(--danger);
+            color: white;
+        }
+
+        /* Tables */
+        .table-container {
+            overflow-x: auto;
+            margin: 20px 0;
+            border-radius: 10px;
+            box-shadow: 0 4px 15px rgba(128, 0, 32, 0.1);
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background: var(--white);
+        }
+
+        th, td {
+            padding: 12px 15px;
+            text-align: left;
+            border-bottom: 1px solid var(--gray-medium);
+        }
+
+        th {
+            background: var(--burgundy-primary);
+            color: var(--white);
+            font-weight: 600;
+            text-transform: uppercase;
+            font-size: 0.9rem;
+            letter-spacing: 0.5px;
+        }
+
+        tr:nth-child(even) {
+            background: var(--gray-light);
+        }
+
+        tr:hover {
+            background: rgba(128, 0, 32, 0.05);
+        }
+
+        /* Charts */
+        .chart-container {
+            position: relative;
+            height: 400px;
+            margin: 20px 0;
+            background: var(--white);
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 4px 15px rgba(128, 0, 32, 0.1);
+        }
+
+        .chart-title {
+            text-align: center;
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: var(--burgundy-primary);
+            margin-bottom: 20px;
+        }
+
+        /* Performance Ratings */
+        .rating {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            font-weight: 600;
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 0.9rem;
+        }
+
+        .rating-excellent {
+            background: var(--success);
+            color: white;
+        }
+
+        .rating-good {
+            background: var(--warning);
+            color: var(--gray-dark);
+        }
+
+        .rating-poor {
+            background: var(--danger);
+            color: white;
+        }
+
+        .rating-unviable {
+            background: var(--gray-dark);
+            color: white;
+        }
+
+        /* Star Ratings */
+        .stars {
+            color: var(--gold-accent);
+            font-size: 1.2rem;
+            margin: 5px 0;
+        }
+
+        /* Lists */
+        .pros-cons {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin: 20px 0;
+        }
+
+        .pros, .cons {
+            padding: 20px;
+            border-radius: 8px;
+        }
+
+        .pros {
+            background: rgba(40, 167, 69, 0.1);
+            border-left: 4px solid var(--success);
+        }
+
+        .cons {
+            background: rgba(220, 53, 69, 0.1);
+            border-left: 4px solid var(--danger);
+        }
+
+        .pros h4, .cons h4 {
+            margin-bottom: 15px;
+            font-weight: 600;
+        }
+
+        .pros h4 {
+            color: var(--success);
+        }
+
+        .cons h4 {
+            color: var(--danger);
+        }
+
+        .pros ul, .cons ul {
+            list-style: none;
+            padding: 0;
+        }
+
+        .pros li:before {
+            content: "✓ ";
+            color: var(--success);
+            font-weight: bold;
+            margin-right: 5px;
+        }
+
+        .cons li:before {
+            content: "✗ ";
+            color: var(--danger);
+            font-weight: bold;
+            margin-right: 5px;
+        }
+
+        /* Executive Summary */
+        .executive-summary {
+            background: linear-gradient(135deg, var(--burgundy-primary) 0%, var(--burgundy-dark) 100%);
+            color: var(--white);
+            padding: 40px;
+            border-radius: 15px;
+            margin: 30px 0;
+            box-shadow: 0 8px 30px rgba(128, 0, 32, 0.3);
+        }
+
+        .key-finding {
+            background: rgba(255,255,255,0.1);
+            padding: 20px;
+            border-radius: 10px;
+            margin: 20px 0;
+            border-left: 5px solid var(--gold-accent);
+            backdrop-filter: blur(10px);
+        }
+
+        .key-finding h3 {
+            color: var(--gold-accent);
+            margin-bottom: 10px;
+        }
+
+        /* Animations */
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .animate-fade-in {
+            animation: fadeInUp 0.6s ease-out;
+        }
+
+        /* Recommendations */
+        .recommendation {
+            background: linear-gradient(135deg, var(--gold-accent) 0%, #e6c547 100%);
+            color: var(--gray-dark);
+            padding: 20px;
+            border-radius: 10px;
+            margin: 15px 0;
+            font-weight: 600;
+            box-shadow: 0 4px 15px rgba(212, 175, 55, 0.3);
+        }
+
+        .recommendation:before {
+            content: "💡 ";
+            font-size: 1.2rem;
+            margin-right: 10px;
+        }
+
+        /* Action Items */
+        .action-item {
+            display: flex;
+            align-items: center;
+            padding: 15px;
+            background: var(--white);
+            border-radius: 8px;
+            margin: 10px 0;
+            border-left: 4px solid var(--burgundy-primary);
+            box-shadow: 0 2px 10px rgba(128, 0, 32, 0.1);
+        }
+
+        .action-priority {
+            padding: 5px 10px;
+            border-radius: 15px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            margin-right: 15px;
+            min-width: 80px;
+            text-align: center;
+        }
+
+        .priority-critical {
+            background: var(--danger);
+            color: white;
+        }
+
+        .priority-high {
+            background: var(--warning);
+            color: var(--gray-dark);
+        }
+
+        .priority-medium {
+            background: var(--burgundy-light);
+            color: white;
+        }
+
+        /* Responsive Charts */
+        @media (max-width: 768px) {
+            .chart-container {
+                height: 300px;
+            }
+        }
+
+        /* Print Button */
+        .print-button {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: var(--burgundy-primary);
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 25px;
+            font-weight: 600;
+            cursor: pointer;
+            box-shadow: 0 4px 15px rgba(128, 0, 32, 0.3);
+            transition: all 0.3s ease;
+            z-index: 1000;
+        }
+
+        .print-button:hover {
+            background: var(--burgundy-dark);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(128, 0, 32, 0.4);
+        }
+
+        /* Scrollbar Styling */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: var(--gray-light);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--burgundy-primary);
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--burgundy-dark);
+        }
+    </style>
+</head>
+<body>
+    <button class="print-button no-print" onclick="window.print()">🖨️ Print Report</button>
+
+    <div class="header">
+        <div class="container">
+            <h1>OSUS REAL ESTATE BROKERAGE LLC</h1>
+            <h2>Department-Wise Performance Analysis by Sales Type</h2>
+            
+            <div class="report-meta">
+                <div class="meta-item">
+                    <div class="meta-label">Report Period</div>
+                    <div class="meta-value">January - September 2025</div>
+                </div>
+                <div class="meta-item">
+                    <div class="meta-label">Report Date</div>
+                    <div class="meta-value">October 7, 2025</div>
+                </div>
+                <div class="meta-item">
+                    <div class="meta-label">Total Revenue</div>
+                    <div class="meta-value">AED 35.49M</div>
+                </div>
+                <div class="meta-item">
+                    <div class="meta-label">Net Margin</div>
+                    <div class="meta-value">34.7%</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="container">
+        <!-- Executive Summary -->
+        <div class="executive-summary animate-fade-in">
+            <h2>EXECUTIVE SUMMARY</h2>
+            <p>This report provides a comprehensive breakdown of revenue, operational costs, and net profitability by sales department/type. Analysis reveals significant performance disparities across sales categories, with critical insights for strategic resource allocation.</p>
+            
+            <div class="key-finding">
+                <h3>🔑 Key Finding</h3>
+                <p><strong>Primary Sales delivers 3.7x higher net revenue per deal than Exclusive Sales, yet receives only 25% of organizational focus.</strong></p>
+            </div>
+        </div>
+
+        <!-- Department Performance Overview Chart -->
+        <div class="section animate-fade-in">
+            <div class="section-header">
+                <h2 class="section-title">Department Performance Overview</h2>
+            </div>
+            
+            <div class="chart-container">
+                <div class="chart-title">Net Revenue per Deal by Department</div>
+                <canvas id="revenuePerDealChart"></canvas>
+            </div>
+            
+            <div class="grid-4">
+                <div class="metric">
+                    <div class="metric-value">AED 39,519</div>
+                    <div class="metric-label">Primary Sales</div>
+                    <div class="metric-change metric-positive">+86% vs avg</div>
+                </div>
+                <div class="metric">
+                    <div class="metric-value">AED 21,305</div>
+                    <div class="metric-label">Exclusive Sales</div>
+                    <div class="metric-change metric-negative">-46% vs Primary</div>
+                </div>
+                <div class="metric">
+                    <div class="metric-value">AED 5,273</div>
+                    <div class="metric-label">Secondary Sales</div>
+                    <div class="metric-change metric-negative">-87% vs Primary</div>
+                </div>
+                <div class="metric">
+                    <div class="metric-value">AED 2,743</div>
+                    <div class="metric-label">Rental Sales</div>
+                    <div class="metric-change metric-negative">-93% vs Primary</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Primary Sales Department -->
+        <div class="section animate-fade-in">
+            <div class="section-header">
+                <h2 class="section-title">1. PRIMARY SALES DEPARTMENT</h2>
+                <div class="rating rating-excellent">⭐⭐⭐⭐ EXCELLENT</div>
+            </div>
+            
+            <div class="grid-3">
+                <div class="card">
+                    <div class="card-header">Volume Metrics</div>
+                    <ul style="list-style: none; padding: 0;">
+                        <li><strong>Total Deals:</strong> 120</li>
+                        <li><strong>Total Sales Value:</strong> AED 334,745,222</li>
+                        <li><strong>Average Deal Size:</strong> AED 2,789,544</li>
+                        <li><strong>Market Share:</strong> 37.6% of total sales value</li>
+                    </ul>
+                </div>
+                
+                <div class="card">
+                    <div class="card-header">Revenue Metrics</div>
+                    <ul style="list-style: none; padding: 0;">
+                        <li><strong>Gross Commission Revenue:</strong> AED 11,424,552</li>
+                        <li><strong>Gross Margin:</strong> 3.41% of sales value</li>
+                        <li><strong>Developer Commission Rate:</strong> 5.0-6.5%</li>
+                    </ul>
+                </div>
+                
+                <div class="card">
+                    <div class="card-header">Net Performance</div>
+                    <ul style="list-style: none; padding: 0;">
+                        <li><strong>Net Revenue After Costs:</strong> AED 4,742,236</li>
+                        <li><strong>Net Margin on Sales:</strong> 1.42%</li>
+                        <li><strong>Net Revenue per Deal:</strong> AED 39,519</li>
+                        <li><strong>Retention Rate:</strong> 41.5%</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="chart-container">
+                <div class="chart-title">Primary Sales - Operational Costs Breakdown</div>
+                <canvas id="primaryCostsChart"></canvas>
+            </div>
+
+            <div class="pros-cons">
+                <div class="pros">
+                    <h4>What's Good</h4>
+                    <ul>
+                        <li>Highest average deal size (AED 2.79M)</li>
+                        <li>Highest net revenue per deal (AED 39,519)</li>
+                        <li>Best retention rate (41.5%)</li>
+                        <li>Premium developer relationships with higher commission rates</li>
+                        <li>Lower cost structure relative to revenue generated</li>
+                        <li>Strong margins despite competitive market</li>
+                    </ul>
+                </div>
+                
+                <div class="cons">
+                    <h4>What's Bad</h4>
+                    <ul>
+                        <li>Only 25% of total deal volume (underutilized)</li>
+                        <li>Longer sales cycles (60-90 days average)</li>
+                        <li>Requires more experienced agents (higher barrier to entry)</li>
+                        <li>Limited inventory access in some projects</li>
+                        <li>Higher client qualification requirements</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="recommendation">
+                <strong>Strategic Recommendation: EXPAND AGGRESSIVELY</strong> - Increase focus to 50% of total deals. Primary sales deliver superior profitability with manageable cost structure.
+            </div>
+        </div>
+
+        <!-- Exclusive Sales Department -->
+        <div class="section animate-fade-in">
+            <div class="section-header">
+                <h2 class="section-title">2. EXCLUSIVE SALES DEPARTMENT</h2>
+                <div class="rating rating-good">⭐⭐⭐ GOOD (But Declining)</div>
+            </div>
+            
+            <div class="grid-3">
+                <div class="card">
+                    <div class="card-header">Volume Metrics</div>
+                    <ul style="list-style: none; padding: 0;">
+                        <li><strong>Total Deals:</strong> 354</li>
+                        <li><strong>Total Sales Value:</strong> AED 538,084,968</li>
+                        <li><strong>Average Deal Size:</strong> AED 1,520,014</li>
+                        <li><strong>Market Share:</strong> 60.5% of total sales value</li>
+                    </ul>
+                </div>
+                
+                <div class="card">
+                    <div class="card-header">Revenue Metrics</div>
+                    <ul style="list-style: none; padding: 0;">
+                        <li><strong>Gross Commission Revenue:</strong> AED 23,949,098</li>
+                        <li><strong>Gross Margin:</strong> 4.45% of sales value</li>
+                        <li><strong>Developer Commission Rate:</strong> 7.0-8.0%</li>
+                    </ul>
+                </div>
+                
+                <div class="card">
+                    <div class="card-header">Net Performance</div>
+                    <ul style="list-style: none; padding: 0;">
+                        <li><strong>Net Revenue After Costs:</strong> AED 7,541,984</li>
+                        <li><strong>Net Margin on Sales:</strong> 1.40%</li>
+                        <li><strong>Net Revenue per Deal:</strong> AED 21,305</li>
+                        <li><strong>Retention Rate:</strong> 31.5%</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="chart-container">
+                <div class="chart-title">Exclusive Sales - Operational Costs Breakdown</div>
+                <canvas id="exclusiveCostsChart"></canvas>
+            </div>
+
+            <div class="recommendation">
+                <strong>Strategic Recommendation: OPTIMIZE & RESTRUCTURE</strong> - Reduce operational costs by 15-20%. Implement tiered commission structure. Eliminate low-margin deals (<AED 1M). Target cost ratio of 55-60% vs current 68.5%.
+            </div>
+        </div>
+
+        <!-- Secondary Sales Department -->
+        <div class="section animate-fade-in">
+            <div class="section-header">
+                <h2 class="section-title">3. SECONDARY SALES DEPARTMENT</h2>
+                <div class="rating rating-poor">⭐⭐ POOR</div>
+            </div>
+            
+            <div class="grid-2">
+                <div class="card">
+                    <div class="card-header">Key Metrics</div>
+                    <ul style="list-style: none; padding: 0;">
+                        <li><strong>Total Deals:</strong> 5</li>
+                        <li><strong>Total Sales Value:</strong> AED 16,140,000</li>
+                        <li><strong>Average Deal Size:</strong> AED 3,228,000</li>
+                        <li><strong>Gross Commission Revenue:</strong> AED 95,865</li>
+                        <li><strong>Net Revenue per Deal:</strong> AED 5,273</li>
+                    </ul>
+                </div>
+                
+                <div class="card">
+                    <div class="card-header">Performance Issues</div>
+                    <ul style="list-style: none; padding: 0;">
+                        <li><strong>Gross Margin:</strong> 0.59% (WORST)</li>
+                        <li><strong>Cost Ratio:</strong> 72.5% (Unsustainable)</li>
+                        <li><strong>Retention Rate:</strong> 27.5% (Poor)</li>
+                        <li><strong>Market Share:</strong> 1.8% (Minimal)</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="recommendation">
+                <strong>Strategic Recommendation: STRATEGIC EXIT or COMPLETE OVERHAUL</strong> - Current model unsustainable. Either: (1) Exit secondary sales entirely, OR (2) Restructure to achieve 3-4% commission minimum and reduce costs to <50% of gross.
+            </div>
+        </div>
+
+        <!-- Rental Sales Department -->
+        <div class="section animate-fade-in">
+            <div class="section-header">
+                <h2 class="section-title">4. RENTAL SALES DEPARTMENT</h2>
+                <div class="rating rating-unviable">⭐ UNVIABLE</div>
+            </div>
+            
+            <div class="card">
+                <div class="card-header">Critical Metrics</div>
+                <div class="grid-2">
+                    <div>
+                        <ul style="list-style: none; padding: 0;">
+                            <li><strong>Total Deals:</strong> 3</li>
+                            <li><strong>Total Sales Value:</strong> AED 235,000</li>
+                            <li><strong>Average Deal Size:</strong> AED 78,333</li>
+                        </ul>
+                    </div>
+                    <div>
+                        <ul style="list-style: none; padding: 0;">
+                            <li><strong>Gross Commission Revenue:</strong> AED 17,325</li>
+                            <li><strong>Net Revenue per Deal:</strong> AED 2,743</li>
+                            <li><strong>Market Share:</strong> 0.03% (Negligible)</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <div class="recommendation">
+                <strong>Strategic Recommendation: IMMEDIATE DISCONTINUATION</strong> - Rental sales contribute virtually nothing to profitability while consuming valuable agent resources. Redirect all agents to Primary and Exclusive sales. Estimated opportunity cost: AED 500K+ annually.
+            </div>
+        </div>
+
+        <!-- Comparative Analysis -->
+        <div class="section animate-fade-in">
+            <div class="section-header">
+                <h2 class="section-title">Comparative Analysis</h2>
+            </div>
+            
+            <div class="chart-container">
+                <div class="chart-title">Department Performance Scorecard</div>
+                <canvas id="scorecardChart"></canvas>
+            </div>
+
+            <div class="table-container">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Metric</th>
+                            <th>Primary Sales</th>
+                            <th>Exclusive Sales</th>
+                            <th>Secondary Sales</th>
+                            <th>Rental Sales</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><strong>Volume Score</strong></td>
+                            <td><span class="stars">⭐⭐⭐</span></td>
+                            <td><span class="stars">⭐⭐⭐⭐⭐</span></td>
+                            <td><span class="stars">⭐</span></td>
+                            <td><span class="stars">⭐</span></td>
+                        </tr>
+                        <tr>
+                            <td><strong>Revenue Score</strong></td>
+                            <td><span class="stars">⭐⭐⭐⭐</span></td>
+                            <td><span class="stars">⭐⭐⭐⭐⭐</span></td>
+                            <td><span class="stars">⭐</span></td>
+                            <td><span class="stars">⭐</span></td>
+                        </tr>
+                        <tr>
+                            <td><strong>Profitability Score</strong></td>
+                            <td><span class="stars">⭐⭐⭐⭐⭐</span></td>
+                            <td><span class="stars">⭐⭐⭐</span></td>
+                            <td><span class="stars">⭐</span></td>
+                            <td><span class="stars">⭐</span></td>
+                        </tr>
+                        <tr>
+                            <td><strong>Efficiency Score</strong></td>
+                            <td><span class="stars">⭐⭐⭐⭐</span></td>
+                            <td><span class="stars">⭐⭐</span></td>
+                            <td><span class="stars">⭐</span></td>
+                            <td><span class="stars">⭐⭐</span></td>
+                        </tr>
+                        <tr>
+                            <td><strong>Scalability Score</strong></td>
+                            <td><span class="stars">⭐⭐⭐⭐⭐</span></td>
+                            <td><span class="stars">⭐⭐⭐⭐</span></td>
+                            <td><span class="stars">⭐⭐</span></td>
+                            <td><span class="stars">⭐</span></td>
+                        </tr>
+                        <tr>
+                            <td><strong>Strategic Value</strong></td>
+                            <td><span class="stars">⭐⭐⭐⭐⭐</span></td>
+                            <td><span class="stars">⭐⭐⭐⭐</span></td>
+                            <td><span class="stars">⭐⭐</span></td>
+                            <td><span class="stars">⭐</span></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Cost Structure Analysis -->
+        <div class="section animate-fade-in page-break">
+            <div class="section-header">
+                <h2 class="section-title">Cost Structure Deep Dive</h2>
+            </div>
+            
+            <div class="chart-container">
+                <div class="chart-title">Total Company Operating Costs Breakdown</div>
+                <canvas id="totalCostsChart"></canvas>
+            </div>
+
+            <div class="grid-2">
+                <div class="card">
+                    <div class="card-header">Current State</div>
+                    <ul style="list-style: none; padding: 0;">
+                        <li><strong>Total Gross Commission:</strong> AED 35,486,840</li>
+                        <li><strong>Total Operating Costs:</strong> AED 23,167,595</li>
+                        <li><strong>Cost Ratio:</strong> 65.3% (Unsustainable)</li>
+                        <li><strong>Net Revenue:</strong> AED 12,319,245</li>
+                    </ul>
+                </div>
+                
+                <div class="card">
+                    <div class="card-header">Industry Benchmark</div>
+                    <ul style="list-style: none; padding: 0;">
+                        <li><strong>Best Practice Cost Ratio:</strong> 45-55%</li>
+                        <li><strong>Current Gap:</strong> 10-20% above optimal</li>
+                        <li><strong>Potential Savings:</strong> AED 4.7-5.8M annually</li>
+                        <li><strong>Target Net Margin:</strong> 45-50%</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="table-container">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Cost Category</th>
+                            <th>Amount (AED)</th>
+                            <th>% of Gross</th>
+                            <th>Priority Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><strong>Agent Commissions</strong></td>
+                            <td>17,171,145</td>
+                            <td>48.4%</td>
+                            <td>Tier-based restructure</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Broker Fees</strong></td>
+                            <td>2,017,943</td>
+                            <td>5.7%</td>
+                            <td>Renegotiate/reduce</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Referrer Fees</strong></td>
+                            <td>1,306,294</td>
+                            <td>3.7%</td>
+                            <td>Cap at 2%</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Director Overrides</strong></td>
+                            <td>886,737</td>
+                            <td>2.5%</td>
+                            <td>Reduce to 1.5%</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Manager Overrides</strong></td>
+                            <td>948,881</td>
+                            <td>2.7%</td>
+                            <td>Performance-based only</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Cashback</strong></td>
+                            <td>239,491</td>
+                            <td>0.7%</td>
+                            <td>Eliminate Q4</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Other External</strong></td>
+                            <td>597,104</td>
+                            <td>1.7%</td>
+                            <td>Audit & reduce</td>
+                        </tr>
+                        <tr style="background: var(--burgundy-light); color: white; font-weight: bold;">
+                            <td><strong>TOTAL COSTS</strong></td>
+                            <td><strong>23,167,595</strong></td>
+                            <td><strong>65.3%</strong></td>
+                            <td><strong>Target: 50-55%</strong></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Strategic Resource Allocation -->
+        <div class="section animate-fade-in">
+            <div class="section-header">
+                <h2 class="section-title">Strategic Resource Allocation</h2>
+            </div>
+            
+            <div class="grid-2">
+                <div class="chart-container">
+                    <div class="chart-title">Current Department Mix</div>
+                    <canvas id="currentAllocationChart"></canvas>
+                </div>
+                
+                <div class="chart-container">
+                    <div class="chart-title">Recommended Department Mix</div>
+                    <canvas id="recommendedAllocationChart"></canvas>
+                </div>
+            </div>
+
+            <div class="table-container">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Department</th>
+                            <th>Current Deal %</th>
+                            <th>Recommended Deal %</th>
+                            <th>Current Agent Resources</th>
+                            <th>Recommended Agent Resources</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><strong>Primary Sales</strong></td>
+                            <td>24.9%</td>
+                            <td><strong>50%</strong></td>
+                            <td>25%</td>
+                            <td><strong>50%</strong></td>
+                        </tr>
+                        <tr>
+                            <td><strong>Exclusive Sales</strong></td>
+                            <td>73.5%</td>
+                            <td><strong>50%</strong></td>
+                            <td>70%</td>
+                            <td><strong>50%</strong></td>
+                        </tr>
+                        <tr>
+                            <td><strong>Secondary Sales</strong></td>
+                            <td>1.0%</td>
+                            <td><strong>0%</strong></td>
+                            <td>3%</td>
+                            <td><strong>0%</strong></td>
+                        </tr>
+                        <tr>
+                            <td><strong>Rental Sales</strong></td>
+                            <td>0.6%</td>
+                            <td><strong>0%</strong></td>
+                            <td>2%</td>
+                            <td><strong>0%</strong></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="recommendation">
+                <strong>Rationale:</strong> Rebalancing toward Primary Sales will increase net profitability by 40-50% with same total deal volume. Primary sales deliver 1.86x higher net revenue per deal with 17% better cost efficiency.
+            </div>
+        </div>
+
+        <!-- Financial Impact Summary -->
+        <div class="section animate-fade-in">
+            <div class="section-header">
+                <h2 class="section-title">Financial Impact Summary</h2>
+            </div>
+            
+            <div class="chart-container">
+                <div class="chart-title">Current vs Projected Financial Performance</div>
+                <canvas id="financialImpactChart"></canvas>
+            </div>
+
+            <div class="grid-2">
+                <div class="card">
+                    <div class="card-header">Current State (YTD 2025)</div>
+                    <ul style="list-style: none; padding: 0;">
+                        <li><strong>Total Gross Commission:</strong> AED 35,486,840</li>
+                        <li><strong>Total Operating Costs:</strong> AED 23,167,595 (65.3%)</li>
+                        <li><strong>Net Revenue:</strong> AED 12,319,245</li>
+                        <li><strong>Net Margin:</strong> 34.7%</li>
+                    </ul>
+                </div>
+                
+                <div class="card">
+                    <div class="card-header">Projected State (Post-Restructuring)</div>
+                    <ul style="list-style: none; padding: 0;">
+                        <li><strong>Total Gross Commission:</strong> AED 45,000,000 (+26.8%)</li>
+                        <li><strong>Total Operating Costs:</strong> AED 24,750,000 (55.0%)</li>
+                        <li><strong>Net Revenue:</strong> AED 20,250,000 (+64.4%)</li>
+                        <li><strong>Net Margin:</strong> 45.0% (+10.3%)</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="grid-4">
+                <div class="metric">
+                    <div class="metric-value">+26.8%</div>
+                    <div class="metric-label">Revenue Growth</div>
+                    <div class="metric-change metric-positive">+AED 9.5M</div>
+                </div>
+                <div class="metric">
+                    <div class="metric-value">-10.3pp</div>
+                    <div class="metric-label">Cost Ratio Improvement</div>
+                    <div class="metric-change metric-positive">65.3% → 55%</div>
+                </div>
+                <div class="metric">
+                    <div class="metric-value">+64.4%</div>
+                    <div class="metric-label">Net Revenue Growth</div>
+                    <div class="metric-change metric-positive">+AED 7.9M</div>
+                </div>
+                <div class="metric">
+                    <div class="metric-value">561%</div>
+                    <div class="metric-label">ROI</div>
+                    <div class="metric-change metric-positive">1.8 months payback</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Critical Priorities -->
+        <div class="section animate-fade-in">
+            <div class="section-header">
+                <h2 class="section-title">Critical Priorities & Action Plan</h2>
+            </div>
+            
+            <h3 class="section-subtitle">CRITICAL PRIORITIES (Immediate - 30 Days)</h3>
+            
+            <div class="action-item">
+                <div class="action-priority priority-critical">CRITICAL</div>
+                <div>
+                    <strong>EXIT NON-PERFORMING DEPARTMENTS</strong><br>
+                    ❌ Shut down Rental Sales (7 days)<br>
+                    ❌ Exit Secondary Sales (60 days)<br>
+                    💰 <strong>Savings: AED 500K+ opportunity cost recovery</strong>
+                </div>
+            </div>
+            
+            <div class="action-item">
+                <div class="action-priority priority-critical">CRITICAL</div>
+                <div>
+                    <strong>RESTRUCTURE COMMISSION FRAMEWORK</strong><br>
+                    Implement 3-tier agent commission structure<br>
+                    Cap broker fees at 4%, referrer fees at 2%<br>
+                    💰 <strong>Savings: AED 2.6-4.7M annually</strong>
+                </div>
+            </div>
+            
+            <div class="action-item">
+                <div class="action-priority priority-critical">CRITICAL</div>
+                <div>
+                    <strong>SHIFT STRATEGIC FOCUS TO PRIMARY SALES</strong><br>
+                    Reallocate 15 agents from Exclusive to Primary<br>
+                    Target 50% of deals from Primary (vs current 25%)<br>
+                    💰 <strong>Revenue Impact: +AED 8.5M net revenue</strong>
+                </div>
+            </div>
+
+            <h3 class="section-subtitle">HIGH PRIORITY (30-90 Days)</h3>
+            
+            <div class="action-item">
+                <div class="action-priority priority-high">HIGH</div>
+                <div>
+                    <strong>OPTIMIZE EXCLUSIVE SALES OPERATIONS</strong><br>
+                    Implement AED 1M minimum deal size<br>
+                    Reduce cost ratio from 68.5% to 58%<br>
+                    💰 <strong>Margin Improvement: +AED 2.5M</strong>
+                </div>
+            </div>
+            
+            <div class="action-item">
+                <div class="action-priority priority-high">HIGH</div>
+                <div>
+                    <strong>PERFORMANCE MANAGEMENT PROGRAM</strong><br>
+                    Bottom 25% agents: 90-day improvement or exit<br>
+                    Recruit 3-5 luxury segment specialists<br>
+                    💰 <strong>Productivity Gain: +25%</strong>
+                </div>
+            </div>
+        </div>
+
+        <!-- Conclusion -->
+        <div class="executive-summary animate-fade-in">
+            <h2>CONCLUSION</h2>
+            <p>The departmental analysis reveals a company with strong sales capabilities but fundamental structural problems that are destroying profitability. <strong>Primary Sales is the clear star performer</strong> delivering 86% higher net revenue per deal with 17% better cost efficiency, yet receives only 25% of organizational focus.</p>
+            
+            <div class="key-finding">
+                <h3>🎯 The Path Forward is Clear</h3>
+                <ol style="margin: 15px 0; padding-left: 20px;">
+                    <li><strong>Eliminate waste:</strong> Exit Rental and Secondary Sales immediately</li>
+                    <li><strong>Fix the cost structure:</strong> Reduce operational costs from 65.3% to 52-55%</li>
+                    <li><strong>Shift strategic focus:</strong> Rebalance from 25% Primary to 50% Primary sales</li>
+                    <li><strong>Optimize performance:</strong> Implement tier-based compensation and eliminate bottom performers</li>
+                </ol>
+            </div>
+            
+            <p><strong>These actions will transform OSUS from a struggling operation posting 1.4% margins in Q3 to a highly profitable brokerage achieving 12-15% net margins within 9-12 months.</strong></p>
+            
+            <div style="text-align: center; margin: 30px 0; padding: 20px; background: rgba(255,255,255,0.1); border-radius: 10px;">
+                <h3 style="color: var(--gold-accent); margin-bottom: 10px;">The data is unequivocal. The choice is binary:</h3>
+                <h2 style="font-size: 2rem; text-shadow: 2px 2px 4px rgba(0,0,0,0.3);">TRANSFORM OR FACE INSOLVENCY</h2>
+            </div>
+            
+            <div style="text-align: right; margin-top: 30px; font-style: italic; opacity: 0.9;">
+                <p><strong>Prepared by:</strong> Senior Performance Analyst with 30 Years Executive Experience</p>
+                <p><strong>Classification:</strong> Executive Leadership - Confidential</p>
+                <p><strong>Next Review:</strong> 30 Days</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Chart.js Configuration
+        Chart.register(ChartDataLabels);
+        
+        const chartOptions = {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    position: 'bottom',
+                    labels: {
+                        usePointStyle: true,
+                        font: {
+                            size: 12
+                        }
+                    }
+                },
+                datalabels: {
+                    display: true,
+                    color: 'white',
+                    font: {
+                        weight: 'bold',
+                        size: 11
+                    },
+                    formatter: (value, context) => {
+                        if (typeof value === 'number') {
+                            return value.toLocaleString();
+                        }
+                        return value;
+                    }
+                }
+            },
+            animation: {
+                duration: 2000,
+                easing: 'easeInOutQuart'
+            }
+        };
+
+        const burgundyColors = [
+            '#800020', // Primary burgundy
+            '#a6002a', // Light burgundy
+            '#5c0016', // Dark burgundy
+            '#cc003f', // Burgundy accent
+            '#d4af37', // Gold accent
+            '#dc3545', // Danger red
+            '#28a745', // Success green
+            '#ffc107'  // Warning yellow
+        ];
+
+        // Net Revenue per Deal Chart
+        const revenuePerDealCtx = document.getElementById('revenuePerDealChart').getContext('2d');
+        new Chart(revenuePerDealCtx, {
+            type: 'bar',
+            data: {
+                labels: ['Primary Sales', 'Exclusive Sales', 'Secondary Sales', 'Rental Sales'],
+                datasets: [{
+                    label: 'Net Revenue per Deal (AED)',
+                    data: [39519, 21305, 5273, 2743],
+                    backgroundColor: burgundyColors.slice(0, 4),
+                    borderColor: burgundyColors.slice(0, 4),
+                    borderWidth: 2
+                }]
+            },
+            options: {
+                ...chartOptions,
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: {
+                            callback: function(value) {
+                                return 'AED ' + value.toLocaleString();
+                            }
+                        }
+                    }
+                }
+            }
+        });
+
+        // Primary Sales Costs Chart
+        const primaryCostsCtx = document.getElementById('primaryCostsChart').getContext('2d');
+        new Chart(primaryCostsCtx, {
+            type: 'doughnut',
+            data: {
+                labels: [
+                    'Agent Commissions (45%)',
+                    'Broker Fees (5%)',
+                    'Referrer Fees (3%)',
+                    'Director Overrides (2.5%)',
+                    'Manager Overrides (2%)',
+                    'Other Costs (1%)',
+                    'Net Retained (41.5%)'
+                ],
+                datasets: [{
+                    data: [45, 5, 3, 2.5, 2, 1, 41.5],
+                    backgroundColor: [
+                        '#800020', '#a6002a', '#5c0016', '#cc003f', 
+                        '#d4af37', '#dc3545', '#28a745'
+                    ]
+                }]
+            },
+            options: chartOptions
+        });
+
+        // Exclusive Sales Costs Chart
+        const exclusiveCostsCtx = document.getElementById('exclusiveCostsChart').getContext('2d');
+        new Chart(exclusiveCostsCtx, {
+            type: 'doughnut',
+            data: {
+                labels: [
+                    'Agent Commissions (50%)',
+                    'Broker Fees (6%)',
+                    'Referrer Fees (4%)',
+                    'Director Overrides (2.5%)',
+                    'Manager Overrides (3%)',
+                    'Cashback (1%)',
+                    'Other Costs (2%)',
+                    'Net Retained (31.5%)'
+                ],
+                datasets: [{
+                    data: [50, 6, 4, 2.5, 3, 1, 2, 31.5],
+                    backgroundColor: [
+                        '#800020', '#a6002a', '#5c0016', '#cc003f', 
+                        '#d4af37', '#dc3545', '#ffc107', '#28a745'
+                    ]
+                }]
+            },
+            options: chartOptions
+        });
+
+        // Scorecard Radar Chart
+        const scorecardCtx = document.getElementById('scorecardChart').getContext('2d');
+        new Chart(scorecardCtx, {
+            type: 'radar',
+            data: {
+                labels: ['Volume', 'Revenue', 'Profitability', 'Efficiency', 'Scalability', 'Strategic Value'],
+                datasets: [
+                    {
+                        label: 'Primary Sales',
+                        data: [3, 4, 5, 4, 5, 5],
+                        backgroundColor: 'rgba(128, 0, 32, 0.2)',
+                        borderColor: '#800020',
+                        pointBackgroundColor: '#800020'
+                    },
+                    {
+                        label: 'Exclusive Sales',
+                        data: [5, 5, 3, 2, 4, 4],
+                        backgroundColor: 'rgba(166, 0, 42, 0.2)',
+                        borderColor: '#a6002a',
+                        pointBackgroundColor: '#a6002a'
+                    },
+                    {
+                        label: 'Secondary Sales',
+                        data: [1, 1, 1, 1, 2, 2],
+                        backgroundColor: 'rgba(220, 53, 69, 0.2)',
+                        borderColor: '#dc3545',
+                        pointBackgroundColor: '#dc3545'
+                    },
+                    {
+                        label: 'Rental Sales',
+                        data: [1, 1, 1, 2, 1, 1],
+                        backgroundColor: 'rgba(108, 117, 125, 0.2)',
+                        borderColor: '#6c757d',
+                        pointBackgroundColor: '#6c757d'
+                    }
+                ]
+            },
+            options: {
+                ...chartOptions,
+                scales: {
+                    r: {
+                        beginAtZero: true,
+                        max: 5,
+                        ticks: {
+                            stepSize: 1
+                        }
+                    }
+                }
+            }
+        });
+
+        // Total Company Costs Chart
+        const totalCostsCtx = document.getElementById('totalCostsChart').getContext('2d');
+        new Chart(totalCostsCtx, {
+            type: 'pie',
+            data: {
+                labels: [
+                    'Agent Commissions (48.4%)',
+                    'Broker Fees (5.7%)',
+                    'Referrer Fees (3.7%)',
+                    'Manager Overrides (2.7%)',
+                    'Director Overrides (2.5%)',
+                    'Other External (1.7%)',
+                    'Cashback (0.7%)',
+                    'Net Retained (34.7%)'
+                ],
+                datasets: [{
+                    data: [48.4, 5.7, 3.7, 2.7, 2.5, 1.7, 0.7, 34.7],
+                    backgroundColor: [
+                        '#800020', '#a6002a', '#5c0016', '#cc003f', 
+                        '#d4af37', '#dc3545', '#ffc107', '#28a745'
+                    ]
+                }]
+            },
+            options: chartOptions
+        });
+
+        // Current vs Recommended Allocation Charts
+        const currentAllocationCtx = document.getElementById('currentAllocationChart').getContext('2d');
+        new Chart(currentAllocationCtx, {
+            type: 'doughnut',
+            data: {
+                labels: ['Exclusive (73.5%)', 'Primary (24.9%)', 'Secondary (1.0%)', 'Rental (0.6%)'],
+                datasets: [{
+                    data: [73.5, 24.9, 1.0, 0.6],
+                    backgroundColor: ['#a6002a', '#800020', '#dc3545', '#6c757d']
+                }]
+            },
+            options: chartOptions
+        });
+
+        const recommendedAllocationCtx = document.getElementById('recommendedAllocationChart').getContext('2d');
+        new Chart(recommendedAllocationCtx, {
+            type: 'doughnut',
+            data: {
+                labels: ['Primary (50%)', 'Exclusive (50%)', 'Secondary (0%)', 'Rental (0%)'],
+                datasets: [{
+                    data: [50, 50, 0, 0],
+                    backgroundColor: ['#800020', '#a6002a', '#e9ecef', '#e9ecef']
+                }]
+            },
+            options: chartOptions
+        });
+
+        // Financial Impact Chart
+        const financialImpactCtx = document.getElementById('financialImpactChart').getContext('2d');
+        new Chart(financialImpactCtx, {
+            type: 'bar',
+            data: {
+                labels: ['Gross Commission', 'Operating Costs', 'Net Revenue'],
+                datasets: [
+                    {
+                        label: 'Current State (AED M)',
+                        data: [35.49, 23.17, 12.32],
+                        backgroundColor: '#a6002a'
+                    },
+                    {
+                        label: 'Projected State (AED M)',
+                        data: [45.00, 24.75, 20.25],
+                        backgroundColor: '#28a745'
+                    }
+                ]
+            },
+            options: {
+                ...chartOptions,
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: {
+                            callback: function(value) {
+                                return 'AED ' + value + 'M';
+                            }
+                        }
+                    }
+                }
+            }
+        });
+
+        // Animate elements on scroll
+        const observerOptions = {
+            threshold: 0.1,
+            rootMargin: '0px 0px -50px 0px'
+        };
+
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('animate-fade-in');
+                }
+            });
+        }, observerOptions);
+
+        // Observe all sections
+        document.querySelectorAll('.section, .executive-summary').forEach(section => {
+            observer.observe(section);
+        });
+
+        // Print optimization
+        window.addEventListener('beforeprint', () => {
+            // Adjust chart sizes for print
+            Chart.helpers.each(Chart.instances, (chart) => {
+                chart.resize();
+            });
+        });
+    </script>
+</body>
+</html>
