@@ -5,7 +5,7 @@ import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Progress } from '@/components/ui/progress'
-import { CalendarBlank, MapPin, Clock, TrendUp, Plus, Bell, Envelope } from '@phosphor-icons/react'
+import { CalendarBlank, MapPin, Clock, TrendUp, Plus, Bell, Envelope, Lightning, Sparkle, Target } from '@phosphor-icons/react'
 import { BookingRequest, SAMPLE_AGENTS, SHOOT_COMPLEXITIES } from '@/lib/types'
 import { formatDate, formatDateTime } from '@/lib/date-utils'
 import { BookingForm } from '@/components/booking/BookingForm'
@@ -14,6 +14,8 @@ import { CalendarNotificationCenter } from '@/components/calendar/CalendarNotifi
 import { PushNotificationSettings } from '@/components/notifications/PushNotificationSettings'
 import { PushNotificationDemo } from '@/components/notifications/PushNotificationDemo'
 import { useNotifications } from '@/hooks/useNotifications'
+import { OSUS_BRAND } from '@/lib/osus-brand'
+import { DailyAIInsights } from '@/components/insights/DailyAIInsights'
 
 interface AgentDashboardProps {
   currentUserId: string
@@ -54,11 +56,11 @@ export function AgentDashboard({ currentUserId }: AgentDashboardProps) {
   const getStatusBadge = (status: string) => {
     switch (status) {
       case 'pending':
-        return <Badge variant="outline" className="border-yellow-300 text-yellow-800">Pending</Badge>
+        return <Badge variant="outline" className="border-osus-secondary-300 text-osus-secondary-800 bg-osus-secondary-50">Pending</Badge>
       case 'approved':
-        return <Badge className="bg-green-100 text-green-800">Approved</Badge>
+        return <Badge className="bg-emerald-100 text-emerald-800 hover:bg-emerald-200">Approved</Badge>
       case 'completed':
-        return <Badge className="bg-blue-100 text-blue-800">Completed</Badge>
+        return <Badge className="bg-osus-primary-100 text-osus-primary-800 hover:bg-osus-primary-200">Completed</Badge>
       case 'declined':
         return <Badge variant="destructive">Declined</Badge>
       case 'cancelled':
@@ -72,11 +74,11 @@ export function AgentDashboard({ currentUserId }: AgentDashboardProps) {
     if (!complexity) return null
     switch (complexity) {
       case 'quick':
-        return <Badge className="bg-green-100 text-green-800">Quick</Badge>
+        return <Badge className="bg-emerald-100 text-emerald-800 hover:bg-emerald-200">Quick</Badge>
       case 'standard':
-        return <Badge className="bg-yellow-100 text-yellow-800">Standard</Badge>
+        return <Badge className="bg-osus-secondary-100 text-osus-secondary-800 hover:bg-osus-secondary-200">Standard</Badge>
       case 'complex':
-        return <Badge className="bg-red-100 text-red-800">Complex</Badge>
+        return <Badge className="bg-red-100 text-red-800 hover:bg-red-200">Complex</Badge>
       default:
         return <Badge variant="outline">{complexity}</Badge>
     }
@@ -103,19 +105,33 @@ export function AgentDashboard({ currentUserId }: AgentDashboardProps) {
   }
 
   return (
-    <div className="p-6 max-w-7xl mx-auto">
+    <div className="p-6 max-w-7xl mx-auto bg-gradient-to-br from-osus-primary-50/30 via-white to-osus-secondary-50/20 min-h-screen">
       {/* Header */}
       <div className="mb-8">
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-3xl font-bold text-foreground">Welcome back, {currentAgent.name}</h1>
-            <p className="text-muted-foreground mt-1">
-              {currentAgent.tier ? (currentAgent.tier.charAt(0).toUpperCase() + currentAgent.tier.slice(1)) : 'Standard'} Agent • Performance Score: {currentAgent.performance_score}/100
+            <div className="relative">
+              <h1 className="text-3xl font-bold bg-gradient-to-r from-osus-primary-600 to-osus-primary-800 bg-clip-text text-transparent">
+                Welcome back, {currentAgent.name}
+              </h1>
+              <div className="absolute -top-1 -right-4">
+                <Sparkle className="w-6 h-6 text-osus-secondary-500 animate-pulse" />
+              </div>
+            </div>
+            <p className="text-osus-primary-700/80 mt-2 font-medium">
+              {currentAgent.tier ? (currentAgent.tier.charAt(0).toUpperCase() + currentAgent.tier.slice(1)) : 'Standard'} Agent • 
+              <span className="inline-flex items-center gap-1 text-osus-secondary-600">
+                <Target className="w-4 h-4" />
+                Performance Score: {currentAgent.performance_score}/100
+              </span>
             </p>
           </div>
           <div className="flex items-center gap-2">
             <CalendarExportButton bookings={approvedBookings} />
-            <Button onClick={() => setActiveTab('new-booking')} className="flex items-center gap-2">
+            <Button 
+              onClick={() => setActiveTab('new-booking')} 
+              className="flex items-center gap-2 bg-gradient-to-r from-osus-primary-500 to-osus-primary-600 hover:from-osus-primary-600 hover:to-osus-primary-700 text-white border-0 shadow-lg hover:shadow-xl transition-all duration-200"
+            >
               <Plus className="w-4 h-4" />
               New Booking
             </Button>
@@ -125,59 +141,71 @@ export function AgentDashboard({ currentUserId }: AgentDashboardProps) {
 
       {/* Stats Cards */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-        <Card>
+        <Card className="border-osus-primary-200/50 shadow-md hover:shadow-lg transition-all duration-200 bg-gradient-to-br from-white to-osus-primary-50/30">
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">Monthly Quota</CardTitle>
+            <CardTitle className="text-sm font-medium text-osus-primary-700 flex items-center gap-2">
+              <Target className="w-4 h-4" />
+              Monthly Quota
+            </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{currentAgent.monthly_used || 0}/{currentAgent.monthly_quota || 0}</div>
+            <div className="text-2xl font-bold text-osus-primary-800">{currentAgent.monthly_used || 0}/{currentAgent.monthly_quota || 0}</div>
             <Progress 
               value={((currentAgent.monthly_used || 0) / (currentAgent.monthly_quota || 1)) * 100} 
-              className="mt-2"
+              className="mt-2 [&>div]:bg-gradient-to-r [&>div]:from-osus-primary-500 [&>div]:to-osus-secondary-500"
             />
-            <p className="text-xs text-muted-foreground mt-1">
+            <p className="text-xs text-osus-primary-600 mt-1 font-medium">
               {(currentAgent.monthly_quota || 0) - (currentAgent.monthly_used || 0)} slots remaining
             </p>
           </CardContent>
         </Card>
 
-        <Card>
+        <Card className="border-osus-secondary-200/50 shadow-md hover:shadow-lg transition-all duration-200 bg-gradient-to-br from-white to-osus-secondary-50/30">
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">Pending Requests</CardTitle>
+            <CardTitle className="text-sm font-medium text-osus-secondary-700 flex items-center gap-2">
+              <Clock className="w-4 h-4" />
+              Pending Requests
+            </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{pendingBookings.length}</div>
-            <p className="text-xs text-muted-foreground mt-1">Awaiting approval</p>
+            <div className="text-2xl font-bold text-osus-secondary-800">{pendingBookings.length}</div>
+            <p className="text-xs text-osus-secondary-600 mt-1 font-medium">Awaiting approval</p>
           </CardContent>
         </Card>
 
-        <Card>
+        <Card className="border-emerald-200/50 shadow-md hover:shadow-lg transition-all duration-200 bg-gradient-to-br from-white to-emerald-50/30">
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">Upcoming Shoots</CardTitle>
+            <CardTitle className="text-sm font-medium text-emerald-700 flex items-center gap-2">
+              <Lightning className="w-4 h-4" />
+              Upcoming Shoots
+            </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{approvedBookings.length}</div>
-            <p className="text-xs text-muted-foreground mt-1">Confirmed bookings</p>
+            <div className="text-2xl font-bold text-emerald-800">{approvedBookings.length}</div>
+            <p className="text-xs text-emerald-600 mt-1 font-medium">Confirmed bookings</p>
           </CardContent>
         </Card>
 
-        <Card>
+        <Card className="border-osus-primary-200/50 shadow-md hover:shadow-lg transition-all duration-200 bg-gradient-to-br from-white via-osus-primary-50/20 to-osus-secondary-50/20">
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">Performance Score</CardTitle>
+            <CardTitle className="text-sm font-medium text-osus-primary-700 flex items-center gap-2">
+              <TrendUp className="w-4 h-4" />
+              Performance Score
+            </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold flex items-center gap-2">
+            <div className="text-2xl font-bold flex items-center gap-2 text-osus-primary-800">
               {currentAgent.performance_score}
-              <TrendUp className="w-4 h-4 text-green-600" />
+              <div className="w-2 h-2 bg-gradient-to-r from-osus-primary-500 to-osus-secondary-500 rounded-full animate-pulse" />
             </div>
-            <p className="text-xs text-muted-foreground mt-1">+5 this month</p>
+            <p className="text-xs text-osus-secondary-600 mt-1 font-medium">+5 this month</p>
           </CardContent>
         </Card>
       </div>
 
       {/* Tabs */}
       <Tabs value={activeTab} onValueChange={setActiveTab}>
-        <TabsList className="mb-6">
+        <TabsList className="mb-6 bg-osus-primary-100/50 border border-osus-primary-200/50">
           <TabsTrigger value="overview">Overview</TabsTrigger>
           <TabsTrigger value="pending">Pending ({pendingBookings.length})</TabsTrigger>
           <TabsTrigger value="approved">Approved ({approvedBookings.length})</TabsTrigger>
@@ -187,11 +215,23 @@ export function AgentDashboard({ currentUserId }: AgentDashboardProps) {
         </TabsList>
 
         <TabsContent value="overview">
+          {/* Daily AI Insights */}
+          <div className="mb-6">
+            <DailyAIInsights 
+              bookings={myBookings}
+              currentUser={currentAgent}
+              userRole="agent"
+            />
+          </div>
+          
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             {/* Recent Bookings */}
-            <Card>
-              <CardHeader>
-                <CardTitle>Recent Bookings</CardTitle>
+            <Card className="border-osus-primary-200/50 shadow-lg">
+              <CardHeader className="bg-gradient-to-r from-osus-primary-50 to-osus-secondary-50 border-b border-osus-primary-200/30">
+                <CardTitle className="text-osus-primary-800 flex items-center gap-2">
+                  <CalendarBlank className="w-5 h-5" />
+                  Recent Bookings
+                </CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="space-y-4">
@@ -240,9 +280,12 @@ export function AgentDashboard({ currentUserId }: AgentDashboardProps) {
             </Card>
 
             {/* Performance Insights */}
-            <Card>
-              <CardHeader>
-                <CardTitle>Performance Insights</CardTitle>
+            <Card className="border-osus-primary-200/50 shadow-lg">
+              <CardHeader className="bg-gradient-to-r from-osus-primary-50 to-osus-secondary-50 border-b border-osus-primary-200/30">
+                <CardTitle className="text-osus-primary-800 flex items-center gap-2">
+                  <TrendUp className="w-5 h-5" />
+                  Performance Insights
+                </CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="space-y-4">
@@ -268,12 +311,24 @@ export function AgentDashboard({ currentUserId }: AgentDashboardProps) {
                     <Progress value={78} className="h-2" />
                   </div>
                   
-                  <div className="mt-4 p-3 bg-muted/50 rounded-md">
-                    <p className="text-sm font-medium mb-1">Tips for Higher Priority</p>
-                    <ul className="text-xs text-muted-foreground space-y-1">
-                      <li>• Enable flexible scheduling for +5 points</li>
-                      <li>• Book 7+ days in advance for +10 points</li>
-                      <li>• Accurate estimates improve your score</li>
+                  <div className="mt-4 p-4 bg-gradient-to-r from-osus-primary-50 to-osus-secondary-50 border border-osus-primary-200/30 rounded-lg">
+                    <p className="text-sm font-semibold mb-2 text-osus-primary-800 flex items-center gap-2">
+                      <Sparkle className="w-4 h-4" />
+                      Daily AI Tips for Higher Priority
+                    </p>
+                    <ul className="text-xs text-osus-primary-700 space-y-1 font-medium">
+                      <li className="flex items-center gap-2">
+                        <div className="w-1 h-1 bg-osus-secondary-500 rounded-full" />
+                        Enable flexible scheduling for +5 points
+                      </li>
+                      <li className="flex items-center gap-2">
+                        <div className="w-1 h-1 bg-osus-secondary-500 rounded-full" />
+                        Book 7+ days in advance for +10 points
+                      </li>
+                      <li className="flex items-center gap-2">
+                        <div className="w-1 h-1 bg-osus-secondary-500 rounded-full" />
+                        Accurate estimates improve your score
+                      </li>
                     </ul>
                   </div>
                 </div>

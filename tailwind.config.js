@@ -24,6 +24,34 @@ const defaultTheme = {
       pwa: { raw: "(display-mode: standalone)" },
     },
     colors: {
+      // OSUS Brand Colors
+      'osus-primary': {
+        50: '#f0f9ff',
+        100: '#e0f2fe',
+        200: '#bae6fd',
+        300: '#7dd3fc',
+        400: '#38bdf8',
+        500: '#0ea5e9', // Primary OSUS Blue
+        600: '#0284c7',
+        700: '#0369a1',
+        800: '#075985',
+        900: '#0c4a6e',
+        950: '#082f49'
+      },
+      'osus-secondary': {
+        50: '#fff7ed',
+        100: '#ffedd5',
+        200: '#fed7aa',
+        300: '#fdba74',
+        400: '#fb923c',
+        500: '#f97316', // OSUS Orange accent
+        600: '#ea580c',
+        700: '#c2410c',
+        800: '#9a3412',
+        900: '#7c2d12',
+        950: '#431407'
+      },
+      // Existing color system (preserved)
       neutral: {
         1: "var(--color-neutral-1)",
         2: "var(--color-neutral-2)",
@@ -91,6 +119,11 @@ const defaultTheme = {
         overlay: "var(--color-bg-overlay)",
       },
       "focus-ring": "var(--color-focus-ring)",
+      // OSUS specific utility colors
+      'osus-success': '#10b981',
+      'osus-warning': '#f59e0b',
+      'osus-error': '#ef4444',
+      'osus-info': '#3b82f6',
     },
     borderRadius: {
       sm: "var(--radius-sm)",
@@ -99,6 +132,36 @@ const defaultTheme = {
       xl: "var(--radius-xl)",
       "2xl": "var(--radius-2xl)",
       full: "var(--radius-full)",
+    },
+    fontFamily: {
+      sans: ['Inter', 'system-ui', '-apple-system', 'BlinkMacSystemFont', 'Segoe UI', 'Roboto', 'sans-serif'],
+      mono: ['JetBrains Mono', 'Menlo', 'Monaco', 'Consolas', 'Liberation Mono', 'Courier New', 'monospace'],
+    },
+    animation: {
+      'fade-in': 'fadeIn 0.3s ease-out',
+      'slide-up': 'slideUp 0.3s ease-out',
+      'pulse-soft': 'pulseSoft 2s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+      'bounce-soft': 'bounceSoft 1s ease-in-out',
+    },
+    keyframes: {
+      fadeIn: {
+        '0%': { opacity: '0', transform: 'translateY(10px)' },
+        '100%': { opacity: '1', transform: 'translateY(0)' },
+      },
+      slideUp: {
+        '0%': { transform: 'translateY(20px)', opacity: '0' },
+        '100%': { transform: 'translateY(0)', opacity: '1' },
+      },
+      pulseSoft: {
+        '0%, 100%': { opacity: '1' },
+        '50%': { opacity: '0.8' },
+      },
+      bounceSoft: {
+        '0%, 20%, 53%, 80%, 100%': { transform: 'translate3d(0,0,0)' },
+        '40%, 43%': { transform: 'translate3d(0,-15px,0)' },
+        '70%': { transform: 'translate3d(0,-7px,0)' },
+        '90%': { transform: 'translate3d(0,-2px,0)' },
+      },
     },
   },
   spacing: {

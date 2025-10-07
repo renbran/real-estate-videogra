@@ -9,8 +9,10 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Separator } from '@/components/ui/separator'
 import { Switch } from '@/components/ui/switch'
 import { Badge } from '@/components/ui/badge'
-import { CalendarBlank, MapPin, Clock, TrendUp } from '@phosphor-icons/react'
+import { CalendarBlank, MapPin, Clock, TrendUp, Sparkle } from '@phosphor-icons/react'
 import { toast } from 'sonner'
+import { SmartBookingSuggestions } from './SmartBookingSuggestions'
+import { OSUS_BRAND } from '@/lib/osus-brand'
 import {
   BookingRequest,
   ShootCategory,
@@ -30,7 +32,7 @@ interface BookingFormProps {
 }
 
 export function BookingForm({ currentUserId, onSubmit }: BookingFormProps) {
-  const { addBooking } = useBookings()
+  const { addBooking } = useBookingAPI()
   const [isSubmitting, setIsSubmitting] = useState(false)
 
   const [formData, setFormData] = useState({
@@ -212,11 +214,12 @@ export function BookingForm({ currentUserId, onSubmit }: BookingFormProps) {
   return (
     <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
       <div className="lg:col-span-2">
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <CalendarBlank size={20} />
+        <Card className="border-osus-primary-200/50 shadow-lg bg-gradient-to-br from-white to-osus-primary-50/20">
+          <CardHeader className="bg-gradient-to-r from-osus-primary-50 to-osus-secondary-50 border-b border-osus-primary-200/30">
+            <CardTitle className="text-osus-primary-800 flex items-center gap-2">
+              <CalendarBlank size={20} className="text-osus-secondary-500" />
               New Property Videography Booking
+              <Sparkle className="w-5 h-5 text-osus-secondary-500 animate-pulse" />
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -342,7 +345,11 @@ export function BookingForm({ currentUserId, onSubmit }: BookingFormProps) {
 
               {/* Preferred Date */}
               <div className="space-y-2">
-                <Label htmlFor="preferred-date">Preferred Date</Label>
+                <Label htmlFor="preferred-date" className="flex items-center gap-2">
+                  <CalendarBlank size={16} />
+                  Preferred Date
+                  <Sparkle className="w-4 h-4 text-osus-secondary-500" />
+                </Label>
                 <Input
                   id="preferred-date"
                   type="date"
@@ -352,6 +359,20 @@ export function BookingForm({ currentUserId, onSubmit }: BookingFormProps) {
                   required
                 />
               </div>
+
+              {/* Smart Booking Suggestions */}
+              {(formData.location || formData.preferred_date) && (
+                <SmartBookingSuggestions
+                  location={formData.location}
+                  preferredDate={formData.preferred_date}
+                  onSuggestionSelect={(suggestion) => {
+                    handleInputChange('preferred_date', suggestion.suggestedDate)
+                    toast.success('Applied AI suggestion!', {
+                      description: `Updated to ${suggestion.title}`
+                    })
+                  }}
+                />
+              )}
 
               {/* Backup dates */}
               <div className="space-y-2">

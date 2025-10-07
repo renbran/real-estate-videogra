@@ -7,7 +7,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Progress } from '@/components/ui/progress'
-import { CheckCircle, XCircle, MapPin, Clock, Users, Bell, TrendUp, CurrencyDollar, Star, Calendar, BarChart3, FileText, Settings, Route } from '@phosphor-icons/react'
+import { CheckCircle, XCircle, MapPin, Clock, Users, Bell, TrendUp, CurrencyDollar, Star, Calendar, BarChart3, FileText, Settings, Route, Lightning, Sparkle, Target, Crown } from '@phosphor-icons/react'
 import { toast } from 'sonner'
 import { BookingRequest, SAMPLE_AGENTS, SHOOT_COMPLEXITIES } from '@/lib/types'
 import { formatDate, formatDateTime } from '@/lib/date-utils'
@@ -20,6 +20,19 @@ import { AnalyticsDashboard } from '@/components/analytics/AnalyticsDashboard'
 import { FileManager } from '@/components/files/FileManager'
 import { RouteOptimizer as RouteOptimizerNew } from '@/components/optimization/RouteOptimizer'
 import { DEMO_ANALYTICS } from '@/lib/demo-data'
+import { OSUS_BRAND } from '@/lib/osus-brand'
+import { useBookingAPI } from '@/hooks/useClientAPI'
+import { DailyAIInsights } from '@/components/insights/DailyAIInsights'
+
+// Hook wrapper for compatibility
+function useBookings() {
+  const api = useBookingAPI()
+  return {
+    bookings: api.getBookings(),
+    loading: false,
+    updateBooking: api.updateBooking
+  }
+}
 
 export function ManagerDashboard() {
   const { bookings, loading, updateBooking } = useBookings()
@@ -75,11 +88,11 @@ export function ManagerDashboard() {
   const getStatusBadge = (status: string) => {
     switch (status) {
       case 'pending':
-        return <Badge variant="outline" className="border-yellow-300 text-yellow-800">Pending</Badge>
+        return <Badge variant="outline" className="border-osus-secondary-300 text-osus-secondary-800 bg-osus-secondary-50">Pending</Badge>
       case 'approved':
-        return <Badge className="bg-green-100 text-green-800">Approved</Badge>
+        return <Badge className="bg-emerald-100 text-emerald-800 hover:bg-emerald-200">Approved</Badge>
       case 'completed':
-        return <Badge className="bg-blue-100 text-blue-800">Completed</Badge>
+        return <Badge className="bg-osus-primary-100 text-osus-primary-800 hover:bg-osus-primary-200">Completed</Badge>
       case 'declined':
         return <Badge variant="destructive">Declined</Badge>
       default:
@@ -90,31 +103,47 @@ export function ManagerDashboard() {
   const getComplexityBadge = (complexity: string) => {
     switch (complexity) {
       case 'quick':
-        return <Badge className="bg-green-100 text-green-800">Quick</Badge>
+        return <Badge className="bg-emerald-100 text-emerald-800 hover:bg-emerald-200">Quick</Badge>
       case 'standard':
-        return <Badge className="bg-yellow-100 text-yellow-800">Standard</Badge>
+        return <Badge className="bg-osus-secondary-100 text-osus-secondary-800 hover:bg-osus-secondary-200">Standard</Badge>
       case 'complex':
-        return <Badge className="bg-red-100 text-red-800">Complex</Badge>
+        return <Badge className="bg-red-100 text-red-800 hover:bg-red-200">Complex</Badge>
       default:
         return <Badge variant="outline">{complexity}</Badge>
     }
   }
 
   const getPriorityBadge = (score: number) => {
-    if (score >= 80) return <Badge className="bg-green-100 text-green-800">High Priority</Badge>
-    if (score >= 60) return <Badge className="bg-yellow-100 text-yellow-800">Medium Priority</Badge>
+    if (score >= 80) return (
+      <Badge className="bg-gradient-to-r from-osus-primary-100 to-emerald-100 text-osus-primary-800 hover:from-osus-primary-200 hover:to-emerald-200 flex items-center gap-1">
+        <Crown className="w-3 h-3" />
+        High Priority
+      </Badge>
+    )
+    if (score >= 60) return (
+      <Badge className="bg-osus-secondary-100 text-osus-secondary-800 hover:bg-osus-secondary-200 flex items-center gap-1">
+        <Target className="w-3 h-3" />
+        Medium Priority
+      </Badge>
+    )
     return <Badge variant="outline">Low Priority</Badge>
   }
 
   return (
-    <div className="p-6 max-w-7xl mx-auto">
+    <div className="p-6 max-w-7xl mx-auto bg-gradient-to-br from-osus-primary-50/30 via-white to-osus-secondary-50/20 min-h-screen">
       {/* Header */}
       <div className="mb-8">
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-3xl font-bold text-foreground">Manager Dashboard</h1>
-            <p className="text-muted-foreground mt-1">
-              Manage videography bookings and optimize schedules
+            <div className="relative">
+              <h1 className="text-3xl font-bold bg-gradient-to-r from-osus-primary-600 to-osus-primary-800 bg-clip-text text-transparent flex items-center gap-3">
+                <Crown className="w-8 h-8 text-osus-secondary-500" />
+                Manager Dashboard
+                <Sparkle className="w-6 h-6 text-osus-secondary-500 animate-pulse" />
+              </h1>
+            </div>
+            <p className="text-osus-primary-700/80 mt-2 font-medium">
+              AI-Powered videography booking management and route optimization
             </p>
           </div>
           <CalendarExportButton bookings={approvedBookings} />
@@ -162,6 +191,14 @@ export function ManagerDashboard() {
             <p className="text-xs text-muted-foreground mt-1">This month</p>
           </CardContent>
         </Card>
+      </div>
+
+      {/* Daily AI Insights */}
+      <div className="mb-8">
+        <DailyAIInsights 
+          bookings={allBookings}
+          userRole="manager"
+        />
       </div>
 
       {/* Tabs */}
