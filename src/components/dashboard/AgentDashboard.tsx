@@ -110,7 +110,7 @@ export function AgentDashboard({ currentUserId }: AgentDashboardProps) {
           <div>
             <h1 className="text-3xl font-bold text-foreground">Welcome back, {currentAgent.name}</h1>
             <p className="text-muted-foreground mt-1">
-              {currentAgent.tier.charAt(0).toUpperCase() + currentAgent.tier.slice(1)} Agent • Performance Score: {currentAgent.performance_score}/100
+              {currentAgent.tier ? (currentAgent.tier.charAt(0).toUpperCase() + currentAgent.tier.slice(1)) : 'Standard'} Agent • Performance Score: {currentAgent.performance_score}/100
             </p>
           </div>
           <div className="flex items-center gap-2">
@@ -130,13 +130,13 @@ export function AgentDashboard({ currentUserId }: AgentDashboardProps) {
             <CardTitle className="text-sm font-medium text-muted-foreground">Monthly Quota</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{currentAgent.monthly_used}/{currentAgent.monthly_quota}</div>
+            <div className="text-2xl font-bold">{currentAgent.monthly_used || 0}/{currentAgent.monthly_quota || 0}</div>
             <Progress 
-              value={(currentAgent.monthly_used / currentAgent.monthly_quota) * 100} 
+              value={((currentAgent.monthly_used || 0) / (currentAgent.monthly_quota || 1)) * 100} 
               className="mt-2"
             />
             <p className="text-xs text-muted-foreground mt-1">
-              {currentAgent.monthly_quota - currentAgent.monthly_used} slots remaining
+              {(currentAgent.monthly_quota || 0) - (currentAgent.monthly_used || 0)} slots remaining
             </p>
           </CardContent>
         </Card>
@@ -352,7 +352,7 @@ export function AgentDashboard({ currentUserId }: AgentDashboardProps) {
                           <span className="font-medium">Scheduled:</span> {formatDate(booking.scheduled_date || booking.preferred_date)}
                         </div>
                         <div>
-                          <span className="font-medium">Duration:</span> {SHOOT_COMPLEXITIES[booking.shoot_complexity].duration} minutes
+                          <span className="font-medium">Duration:</span> {booking.shoot_complexity ? SHOOT_COMPLEXITIES[booking.shoot_complexity]?.duration || 90 : 90} minutes
                         </div>
                       </div>
                     </div>

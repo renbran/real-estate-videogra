@@ -81,7 +81,7 @@ export function CalendarNotificationCenter({
   const handleCalendarExport = (format: 'google' | 'outlook' | 'ical', booking?: BookingRequest) => {
     if (booking) {
       exportBookingToCalendar(booking, format)
-      toast.success(`Calendar event exported to ${format.charAt(0).toUpperCase() + format.slice(1)}`)
+      toast.success(`Calendar event exported to ${format ? (format.charAt(0).toUpperCase() + format.slice(1)) : 'Calendar'}`)
     } else {
       exportMultipleBookingsToCalendar(upcomingBookings)
       toast.success('All upcoming bookings exported to calendar')
