@@ -3,24 +3,37 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Separator } from '@/components/ui/separator'
-import { Bell, Play, CheckCircle, XCircle, Clock, Rocket } from '@phosphor-icons/react'
-import { pushNotificationService, PushNotificationType } from '@/lib/push-notification-service'
-import { SAMPLE_AGENTS } from '@/lib/types'
-import { useBookings } from '@/hooks/useClientAPI'
+import { Bell, XCircle, CheckCircle, Play, Rocket } from '@phosphor-icons/react'
 import { toast } from 'sonner'
 
+type PushNotificationType = 'booking_approved' | 'booking_reminder_2h' | 'optimization_alert' | 'emergency_booking'
+
+interface NotificationStatus {
+  isSupported: boolean
+  isPermissionGranted: boolean
+  isSubscribed: boolean
+}
+
 export function PushNotificationDemo() {
-  const [notificationStatus, setNotificationStatus] = useState({
+  const [notificationStatus, setNotificationStatus] = useState<NotificationStatus>({
     isSupported: false,
     isPermissionGranted: false,
     isSubscribed: false
   })
-  
-  const { bookings } = useBookings()
 
   useEffect(() => {
-    const settings = pushNotificationService.getNotificationSettings()
-    setNotificationStatus(settings)
+    const checkNotificationSupport = () => {
+      const isSupported = 'Notification' in window && 'serviceWorker' in navigator
+      const isPermissionGranted = Notification.permission === 'granted'
+      
+      setNotificationStatus({
+        isSupported,
+        isPermissionGranted,
+        isSubscribed: isSupported && isPermissionGranted
+      })
+    }
+
+    checkNotificationSupport()
   }, [])
 
   const testNotifications: Array<{
@@ -42,7 +55,7 @@ export function PushNotificationDemo() {
       urgent: true
     },
     {
-      type: 'batch_optimization',
+      type: 'optimization_alert',
       title: 'Optimization Available',
       description: 'Test batching opportunity alert',
       urgent: false
@@ -62,51 +75,44 @@ export function PushNotificationDemo() {
     }
 
     try {
-      // Use sample data for demo or first booking if available
-      const sampleBooking = bookings?.[0] || {
-        id: 'demo-booking-1',
-        agent_id: 'agent-1',
-        shoot_category: 'property' as const,
-        location: '123 Demo Street, San Francisco, CA',
-        property_address: '123 Demo Street, San Francisco, CA',
-        property_value: '1m_2m' as const,
-        shoot_complexity: 'standard' as const,
-        preferred_date: new Date().toISOString().split('T')[0],
-        backup_dates: [],
-        is_flexible: true,
-        status: 'approved' as const,
-        created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString()
+      const notification = testNotifications.find(n => n.type === type)
+      if (notification) {
+        new Notification(notification.title, {
+          body: notification.description,
+          icon: '/favicon.ico',
+          badge: '/favicon.ico',
+          tag: type,
+          requireInteraction: urgent
+        })
+        toast.success(`${notification.title} notification sent!`)
       }
-      const sampleUser = SAMPLE_AGENTS[0]
-
-      await pushNotificationService.showNotification(
-        type,
-        sampleBooking,
-        sampleUser,
-        {}
-      )
-
-      toast.success('Test notification sent!')
     } catch (error) {
-      console.error('Failed to send test notification:', error)
-      toast.error('Failed to send test notification')
+      console.error('Failed to send notification:', error)
+      toast.error('Failed to send notification')
     }
   }
 
-  const handleInitialize = async () => {
+  const handleInitializeNotifications = async () => {
+    if (!notificationStatus.isSupported) {
+      toast.error('Push notifications are not supported in this browser')
+      return
+    }
+
     try {
-      const success = await pushNotificationService.initialize()
-      if (success) {
-        const settings = pushNotificationService.getNotificationSettings()
-        setNotificationStatus(settings)
+      const permission = await Notification.requestPermission()
+      if (permission === 'granted') {
+        setNotificationStatus(prev => ({
+          ...prev,
+          isPermissionGranted: true,
+          isSubscribed: true
+        }))
         toast.success('Push notifications enabled!')
       } else {
-        toast.error('Failed to enable push notifications')
+        toast.error('Push notification permission denied')
       }
     } catch (error) {
-      console.error('Failed to initialize:', error)
-      toast.error('Failed to initialize push notifications')
+      console.error('Failed to request notification permission:', error)
+      toast.error('Failed to enable notifications')
     }
   }
 
@@ -117,21 +123,20 @@ export function PushNotificationDemo() {
     if (!notificationStatus.isPermissionGranted) {
       return <Badge variant="secondary">Disabled</Badge>
     }
-    return <Badge variant="default">Enabled</Badge>
+    return <Badge variant="default" className="bg-green-500">Enabled</Badge>
   }
 
   return (
     <div className="space-y-6">
-      {/* Status Card */}
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Bell className="h-5 w-5" />
-            Push Notification Demo
+            Push Notification Settings
             {getStatusBadge()}
           </CardTitle>
           <CardDescription>
-            Test mobile push notifications for time-sensitive booking updates
+            Configure and test push notifications for real-time booking updates
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
@@ -139,27 +144,27 @@ export function PushNotificationDemo() {
             <div className="p-4 border border-red-200 bg-red-50 rounded-lg">
               <div className="flex items-center gap-2 text-red-700">
                 <XCircle className="h-4 w-4" />
-                <span className="font-medium">Browser Not Supported</span>
+                <span className="font-medium">Not Supported</span>
               </div>
               <p className="text-sm text-red-600 mt-1">
-                Push notifications are not supported in this browser. Try Chrome, Firefox, or Safari.
+                Push notifications are not supported in this browser
               </p>
             </div>
           )}
 
           {notificationStatus.isSupported && !notificationStatus.isPermissionGranted && (
-            <div className="p-4 border border-yellow-200 bg-yellow-50 rounded-lg">
-              <div className="flex items-center justify-between">
+            <div className="space-y-3">
+              <div className="p-4 border border-yellow-200 bg-yellow-50 rounded-lg">
                 <div className="flex items-center gap-2 text-yellow-700">
-                  <Clock className="h-4 w-4" />
-                  <span className="font-medium">Permission Required</span>
+                  <Bell className="h-4 w-4" />
+                  <span className="font-medium">Enable Notifications</span>
                 </div>
-                <Button onClick={handleInitialize} size="sm">
-                  Enable Notifications
+                <Button onClick={handleInitializeNotifications} className="mt-2">
+                  Grant Permission
                 </Button>
               </div>
-              <p className="text-sm text-yellow-600 mt-1">
-                Click "Enable Notifications" to allow push notifications from VideoPro.
+              <p className="text-sm text-muted-foreground">
+                Click above to enable real-time notifications for booking updates
               </p>
             </div>
           )}
@@ -168,17 +173,17 @@ export function PushNotificationDemo() {
             <div className="p-4 border border-green-200 bg-green-50 rounded-lg">
               <div className="flex items-center gap-2 text-green-700">
                 <CheckCircle className="h-4 w-4" />
-                <span className="font-medium">Push Notifications Enabled</span>
+                <span className="font-medium">Notifications Enabled</span>
               </div>
               <p className="text-sm text-green-600 mt-1">
-                You'll receive notifications for booking updates, reminders, and optimization opportunities.
+                You'll receive real-time updates for bookings and schedule changes
               </p>
             </div>
           )}
         </CardContent>
       </Card>
 
-      {/* Test Notifications */}
+      {/* Test Notifications Card */}
       {notificationStatus.isPermissionGranted && (
         <Card>
           <CardHeader>
@@ -187,13 +192,13 @@ export function PushNotificationDemo() {
               Test Notifications
             </CardTitle>
             <CardDescription>
-              Try different types of push notifications to see how they work
+              Send test notifications to see how they appear
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="space-y-3">
-              {testNotifications.map((notification, index) => (
-                <div key={index} className="flex items-center justify-between p-3 border rounded-lg">
+            <div className="grid gap-3">
+              {testNotifications.map((notification) => (
+                <div key={notification.type} className="flex items-center gap-3 p-3 border rounded-lg">
                   <div className="flex-1">
                     <div className="flex items-center gap-2">
                       <span className="font-medium">{notification.title}</span>
@@ -203,12 +208,9 @@ export function PushNotificationDemo() {
                         </Badge>
                       )}
                     </div>
-                    <p className="text-sm text-muted-foreground mt-1">
-                      {notification.description}
-                    </p>
+                    <p className="text-sm text-muted-foreground">{notification.description}</p>
                   </div>
                   <Button
-                    variant="outline"
                     size="sm"
                     onClick={() => handleTestNotification(notification.type, notification.urgent)}
                   >
@@ -221,44 +223,44 @@ export function PushNotificationDemo() {
 
             <Separator className="my-4" />
 
-            <div className="text-center">
+            <div className="space-y-3">
               <Button
                 onClick={() => handleTestNotification('booking_approved', false)}
-                className="flex items-center gap-2"
+                className="flex items-center gap-2 w-full"
               >
                 <Rocket className="h-4 w-4" />
-                Send Sample Booking Approval
+                Send Realistic Booking Update
               </Button>
-              <p className="text-xs text-muted-foreground mt-2">
-                This will trigger a realistic booking approval notification
+              <p className="text-xs text-muted-foreground text-center">
+                This will trigger a realistic booking notification with your current data
               </p>
             </div>
           </CardContent>
         </Card>
       )}
 
-      {/* Features Overview */}
+      {/* Notification Types Info */}
       <Card>
         <CardHeader>
-          <CardTitle>Push Notification Features</CardTitle>
+          <CardTitle>Notification Types</CardTitle>
           <CardDescription>
-            Real-time updates delivered directly to your device
+            Different types of notifications you'll receive
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+          <div className="grid gap-4 md:grid-cols-2">
             <div className="space-y-2">
               <h4 className="font-medium">Booking Updates</h4>
-              <ul className="space-y-1 text-muted-foreground">
+              <ul className="space-y-1 text-sm text-muted-foreground">
                 <li>• ✅ Approval confirmations</li>
-                <li>• ❌ Decline notifications</li>
+                <li>• ❌ Rejection notifications</li>
                 <li>• 📝 Schedule changes</li>
-                <li>• 🚫 Cancellation alerts</li>
+                <li>• 💰 Payment updates</li>
               </ul>
             </div>
             <div className="space-y-2">
               <h4 className="font-medium">Smart Reminders</h4>
-              <ul className="space-y-1 text-muted-foreground">
+              <ul className="space-y-1 text-sm text-muted-foreground">
                 <li>• 📅 24-hour advance notice</li>
                 <li>• ⏰ 2-hour preparation alert</li>
                 <li>• 🚨 30-minute final reminder</li>
@@ -267,7 +269,7 @@ export function PushNotificationDemo() {
             </div>
             <div className="space-y-2">
               <h4 className="font-medium">Optimization Alerts</h4>
-              <ul className="space-y-1 text-muted-foreground">
+              <ul className="space-y-1 text-sm text-muted-foreground">
                 <li>• 🚀 Batching opportunities</li>
                 <li>• 🗺️ Route optimizations</li>
                 <li>• 📊 Capacity suggestions</li>
@@ -276,7 +278,7 @@ export function PushNotificationDemo() {
             </div>
             <div className="space-y-2">
               <h4 className="font-medium">Emergency Features</h4>
-              <ul className="space-y-1 text-muted-foreground">
+              <ul className="space-y-1 text-sm text-muted-foreground">
                 <li>• 🚨 Urgent approval requests</li>
                 <li>• 🔥 Emergency bookings</li>
                 <li>• 📱 Instant manager alerts</li>
