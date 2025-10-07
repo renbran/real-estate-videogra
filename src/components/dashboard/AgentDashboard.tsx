@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { useBookings } from '@/hooks/useClientAPI'
+import { useBookingAPI } from '@/hooks/useClientAPI'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -20,12 +20,12 @@ interface AgentDashboardProps {
 }
 
 export function AgentDashboard({ currentUserId }: AgentDashboardProps) {
-  const { bookings, loading } = useBookings({ agent_id: currentUserId })
+  const { getBookings, getBookingsByAgent } = useBookingAPI()
   const [activeTab, setActiveTab] = useState('overview')
   const { getNotificationHistory } = useNotifications()
   
   const currentAgent = SAMPLE_AGENTS.find(a => a.id === currentUserId) || SAMPLE_AGENTS[0]
-  const myBookings = (bookings || []).filter(b => b.agent_id === currentUserId)
+  const myBookings = getBookingsByAgent(currentUserId)
   const pendingBookings = myBookings.filter(b => b.status === 'pending')
   const approvedBookings = myBookings.filter(b => b.status === 'approved')
   const completedBookings = myBookings.filter(b => b.status === 'completed')

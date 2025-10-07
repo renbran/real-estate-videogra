@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { useBookings } from '@/hooks/useClientAPI'
+import { useBookingAPI } from '@/hooks/useClientAPI'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'

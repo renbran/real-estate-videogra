@@ -53,6 +53,15 @@ export interface User {
   created_at: string
 }
 
+// Agent type alias for components that specifically work with agents
+export type Agent = User & {
+  role: 'agent'
+  agent_tier: AgentTier
+  monthly_quota: number
+  monthly_used: number
+  performance_score: number
+}
+
 export interface BookingRequest {
   id: string
   agent_id: string

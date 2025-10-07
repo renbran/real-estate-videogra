@@ -1,21 +1,28 @@
 import { useState, useEffect } from 'react'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import { Separator } from '@/components/ui/separator'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Bell, CheckCircle, XCircle, Play, Rocket } from '@phosphor-icons/react'
 import { toast } from 'sonner'
 
 interface NotificationStatus {
   isSupported: boolean
   isPermissionGranted: boolean
-  isSubscribed: boolean
+  permission: NotificationPermission
+}
+
+interface TestNotification {
+  id: string
+  title: string
+  body: string
+  icon?: string
+  urgent: boolean
 }
 
 export function PushNotificationDemo() {
   const [notificationStatus, setNotificationStatus] = useState<NotificationStatus>({
     isSupported: false,
     isPermissionGranted: false,
-    isSubscribed: false
+    permission: 'default'
   })
 
   useEffect(() => {
@@ -24,88 +31,85 @@ export function PushNotificationDemo() {
 
   const checkNotificationSupport = () => {
     const isSupported = 'Notification' in window
-    const isPermissionGranted = isSupported && Notification.permission === 'granted'
+    const isPermissionGranted = Notification.permission === 'granted'
     
     setNotificationStatus({
       isSupported,
       isPermissionGranted,
-      isSubscribed: isPermissionGranted
+      permission: Notification.permission
     })
   }
 
-  const sampleNotifications = [
+  const sampleNotifications: TestNotification[] = [
     {
-      title: 'Booking Approved',
-      body: 'Your videography request for 123 Main St has been approved',
+      id: '1',
+      title: 'Booking Confirmed',
+      body: 'Your videography session for 123 Oak Street has been confirmed for tomorrow at 2:00 PM',
       urgent: false
     },
     {
-      title: '2-Hour Reminder',
-      body: 'Upcoming shoot at 456 Oak Ave in 2 hours',
-      urgent: false
-    },
-    {
-      title: 'Optimization Available',
+      id: '2',
+      title: 'New Opportunity',
       body: 'Batch 3 nearby properties for better rates',
       urgent: false
     },
     {
+      id: '3',
       title: 'Urgent Request',
-      body: 'Urgent same-day request - Premium rates available',
+      body: 'Last-minute booking available - Premium rate applies',
       urgent: true
     }
   ]
 
-  const sendTestNotification = (notification: typeof sampleNotifications[0]) => {
+  const sendTestNotification = (notification: TestNotification) => {
     if (!notificationStatus.isPermissionGranted) {
-      toast.error('Please enable push notifications first')
+      toast.error('Notification permission not granted')
       return
     }
-    
+
     try {
       new Notification(notification.title, {
         body: notification.body,
-        icon: '/favicon.ico'
+        icon: '/favicon.ico',
+        tag: notification.id
       })
-      toast.success(`${notification.title} notification sent!`)
+      
+      toast.success(`Sent: ${notification.title}`)
     } catch (error) {
       toast.error('Failed to send notification')
     }
   }
 
-  const enableNotifications = async () => {
+  const requestNotificationPermission = async () => {
     if (!notificationStatus.isSupported) {
-      toast.error('Your browser does not support push notifications')
+      toast.error('Notifications not supported in this browser')
       return
     }
-    
+
     try {
       const permission = await Notification.requestPermission()
+      setNotificationStatus(prev => ({
+        ...prev,
+        permission,
+        isPermissionGranted: permission === 'granted'
+      }))
+      
       if (permission === 'granted') {
-        setNotificationStatus(prev => ({
-          ...prev,
-          isPermissionGranted: true,
-          isSubscribed: true
-        }))
-        toast.success('Push notifications enabled!')
+        toast.success('Notification permission granted!')
       } else {
-        toast.error('Push notification permission denied')
+        toast.error('Notification permission denied')
       }
     } catch (error) {
-      toast.error('Failed to enable notifications')
+      toast.error('Failed to request notification permission')
     }
   }
 
-  const disableNotifications = () => {
-    if (!notificationStatus.isPermissionGranted) {
-      return
-    }
-    
-    setNotificationStatus(prev => ({
-      ...prev,
-      isSubscribed: false
-    }))
-    toast.info('Notifications disabled for this session')
+  const sendAllNotifications = () => {
+    sampleNotifications.forEach((notification, index) => {
+      setTimeout(() => {
+        sendTestNotification(notification)
+      }, index * 1000)
+    })
   }
 
   return (
@@ -117,46 +121,39 @@ export function PushNotificationDemo() {
             Push Notifications
           </CardTitle>
           <p className="text-sm text-muted-foreground">
-            Configure and test push notifications for real-time updates
+            Test push notification functionality for real-time updates
           </p>
         </CardHeader>
         <CardContent className="space-y-4">
           {!notificationStatus.isSupported && (
-            <div className="p-4 border border-destructive/20 bg-destructive/5 rounded-lg">
-              <div className="flex items-center gap-2 text-destructive">
-                <XCircle className="h-4 w-4" />
-                <span className="font-medium">Not Supported</span>
-              </div>
-              <p className="text-sm text-destructive/80 mt-1">
+            <div className="flex items-center gap-2 p-3 bg-destructive/10 rounded-lg">
+              <XCircle className="h-4 w-4 text-destructive" />
+              <span className="text-sm">
                 Your browser doesn't support push notifications
-              </p>
+              </span>
             </div>
           )}
 
           {notificationStatus.isSupported && !notificationStatus.isPermissionGranted && (
-            <div className="p-4 border border-amber-200 bg-amber-50 rounded-lg">
-              <div className="flex items-center gap-2 text-amber-700">
-                <Bell className="h-4 w-4" />
-                <span className="font-medium">Enable Notifications</span>
+            <div className="space-y-2">
+              <div className="flex items-center gap-2 p-3 bg-yellow-100 dark:bg-yellow-900/20 rounded-lg">
+                <Bell className="h-4 w-4 text-yellow-600" />
+                <span className="text-sm">
+                  Enable notifications to receive real-time updates
+                </span>
               </div>
-              <p className="text-sm text-amber-600 mt-1 mb-3">
-                Grant permission to receive real-time booking updates
-              </p>
-              <Button onClick={enableNotifications} size="sm">
+              <Button onClick={requestNotificationPermission} className="w-full">
                 Enable Notifications
               </Button>
             </div>
           )}
 
           {notificationStatus.isPermissionGranted && (
-            <div className="p-4 border border-green-200 bg-green-50 rounded-lg">
-              <div className="flex items-center gap-2 text-green-700">
-                <CheckCircle className="h-4 w-4" />
-                <span className="font-medium">Notifications Enabled</span>
-              </div>
-              <p className="text-sm text-green-600 mt-1">
-                You'll receive real-time updates for bookings and opportunities
-              </p>
+            <div className="flex items-center gap-2 p-3 bg-green-100 dark:bg-green-900/20 rounded-lg">
+              <CheckCircle className="h-4 w-4 text-green-600" />
+              <span className="text-sm">
+                Notifications are enabled and ready
+              </span>
             </div>
           )}
         </CardContent>
@@ -170,44 +167,33 @@ export function PushNotificationDemo() {
               Test Notifications
             </CardTitle>
           </CardHeader>
-          <CardContent>
-            <div className="grid gap-3">
-              {sampleNotifications.map((notification, index) => (
-                <div key={index} className="flex items-center justify-between p-3 border rounded-lg">
-                  <div className="flex-1">
+          <CardContent className="space-y-4">
+            <div className="space-y-2">
+              {sampleNotifications.map((notification) => (
+                <div key={notification.id} className="flex items-center justify-between p-3 border rounded-lg">
+                  <div className="space-y-1">
                     <div className="flex items-center gap-2">
                       <span className="font-medium">{notification.title}</span>
                       {notification.urgent && (
-                        <span className="px-2 py-1 text-xs bg-red-100 text-red-700 rounded">
-                          Urgent
-                        </span>
+                        <Rocket className="h-4 w-4 text-orange-500" />
                       )}
                     </div>
-                    <p className="text-sm text-muted-foreground mt-1">{notification.body}</p>
+                    <p className="text-sm text-muted-foreground">{notification.body}</p>
                   </div>
                   <Button
-                    onClick={() => sendTestNotification(notification)}
                     size="sm"
                     variant="outline"
+                    onClick={() => sendTestNotification(notification)}
                   >
-                    <Play className="h-3 w-3 mr-1" />
-                    Send
+                    <Play className="h-4 w-4" />
                   </Button>
                 </div>
               ))}
             </div>
 
-            <Separator className="my-4" />
-
-            <div className="text-center">
-              <Button onClick={() => sendTestNotification(sampleNotifications[0])} className="w-full">
-                <Rocket className="h-4 w-4 mr-2" />
-                Send Test Notification
-              </Button>
-              <p className="text-xs text-muted-foreground mt-2">
-                This will trigger a realistic notification preview
-              </p>
-            </div>
+            <Button onClick={sendAllNotifications} className="w-full">
+              Send All Test Notifications
+            </Button>
           </CardContent>
         </Card>
       )}
@@ -216,45 +202,33 @@ export function PushNotificationDemo() {
         <CardHeader>
           <CardTitle>Notification Types</CardTitle>
           <p className="text-sm text-muted-foreground">
-            Different types of notifications you'll receive
+            Different types of notifications you'll receive in the VideoPro platform
           </p>
         </CardHeader>
-        <CardContent>
-          <div className="space-y-4">
-            <div className="space-y-2">
-              <h4 className="font-medium text-sm">Booking Updates</h4>
-              <ul className="space-y-1 text-sm text-muted-foreground">
-                <li>• ✅ Approval confirmations</li>
-                <li>• 📝 Requirement changes</li>
-                <li>• ⏰ Schedule modifications</li>
-              </ul>
-            </div>
-
-            <div className="space-y-2">
-              <h4 className="font-medium text-sm">Reminders</h4>
-              <ul className="space-y-1 text-sm text-muted-foreground">
-                <li>• ⏰ 2-hour preparation alerts</li>
-                <li>• 📍 Location and access details</li>
-                <li>• 📋 Equipment checklists</li>
-              </ul>
-            </div>
-
-            <div className="space-y-2">
-              <h4 className="font-medium text-sm">Opportunities</h4>
-              <ul className="space-y-1 text-sm text-muted-foreground">
-                <li>• 🚀 Batching opportunities</li>
-                <li>• 📊 Capacity optimization alerts</li>
-                <li>• 💰 Premium rate notifications</li>
-              </ul>
-            </div>
-
-            <div className="space-y-2">
-              <h4 className="font-medium text-sm">System Alerts</h4>
-              <ul className="space-y-1 text-sm text-muted-foreground">
-                <li>• 🔄 Real-time status updates</li>
-                <li>• 🛠️ Platform maintenance notices</li>
-              </ul>
-            </div>
+        <CardContent className="grid gap-4 md:grid-cols-3">
+          <div className="space-y-2">
+            <h4 className="font-medium text-sm">Booking Updates</h4>
+            <ul className="space-y-1 text-sm text-muted-foreground">
+              <li>• ✅ Approval confirmations</li>
+              <li>• ⏰ Schedule changes</li>
+              <li>• 📍 Location updates</li>
+            </ul>
+          </div>
+          <div className="space-y-2">
+            <h4 className="font-medium text-sm">Opportunities</h4>
+            <ul className="space-y-1 text-sm text-muted-foreground">
+              <li>• 🚀 Batching opportunities</li>
+              <li>• 💰 Premium rate notifications</li>
+              <li>• 📈 High-demand areas</li>
+            </ul>
+          </div>
+          <div className="space-y-2">
+            <h4 className="font-medium text-sm">System Updates</h4>
+            <ul className="space-y-1 text-sm text-muted-foreground">
+              <li>• 🛠️ Platform maintenance notices</li>
+              <li>• 📱 App updates available</li>
+              <li>• 🔧 Feature announcements</li>
+            </ul>
           </div>
         </CardContent>
       </Card>

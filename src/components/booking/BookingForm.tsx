@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { useBookings } from '@/hooks/useClientAPI'
+import { useBookingAPI } from '@/hooks/useClientAPI'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'

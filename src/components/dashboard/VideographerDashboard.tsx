@@ -1,4 +1,4 @@
-import { useBookings } from '@/hooks/useClientAPI'
+import { useBookingAPI } from '@/hooks/useClientAPI'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { CalendarBlank, MapPin, Clock, CheckCircle } from '@phosphor-icons/react'
