@@ -50,7 +50,7 @@ export function PushNotificationDemo() {
       urgent: false
     },
     {
-      title: 'Emergency Booking',
+      title: 'Urgent Request',
       body: 'Urgent same-day request - Premium rates available',
       urgent: true
     }
@@ -226,7 +226,7 @@ export function PushNotificationDemo() {
               <ul className="space-y-1 text-sm text-muted-foreground">
                 <li>• ✅ Approval confirmations</li>
                 <li>• 📝 Requirement changes</li>
-                <li>• ❌ Cancellation notices</li>
+                <li>• ⏰ Schedule modifications</li>
               </ul>
             </div>
 
@@ -252,7 +252,7 @@ export function PushNotificationDemo() {
               <h4 className="font-medium text-sm">System Alerts</h4>
               <ul className="space-y-1 text-sm text-muted-foreground">
                 <li>• 🔄 Real-time status updates</li>
-                <li>• ⚠️ Schedule conflicts</li>
+                <li>• 🛠️ Platform maintenance notices</li>
               </ul>
             </div>
           </div>
