@@ -1,9 +1,9 @@
 import { useState, useEffect } from 'react'
-import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Button } from '@/components/ui/button'
 import { Separator } from '@/components/ui/separator'
+import { Bell, CheckCircle, XCircle, Play, Rocket } from '@phosphor-icons/react'
 import { toast } from 'sonner'
-import { Bell, XCircle, CheckCircle, Play, Rocket } from '@phosphor-icons/react'
 
 interface NotificationStatus {
   isSupported: boolean
@@ -19,19 +19,19 @@ export function PushNotificationDemo() {
   })
 
   useEffect(() => {
-    const checkNotificationSupport = () => {
-      const isSupported = 'Notification' in window
-      const isPermissionGranted = isSupported && Notification.permission === 'granted'
-      
-      setNotificationStatus({
-        isSupported,
-        isPermissionGranted,
-        isSubscribed: isPermissionGranted
-      })
-    }
-
     checkNotificationSupport()
   }, [])
+
+  const checkNotificationSupport = () => {
+    const isSupported = 'Notification' in window
+    const isPermissionGranted = isSupported && Notification.permission === 'granted'
+    
+    setNotificationStatus({
+      isSupported,
+      isPermissionGranted,
+      isSubscribed: isPermissionGranted
+    })
+  }
 
   const sampleNotifications = [
     {
@@ -42,7 +42,7 @@ export function PushNotificationDemo() {
     {
       title: '2-Hour Reminder',
       body: 'Upcoming shoot at 456 Oak Ave in 2 hours',
-      urgent: true
+      urgent: false
     },
     {
       title: 'Optimization Available',
@@ -63,14 +63,11 @@ export function PushNotificationDemo() {
     }
     
     try {
-      if (notification) {
-        new Notification(notification.title, {
-          body: notification.body,
-          icon: '/favicon.ico'
-        })
-        
-        toast.success(`${notification.title} notification sent!`)
-      }
+      new Notification(notification.title, {
+        body: notification.body,
+        icon: '/favicon.ico'
+      })
+      toast.success(`${notification.title} notification sent!`)
     } catch (error) {
       toast.error('Failed to send notification')
     }
@@ -146,7 +143,7 @@ export function PushNotificationDemo() {
                 Grant permission to receive real-time booking updates
               </p>
               <Button onClick={enableNotifications} size="sm">
-                Enable Push Notifications
+                Enable Notifications
               </Button>
             </div>
           )}
@@ -232,7 +229,7 @@ export function PushNotificationDemo() {
                 <li>• ❌ Cancellation notices</li>
               </ul>
             </div>
-            
+
             <div className="space-y-2">
               <h4 className="font-medium text-sm">Reminders</h4>
               <ul className="space-y-1 text-sm text-muted-foreground">
@@ -241,7 +238,7 @@ export function PushNotificationDemo() {
                 <li>• 📋 Equipment checklists</li>
               </ul>
             </div>
-            
+
             <div className="space-y-2">
               <h4 className="font-medium text-sm">Opportunities</h4>
               <ul className="space-y-1 text-sm text-muted-foreground">
@@ -250,11 +247,10 @@ export function PushNotificationDemo() {
                 <li>• 💰 Premium rate notifications</li>
               </ul>
             </div>
-            
+
             <div className="space-y-2">
-              <h4 className="font-medium text-sm">Urgent Alerts</h4>
+              <h4 className="font-medium text-sm">System Alerts</h4>
               <ul className="space-y-1 text-sm text-muted-foreground">
-                <li>• 🔥 Emergency bookings</li>
                 <li>• 🔄 Real-time status updates</li>
                 <li>• ⚠️ Schedule conflicts</li>
               </ul>
