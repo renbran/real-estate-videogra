@@ -7,7 +7,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Progress } from '@/components/ui/progress'
-import { CheckCircle, XCircle, MapPin, Clock, Users, Bell, TrendUp, CurrencyDollar, Star, Calendar } from '@phosphor-icons/react'
+import { CheckCircle, XCircle, MapPin, Clock, Users, Bell, TrendUp, CurrencyDollar, Star, Calendar, BarChart3, FileText, Settings, Route } from '@phosphor-icons/react'
 import { toast } from 'sonner'
 import { BookingRequest, SAMPLE_AGENTS, SHOOT_COMPLEXITIES } from '@/lib/types'
 import { formatDate, formatDateTime } from '@/lib/date-utils'
@@ -16,6 +16,9 @@ import { CalendarExportButton } from '@/components/calendar/CalendarExportButton
 import { NotificationTest } from '@/components/notifications/NotificationTest'
 import { RouteOptimizer } from './RouteOptimizer'
 import { AddressBatchValidator } from '@/components/maps/AddressBatchValidator'
+import { AnalyticsDashboard } from '@/components/analytics/AnalyticsDashboard'
+import { FileManager } from '@/components/files/FileManager'
+import { RouteOptimizer as RouteOptimizerNew } from '@/components/optimization/RouteOptimizer'
 import { DEMO_ANALYTICS } from '@/lib/demo-data'
 
 export function ManagerDashboard() {
@@ -169,11 +172,22 @@ export function ManagerDashboard() {
           </TabsTrigger>
           <TabsTrigger value="approved">Approved ({approvedBookings.length})</TabsTrigger>
           <TabsTrigger value="all">All Bookings ({allBookings.length})</TabsTrigger>
+          <TabsTrigger value="analytics">
+            <BarChart3 className="w-4 h-4 mr-1" />
+            Analytics
+          </TabsTrigger>
+          <TabsTrigger value="optimization">
+            <Route className="w-4 h-4 mr-1" />
+            Route Optimization
+          </TabsTrigger>
+          <TabsTrigger value="files">
+            <FileText className="w-4 h-4 mr-1" />
+            File Manager
+          </TabsTrigger>
           <TabsTrigger value="notifications">
             <Bell className="w-4 h-4 mr-1" />
             Notifications
           </TabsTrigger>
-          <TabsTrigger value="optimization">Route Optimization</TabsTrigger>
           <TabsTrigger value="address-validation">Address Validation</TabsTrigger>
         </TabsList>
 
@@ -375,35 +389,16 @@ export function ManagerDashboard() {
           </div>
         </TabsContent>
 
+        <TabsContent value="analytics">
+          <AnalyticsDashboard />
+        </TabsContent>
+
         <TabsContent value="optimization">
-          <div className="space-y-6">
-            <Card>
-              <CardHeader>
-                <CardTitle>Select Date for Route Optimization</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="max-w-xs">
-                  <Label htmlFor="optimization-date">Date</Label>
-                  <Input
-                    id="optimization-date"
-                    type="date"
-                    value={selectedOptimizationDate}
-                    onChange={(e) => setSelectedOptimizationDate(e.target.value)}
-                    min={new Date().toISOString().split('T')[0]}
-                  />
-                </div>
-              </CardContent>
-            </Card>
-            
-            <RouteOptimizer 
-              selectedDate={selectedOptimizationDate}
-              onOptimizationComplete={(result) => {
-                toast.success('Route optimization completed!', {
-                  description: `Optimized ${result.waypoints.length} properties`
-                })
-              }}
-            />
-          </div>
+          <RouteOptimizerNew />
+        </TabsContent>
+
+        <TabsContent value="files">
+          <FileManager />
         </TabsContent>
 
         <TabsContent value="address-validation">

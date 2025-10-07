@@ -200,6 +200,151 @@ const createTables = async () => {
       )
     `);
     
+    // Company branding and customization
+    await client.query(`
+      CREATE TABLE IF NOT EXISTS company_branding (
+        id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+        company_name VARCHAR(255) NOT NULL,
+        logo_url TEXT,
+        primary_color VARCHAR(7) DEFAULT '#1e40af',
+        secondary_color VARCHAR(7) DEFAULT '#f97316',
+        accent_color VARCHAR(7) DEFAULT '#10b981',
+        custom_css TEXT,
+        email_template TEXT,
+        login_page_background TEXT,
+        favicon_url TEXT,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      )
+    `);
+    
+    // File storage and document management
+    await client.query(`
+      CREATE TABLE IF NOT EXISTS file_storage (
+        id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+        booking_id UUID REFERENCES bookings(id),
+        user_id UUID REFERENCES users(id) NOT NULL,
+        filename VARCHAR(255) NOT NULL,
+        original_filename VARCHAR(255) NOT NULL,
+        file_size BIGINT NOT NULL,
+        mime_type VARCHAR(100) NOT NULL,
+        file_path TEXT NOT NULL,
+        file_url TEXT,
+        download_count INTEGER DEFAULT 0,
+        is_encrypted BOOLEAN DEFAULT true,
+        encryption_key TEXT,
+        uploaded_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        last_accessed TIMESTAMP
+      )
+    `);
+    
+    // Performance analytics and metrics
+    await client.query(`
+      CREATE TABLE IF NOT EXISTS performance_metrics (
+        id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+        user_id UUID REFERENCES users(id) NOT NULL,
+        booking_id UUID REFERENCES bookings(id),
+        metric_type VARCHAR(50) NOT NULL,
+        metric_value DECIMAL(10,2) NOT NULL,
+        metric_date DATE NOT NULL,
+        additional_data JSONB,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      )
+    `);
+    
+    // Route optimization and geographic clustering
+    await client.query(`
+      CREATE TABLE IF NOT EXISTS route_optimizations (
+        id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+        videographer_id UUID REFERENCES users(id) NOT NULL,
+        optimization_date DATE NOT NULL,
+        booking_ids UUID[] NOT NULL,
+        original_route JSONB,
+        optimized_route JSONB,
+        time_saved INTEGER, -- in minutes
+        distance_saved DECIMAL(10,2), -- in miles/km
+        fuel_savings DECIMAL(10,2),
+        status VARCHAR(50) DEFAULT 'pending' CHECK (status IN ('pending', 'accepted', 'rejected')),
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        accepted_at TIMESTAMP
+      )
+    `);
+    
+    // Calendar integrations
+    await client.query(`
+      CREATE TABLE IF NOT EXISTS calendar_integrations (
+        id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+        user_id UUID REFERENCES users(id) NOT NULL,
+        provider VARCHAR(50) NOT NULL CHECK (provider IN ('google', 'outlook', 'apple', 'ical')),
+        access_token TEXT,
+        refresh_token TEXT,
+        calendar_id VARCHAR(255),
+        sync_enabled BOOLEAN DEFAULT true,
+        last_sync TIMESTAMP,
+        timezone VARCHAR(50) DEFAULT 'UTC',
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      )
+    `);
+    
+    // Advanced reporting and custom reports
+    await client.query(`
+      CREATE TABLE IF NOT EXISTS custom_reports (
+        id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+        user_id UUID REFERENCES users(id) NOT NULL,
+        report_name VARCHAR(255) NOT NULL,
+        report_config JSONB NOT NULL,
+        schedule_config JSONB,
+        last_generated TIMESTAMP,
+        is_scheduled BOOLEAN DEFAULT false,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      )
+    `);
+    
+    // Geographic zones for resource management
+    await client.query(`
+      CREATE TABLE IF NOT EXISTS geographic_zones (
+        id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+        zone_name VARCHAR(100) NOT NULL,
+        zone_code VARCHAR(10) NOT NULL UNIQUE,
+        boundary_coordinates JSONB NOT NULL,
+        default_videographer_id UUID REFERENCES users(id),
+        travel_time_matrix JSONB,
+        is_active BOOLEAN DEFAULT true,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      )
+    `);
+    
+    // Emergency contacts and support escalation
+    await client.query(`
+      CREATE TABLE IF NOT EXISTS support_contacts (
+        id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+        contact_type VARCHAR(50) NOT NULL CHECK (contact_type IN ('emergency', 'support', 'escalation')),
+        name VARCHAR(255) NOT NULL,
+        email VARCHAR(255),
+        phone VARCHAR(50),
+        availability_hours VARCHAR(100),
+        priority_level INTEGER DEFAULT 1,
+        is_active BOOLEAN DEFAULT true,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      )
+    `);
+    
+    // Automated backup tracking
+    await client.query(`
+      CREATE TABLE IF NOT EXISTS backup_logs (
+        id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+        backup_type VARCHAR(50) NOT NULL,
+        backup_size BIGINT,
+        backup_location TEXT NOT NULL,
+        status VARCHAR(50) DEFAULT 'completed' CHECK (status IN ('started', 'completed', 'failed')),
+        started_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        completed_at TIMESTAMP,
+        error_message TEXT
+      )
+    `);
+    
     // Create indexes for performance
     console.log('📊 Creating database indexes...');
     
@@ -209,10 +354,18 @@ const createTables = async () => {
     await client.query('CREATE INDEX IF NOT EXISTS idx_bookings_scheduled_date ON bookings(scheduled_date)');
     await client.query('CREATE INDEX IF NOT EXISTS idx_bookings_category ON bookings(shoot_category)');
     await client.query('CREATE INDEX IF NOT EXISTS idx_bookings_created_at ON bookings(created_at)');
+    await client.query('CREATE INDEX IF NOT EXISTS idx_bookings_geographic_zone ON bookings(geographic_zone)');
     await client.query('CREATE INDEX IF NOT EXISTS idx_booking_audit_booking_id ON booking_audit(booking_id)');
     await client.query('CREATE INDEX IF NOT EXISTS idx_notifications_user_id ON notifications(user_id)');
     await client.query('CREATE INDEX IF NOT EXISTS idx_users_email ON users(email)');
     await client.query('CREATE INDEX IF NOT EXISTS idx_users_role ON users(role)');
+    await client.query('CREATE INDEX IF NOT EXISTS idx_file_storage_booking_id ON file_storage(booking_id)');
+    await client.query('CREATE INDEX IF NOT EXISTS idx_file_storage_user_id ON file_storage(user_id)');
+    await client.query('CREATE INDEX IF NOT EXISTS idx_performance_metrics_user_id ON performance_metrics(user_id)');
+    await client.query('CREATE INDEX IF NOT EXISTS idx_performance_metrics_date ON performance_metrics(metric_date)');
+    await client.query('CREATE INDEX IF NOT EXISTS idx_route_optimizations_videographer_id ON route_optimizations(videographer_id)');
+    await client.query('CREATE INDEX IF NOT EXISTS idx_route_optimizations_date ON route_optimizations(optimization_date)');
+    await client.query('CREATE INDEX IF NOT EXISTS idx_calendar_integrations_user_id ON calendar_integrations(user_id)');
     
     // Create trigger for updated_at timestamps
     await client.query(`
@@ -234,6 +387,24 @@ const createTables = async () => {
     await client.query(`
       DROP TRIGGER IF EXISTS update_bookings_updated_at ON bookings;
       CREATE TRIGGER update_bookings_updated_at BEFORE UPDATE ON bookings
+        FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+    `);
+    
+    await client.query(`
+      DROP TRIGGER IF EXISTS update_company_branding_updated_at ON company_branding;
+      CREATE TRIGGER update_company_branding_updated_at BEFORE UPDATE ON company_branding
+        FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+    `);
+    
+    await client.query(`
+      DROP TRIGGER IF EXISTS update_calendar_integrations_updated_at ON calendar_integrations;
+      CREATE TRIGGER update_calendar_integrations_updated_at BEFORE UPDATE ON calendar_integrations
+        FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+    `);
+    
+    await client.query(`
+      DROP TRIGGER IF EXISTS update_custom_reports_updated_at ON custom_reports;
+      CREATE TRIGGER update_custom_reports_updated_at BEFORE UPDATE ON custom_reports
         FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
     `);
     
