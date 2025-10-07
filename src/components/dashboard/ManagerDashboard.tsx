@@ -130,16 +130,16 @@ export function ManagerDashboard() {
   }
 
   return (
-    <div className="p-6 max-w-7xl mx-auto bg-gradient-to-br from-osus-primary-50/30 via-white to-osus-secondary-50/20 min-h-screen">
+    <div className="p-6 max-w-7xl mx-auto bg-gradient-to-br from-osus-primary-50/40 via-white to-osus-secondary-50/30 min-h-screen">
       {/* Header */}
       <div className="mb-8">
         <div className="flex items-center justify-between">
           <div>
             <div className="relative">
-              <h1 className="text-3xl font-bold bg-gradient-to-r from-osus-primary-600 to-osus-primary-800 bg-clip-text text-transparent flex items-center gap-3">
-                <Crown className="w-8 h-8 text-osus-secondary-500" />
+              <h1 className="text-3xl font-bold bg-gradient-to-r from-osus-burgundy to-osus-primary-800 bg-clip-text text-transparent flex items-center gap-3">
+                <Crown className="w-8 h-8 text-osus-gold" />
                 Manager Dashboard
-                <Sparkle className="w-6 h-6 text-osus-secondary-500 animate-pulse" />
+                <Sparkle className="w-6 h-6 text-osus-gold animate-pulse" />
               </h1>
             </div>
             <p className="text-osus-primary-700/80 mt-2 font-medium">

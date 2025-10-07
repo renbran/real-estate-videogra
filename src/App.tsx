@@ -59,15 +59,15 @@ function App() {
 
   if (!currentUser) {
     return (
-      <>
+      <div className="min-h-screen bg-white">
         <LoginForm onLogin={handleLogin} />
         <Toaster />
-      </>
+      </div>
     )
   }
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-white">
       <Header user={currentUser} onLogout={handleLogout} />
       <main>
         {renderDashboard()}

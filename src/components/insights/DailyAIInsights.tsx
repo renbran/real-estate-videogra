@@ -203,13 +203,13 @@ export function DailyAIInsights({ bookings = [], currentUser, userRole = 'agent'
   }
 
   return (
-    <Card className="border-osus-primary-200/50 shadow-lg bg-gradient-to-br from-white via-osus-primary-50/20 to-osus-secondary-50/20">
+    <Card className="border-osus-primary-200/50 shadow-lg bg-gradient-to-br from-white via-osus-primary-50/30 to-osus-secondary-50/20">
       <CardHeader className="bg-gradient-to-r from-osus-primary-50 to-osus-secondary-50 border-b border-osus-primary-200/30">
         <div className="flex items-center justify-between">
-          <CardTitle className="text-osus-primary-800 flex items-center gap-2">
+          <CardTitle className="text-osus-burgundy flex items-center gap-2">
             <BrainCircuit className="w-5 h-5" />
             Daily AI Insights
-            <Sparkle className="w-4 h-4 text-osus-secondary-500 animate-pulse" />
+            <Sparkle className="w-4 h-4 text-osus-gold animate-pulse" />
           </CardTitle>
           <Button
             onClick={refreshInsights}

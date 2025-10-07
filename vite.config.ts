@@ -10,12 +10,15 @@ const projectRoot = process.env.PROJECT_ROOT || import.meta.dirname
 
 // https://vite.dev/config/
 export default defineConfig({
-  base: process.env.NODE_ENV === 'production' ? '/real-estate-videogra/' : '/',
+  base: '/',
   server: {
     host: '0.0.0.0',
-    port: 5001,
+    port: 5000,
     strictPort: false,
-    allowedHosts: ['all']
+    allowedHosts: 'all',
+    hmr: {
+      host: 'localhost'
+    }
   },
   plugins: [
     react(),
