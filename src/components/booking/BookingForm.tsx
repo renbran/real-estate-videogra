@@ -47,10 +47,16 @@ export function BookingForm({ currentUserId, onSubmit }: BookingFormProps) {
     
     // Property shoot fields (most important for real estate)
     property_type: '' as PropertyType,
-    property_value: '' as PropertyValue,
     bedrooms: '',
     shoot_complexity: '' as ShootComplexity,
     property_status: 'vacant' as 'vacant' | 'occupied',
+    
+    // Conditional fields based on shoot category
+    participants_count: '',
+    event_type: '',
+    content_style: '',
+    creative_direction: '',
+    space_layout: '',
     
     // Address validation fields
     formatted_address: '',
@@ -75,10 +81,12 @@ export function BookingForm({ currentUserId, onSubmit }: BookingFormProps) {
     else if (currentAgent?.agent_tier === 'premium') score += 10
     else score += 5
     
-    // Property value bonus
-    if (formData.property_value) {
-      score += PROPERTY_VALUES[formData.property_value]?.priority_points || 0
-    }
+    // Shoot category bonus
+    if (formData.shoot_category === 'property') score += 10
+    else if (formData.shoot_category === 'event') score += 8
+    else if (formData.shoot_category === 'group') score += 6
+    else if (formData.shoot_category === 'content') score += 5
+    else if (formData.shoot_category === 'personal') score += 3
     
     // Shoot complexity bonus
     if (formData.shoot_complexity) {
@@ -128,12 +136,18 @@ export function BookingForm({ currentUserId, onSubmit }: BookingFormProps) {
         location: formData.location,
         special_requirements: formData.special_requirements,
         
-        // Property shoot fields
-        property_type: formData.property_type,
-        property_value: formData.property_value,
-        bedrooms: parseInt(formData.bedrooms) || undefined,
+        // Property shoot fields (conditional)
+        property_type: formData.shoot_category === 'property' ? formData.property_type : undefined,
+        bedrooms: formData.shoot_category === 'property' ? parseInt(formData.bedrooms) || undefined : undefined,
         shoot_complexity: formData.shoot_complexity,
-        property_status: formData.property_status,
+        property_status: formData.shoot_category === 'property' ? formData.property_status : undefined,
+        
+        // Conditional fields based on shoot category
+        participants_count: formData.shoot_category === 'group' ? parseInt(formData.participants_count) || undefined : undefined,
+        event_type: formData.shoot_category === 'event' ? formData.event_type : undefined,
+        content_style: formData.shoot_category === 'content' ? formData.content_style : undefined,
+        creative_direction: formData.shoot_category === 'content' ? formData.creative_direction : undefined,
+        space_layout: formData.shoot_category === 'property' ? formData.space_layout : undefined,
         
         // System fields
         status: approvalStatus === 'auto_approve' ? 'approved' : 'pending',
@@ -166,10 +180,14 @@ export function BookingForm({ currentUserId, onSubmit }: BookingFormProps) {
         is_flexible: false,
         special_requirements: '',
         property_type: '' as PropertyType,
-        property_value: '' as PropertyValue,
         bedrooms: '',
         shoot_complexity: '' as ShootComplexity,
         property_status: 'vacant' as 'vacant' | 'occupied',
+        participants_count: '',
+        event_type: '',
+        content_style: '',
+        creative_direction: '',
+        space_layout: '',
         formatted_address: '',
         place_id: '',
         latitude: undefined,
@@ -200,134 +218,295 @@ export function BookingForm({ currentUserId, onSubmit }: BookingFormProps) {
   }
 
   const isFormValid = () => {
-    return !!(
-      formData.shoot_category && 
-      formData.location && 
-      formData.preferred_date &&
-      formData.property_type && 
-      formData.property_value && 
-      formData.shoot_complexity &&
-      formData.bedrooms
-    )
+    const baseFields = formData.shoot_category && formData.location && formData.preferred_date && formData.shoot_complexity
+    
+    if (!baseFields) return false
+    
+    // Category-specific validation
+    switch (formData.shoot_category) {
+      case 'property':
+        return !!(formData.property_type && formData.bedrooms)
+      case 'group':
+        return !!(formData.participants_count)
+      case 'event':
+        return !!(formData.event_type)
+      case 'content':
+        return !!(formData.content_style)
+      case 'personal':
+        return true // Only base fields required
+      default:
+        return false
+    }
   }
 
   return (
     <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
       <div className="lg:col-span-2">
-        <Card className="border-osus-primary-200/50 shadow-lg bg-gradient-to-br from-white to-osus-primary-50/30">
+        <Card className="border-osus-primary-200/50 shadow-lg bg-white">
           <CardHeader className="bg-gradient-to-r from-osus-primary-50 to-osus-secondary-50 border-b border-osus-primary-200/30">
             <CardTitle className="text-osus-burgundy flex items-center gap-2">
               <CalendarBlank size={20} className="text-osus-gold" />
-              New Property Videography Booking
+              New Videography Booking
               <Sparkle className="w-5 h-5 text-osus-gold animate-pulse" />
             </CardTitle>
           </CardHeader>
           <CardContent>
             <form onSubmit={handleSubmit} className="space-y-6">
               
-              {/* Property Address */}
+              {/* Shoot Category */}
+              <div className="space-y-2">
+                <Label>Type of Shoot</Label>
+                <Select value={formData.shoot_category} onValueChange={(value) => handleInputChange('shoot_category', value)}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select shoot type" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {Object.entries(SHOOT_CATEGORIES).map(([key, { label, description }]) => (
+                      <SelectItem key={key} value={key}>
+                        <div>
+                          <div>{label}</div>
+                          <div className="text-xs text-muted-foreground">{description}</div>
+                        </div>
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              
+              {/* Location */}
               <div className="space-y-2">
                 <Label className="flex items-center gap-2">
                   <MapPin size={16} />
-                  Property Address
+                  {formData.shoot_category === 'property' ? 'Property Address' : 'Shoot Location'}
                 </Label>
                 <Input
                   type="text"
                   value={formData.location}
                   onChange={(e) => handleInputChange('location', e.target.value)}
-                  placeholder="Enter full property address"
+                  placeholder={formData.shoot_category === 'property' ? 'Enter full property address' : 'Enter shoot location'}
                   required
                 />
               </div>
 
-              {/* Property Details */}
+              {/* Category-Specific Details */}
               <div className="space-y-6">
                 <Separator />
                 <div className="space-y-4">
-                  <h3 className="text-sm font-medium text-foreground">Property Details</h3>
+                  <h3 className="text-sm font-medium text-foreground">
+                    {formData.shoot_category === 'property' && 'Property Details'}
+                    {formData.shoot_category === 'personal' && 'Personal Shoot Preferences'}
+                    {formData.shoot_category === 'group' && 'Group Shoot Details'}
+                    {formData.shoot_category === 'content' && 'Content Creation Details'}
+                    {formData.shoot_category === 'event' && 'Event Details'}
+                  </h3>
                   
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                    <div className="space-y-2">
-                      <Label>Property Type</Label>
-                      <Select value={formData.property_type} onValueChange={(value) => handleInputChange('property_type', value)}>
-                        <SelectTrigger>
-                          <SelectValue placeholder="Select type" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {Object.entries(PROPERTY_TYPES).map(([key, { label }]) => (
-                            <SelectItem key={key} value={key}>{label}</SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    </div>
+                  {/* Property Shoot Fields */}
+                  {formData.shoot_category === 'property' && (
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                      <div className="space-y-2">
+                        <Label>Property Type</Label>
+                        <Select value={formData.property_type} onValueChange={(value) => handleInputChange('property_type', value)}>
+                          <SelectTrigger>
+                            <SelectValue placeholder="Select type" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {Object.entries(PROPERTY_TYPES).map(([key, { label }]) => (
+                              <SelectItem key={key} value={key}>{label}</SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
 
-                    <div className="space-y-2">
-                      <Label>Property Value</Label>
-                      <Select value={formData.property_value} onValueChange={(value) => handleInputChange('property_value', value)}>
-                        <SelectTrigger>
-                          <SelectValue placeholder="Select range" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {Object.entries(PROPERTY_VALUES).map(([key, { label }]) => (
-                            <SelectItem key={key} value={key}>{label}</SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    </div>
+                      <div className="space-y-2">
+                        <Label>Number of Bedrooms</Label>
+                        <Select value={formData.bedrooms} onValueChange={(value) => handleInputChange('bedrooms', value)}>
+                          <SelectTrigger>
+                            <SelectValue placeholder="Select" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="1">1 Bedroom</SelectItem>
+                            <SelectItem value="2">2 Bedrooms</SelectItem>
+                            <SelectItem value="3">3 Bedrooms</SelectItem>
+                            <SelectItem value="4">4 Bedrooms</SelectItem>
+                            <SelectItem value="5">5 Bedrooms</SelectItem>
+                            <SelectItem value="6">6+ Bedrooms</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
 
-                    <div className="space-y-2">
-                      <Label>Number of Bedrooms</Label>
-                      <Select value={formData.bedrooms} onValueChange={(value) => handleInputChange('bedrooms', value)}>
-                        <SelectTrigger>
-                          <SelectValue placeholder="Select" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="1">1 Bedroom</SelectItem>
-                          <SelectItem value="2">2 Bedrooms</SelectItem>
-                          <SelectItem value="3">3 Bedrooms</SelectItem>
-                          <SelectItem value="4">4 Bedrooms</SelectItem>
-                          <SelectItem value="5">5 Bedrooms</SelectItem>
-                          <SelectItem value="6">6+ Bedrooms</SelectItem>
-                        </SelectContent>
-                      </Select>
+                      <div className="space-y-2">
+                        <Label>Property Status</Label>
+                        <Select value={formData.property_status} onValueChange={(value) => handleInputChange('property_status', value)}>
+                          <SelectTrigger>
+                            <SelectValue placeholder="Select status" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="vacant">Vacant</SelectItem>
+                            <SelectItem value="occupied">Occupied</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+
+                      <div className="space-y-2 md:col-span-3">
+                        <Label>Space Layout Preferences</Label>
+                        <Select value={formData.space_layout} onValueChange={(value) => handleInputChange('space_layout', value)}>
+                          <SelectTrigger>
+                            <SelectValue placeholder="Select layout focus" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="open-concept">Open Concept Flow</SelectItem>
+                            <SelectItem value="room-by-room">Room-by-Room Tour</SelectItem>
+                            <SelectItem value="lifestyle-focus">Lifestyle Focused</SelectItem>
+                            <SelectItem value="architectural">Architectural Features</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
                     </div>
-                  </div>
+                  )}
+
+                  {/* Personal Shoot Fields */}
+                  {formData.shoot_category === 'personal' && (
+                    <div className="space-y-4">
+                      <div className="p-4 bg-osus-primary-50/50 border border-osus-primary-200/30 rounded-lg">
+                        <h4 className="font-medium text-osus-primary-800 mb-2">Personal Shoot Options</h4>
+                        <ul className="text-sm text-osus-primary-700 space-y-1">
+                          <li>• Professional headshots and portraits</li>
+                          <li>• Personal branding content</li>
+                          <li>• Individual lifestyle photography</li>
+                          <li>• Creative personal expression sessions</li>
+                        </ul>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Group Shoot Fields */}
+                  {formData.shoot_category === 'group' && (
+                    <div className="space-y-4">
+                      <div className="space-y-2">
+                        <Label>Number of Participants</Label>
+                        <Select value={formData.participants_count} onValueChange={(value) => handleInputChange('participants_count', value)}>
+                          <SelectTrigger>
+                            <SelectValue placeholder="Select participant count" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="2">2 People</SelectItem>
+                            <SelectItem value="3">3 People</SelectItem>
+                            <SelectItem value="4">4 People</SelectItem>
+                            <SelectItem value="5">5 People</SelectItem>
+                            <SelectItem value="6">6-10 People</SelectItem>
+                            <SelectItem value="10">10+ People</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                      <div className="p-4 bg-emerald-50 border border-emerald-200 rounded-lg">
+                        <h4 className="font-medium text-emerald-800 mb-2">Group Shoot Specialties</h4>
+                        <ul className="text-sm text-emerald-700 space-y-1">
+                          <li>• Family portraits and gatherings</li>
+                          <li>• Team and corporate group shots</li>
+                          <li>• Friend group lifestyle sessions</li>
+                          <li>• Multi-person coordination and poses</li>
+                        </ul>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Content Shoot Fields */}
+                  {formData.shoot_category === 'content' && (
+                    <div className="space-y-4">
+                      <div className="space-y-2">
+                        <Label>Content Style</Label>
+                        <Select value={formData.content_style} onValueChange={(value) => handleInputChange('content_style', value)}>
+                          <SelectTrigger>
+                            <SelectValue placeholder="Select content style" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="social-media">Social Media Content</SelectItem>
+                            <SelectItem value="commercial">Commercial/Advertising</SelectItem>
+                            <SelectItem value="product">Product Showcase</SelectItem>
+                            <SelectItem value="editorial">Editorial/Magazine Style</SelectItem>
+                            <SelectItem value="documentary">Documentary Style</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                      <div className="space-y-2">
+                        <Label>Creative Direction</Label>
+                        <Select value={formData.creative_direction} onValueChange={(value) => handleInputChange('creative_direction', value)}>
+                          <SelectTrigger>
+                            <SelectValue placeholder="Select creative approach" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="minimalist">Minimalist & Clean</SelectItem>
+                            <SelectItem value="dramatic">Dramatic & Cinematic</SelectItem>
+                            <SelectItem value="natural">Natural & Candid</SelectItem>
+                            <SelectItem value="artistic">Artistic & Creative</SelectItem>
+                            <SelectItem value="brand-focused">Brand-Focused</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                      <div className="p-4 bg-purple-50 border border-purple-200 rounded-lg">
+                        <h4 className="font-medium text-purple-800 mb-2">Content Creation Focus</h4>
+                        <ul className="text-sm text-purple-700 space-y-1">
+                          <li>• High-quality media for marketing campaigns</li>
+                          <li>• Social media and digital content</li>
+                          <li>• Creative storytelling through visuals</li>
+                          <li>• Brand-aligned content development</li>
+                        </ul>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Event Shoot Fields */}
+                  {formData.shoot_category === 'event' && (
+                    <div className="space-y-4">
+                      <div className="space-y-2">
+                        <Label>Event Type</Label>
+                        <Select value={formData.event_type} onValueChange={(value) => handleInputChange('event_type', value)}>
+                          <SelectTrigger>
+                            <SelectValue placeholder="Select event type" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="corporate">Corporate Event</SelectItem>
+                            <SelectItem value="wedding">Wedding</SelectItem>
+                            <SelectItem value="party">Private Party</SelectItem>
+                            <SelectItem value="conference">Conference/Meeting</SelectItem>
+                            <SelectItem value="launch">Product Launch</SelectItem>
+                            <SelectItem value="celebration">Celebration/Milestone</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                      <div className="p-4 bg-amber-50 border border-amber-200 rounded-lg">
+                        <h4 className="font-medium text-amber-800 mb-2">Event Coverage Includes</h4>
+                        <ul className="text-sm text-amber-700 space-y-1">
+                          <li>• Complete event documentation</li>
+                          <li>• Key moments and milestone capture</li>
+                          <li>• Logistics coordination and scheduling</li>
+                          <li>• Multi-angle coverage planning</li>
+                        </ul>
+                      </div>
+                    </div>
+                  )}
                   
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div className="space-y-2">
-                      <Label className="flex items-center gap-2">
-                        <Clock size={16} />
-                        Shoot Complexity
-                      </Label>
-                      <Select value={formData.shoot_complexity} onValueChange={(value) => handleInputChange('shoot_complexity', value)}>
-                        <SelectTrigger>
-                          <SelectValue placeholder="Select complexity" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {Object.entries(SHOOT_COMPLEXITIES).map(([key, { label, description }]) => (
-                            <SelectItem key={key} value={key}>
-                              <div>
-                                <div>{label}</div>
-                                <div className="text-xs text-muted-foreground">{description}</div>
-                              </div>
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    </div>
-
-                    <div className="space-y-2">
-                      <Label>Property Status</Label>
-                      <Select value={formData.property_status} onValueChange={(value) => handleInputChange('property_status', value)}>
-                        <SelectTrigger>
-                          <SelectValue placeholder="Select status" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="vacant">Vacant</SelectItem>
-                          <SelectItem value="occupied">Occupied</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
+                  {/* Shoot Complexity - Common to all */}
+                  <div className="space-y-2">
+                    <Label className="flex items-center gap-2">
+                      <Clock size={16} />
+                      Shoot Complexity
+                    </Label>
+                    <Select value={formData.shoot_complexity} onValueChange={(value) => handleInputChange('shoot_complexity', value)}>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select complexity" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {Object.entries(SHOOT_COMPLEXITIES).map(([key, { label, description }]) => (
+                          <SelectItem key={key} value={key}>
+                            <div>
+                              <div>{label}</div>
+                              <div className="text-xs text-muted-foreground">{description}</div>
+                            </div>
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
                   </div>
                   
                   {formData.shoot_complexity && (

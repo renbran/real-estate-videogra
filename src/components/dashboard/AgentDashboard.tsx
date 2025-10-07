@@ -105,7 +105,7 @@ export function AgentDashboard({ currentUserId }: AgentDashboardProps) {
   }
 
   return (
-    <div className="p-6 max-w-7xl mx-auto bg-gradient-to-br from-osus-primary-50/40 via-white to-osus-secondary-50/30 min-h-screen">
+    <div className="p-6 max-w-7xl mx-auto bg-white min-h-screen">
       {/* Header */}
       <div className="mb-8">
         <div className="flex items-center justify-between">
@@ -130,9 +130,9 @@ export function AgentDashboard({ currentUserId }: AgentDashboardProps) {
             <CalendarExportButton bookings={approvedBookings} />
             <Button 
               onClick={() => setActiveTab('new-booking')} 
-              className="flex items-center gap-2 bg-gradient-to-r from-osus-burgundy to-osus-primary-700 hover:from-osus-primary-700 hover:to-osus-primary-800 text-white border-0 shadow-lg hover:shadow-xl transition-all duration-200"
+              className="flex items-center gap-2 bg-osus-burgundy hover:bg-osus-primary-700 text-white border-0 shadow-md hover:shadow-lg transition-all duration-200 px-6 py-3 text-base font-semibold"
             >
-              <Plus className="w-4 h-4" />
+              <Plus className="w-5 h-5" />
               New Booking
             </Button>
           </div>
@@ -141,7 +141,7 @@ export function AgentDashboard({ currentUserId }: AgentDashboardProps) {
 
       {/* Stats Cards */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-        <Card className="border-osus-primary-200/50 shadow-md hover:shadow-lg transition-all duration-200 bg-gradient-to-br from-white to-osus-primary-50/30">
+        <Card className="border-osus-primary-200/50 shadow-md hover:shadow-lg transition-all duration-200 bg-white">
           <CardHeader className="pb-2">
             <CardTitle className="text-sm font-medium text-osus-primary-700 flex items-center gap-2">
               <Target className="w-4 h-4" />
@@ -160,7 +160,7 @@ export function AgentDashboard({ currentUserId }: AgentDashboardProps) {
           </CardContent>
         </Card>
 
-        <Card className="border-osus-secondary-200/50 shadow-md hover:shadow-lg transition-all duration-200 bg-gradient-to-br from-white to-osus-secondary-50/30">
+        <Card className="border-osus-secondary-200/50 shadow-md hover:shadow-lg transition-all duration-200 bg-white">
           <CardHeader className="pb-2">
             <CardTitle className="text-sm font-medium text-osus-secondary-700 flex items-center gap-2">
               <Clock className="w-4 h-4" />
@@ -173,7 +173,7 @@ export function AgentDashboard({ currentUserId }: AgentDashboardProps) {
           </CardContent>
         </Card>
 
-        <Card className="border-emerald-200/50 shadow-md hover:shadow-lg transition-all duration-200 bg-gradient-to-br from-white to-emerald-50/30">
+        <Card className="border-emerald-200/50 shadow-md hover:shadow-lg transition-all duration-200 bg-white">
           <CardHeader className="pb-2">
             <CardTitle className="text-sm font-medium text-emerald-700 flex items-center gap-2">
               <Lightning className="w-4 h-4" />
@@ -186,7 +186,7 @@ export function AgentDashboard({ currentUserId }: AgentDashboardProps) {
           </CardContent>
         </Card>
 
-        <Card className="border-osus-primary-200/50 shadow-md hover:shadow-lg transition-all duration-200 bg-gradient-to-br from-white via-osus-primary-50/20 to-osus-secondary-50/20">
+        <Card className="border-osus-primary-200/50 shadow-md hover:shadow-lg transition-all duration-200 bg-white">
           <CardHeader className="pb-2">
             <CardTitle className="text-sm font-medium text-osus-primary-700 flex items-center gap-2">
               <TrendUp className="w-4 h-4" />
