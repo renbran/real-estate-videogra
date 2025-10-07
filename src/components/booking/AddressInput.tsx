@@ -3,10 +3,9 @@ import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
 import { Label } from '@/components/ui/label'
 import { Badge } from '@/components/ui/badge'
-import { googleMapsService } from '@/lib/google-maps'
-import { MapPin, CheckCircle, XCircle } from '@phosphor-icons/react'
-import { Loader2 } from 'lucide-react'
 import { GooglePlacePrediction } from '@/lib/types'
+import { googleMapsService } from '@/lib/google-maps'
+import { MapPin, CheckCircle, XCircle, CircleNotch } from '@phosphor-icons/react'
 import { cn } from '@/lib/utils'
 
 interface AddressInputProps {
@@ -44,7 +43,7 @@ export function AddressInput({
   
   const inputRef = useRef<HTMLInputElement>(null)
   const dropdownRef = useRef<HTMLDivElement>(null)
-  const timeoutRef = useRef<NodeJS.Timeout | null>(null)
+  const timeoutRef = useRef<NodeJS.Timeout>()
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -59,6 +58,10 @@ export function AddressInput({
   }, [])
 
   useEffect(() => {
+    if (timeoutRef.current) {
+      clearTimeout(timeoutRef.current)
+    }
+
     if (!value.trim()) {
       setPredictions([])
       setShowDropdown(false)
@@ -67,21 +70,17 @@ export function AddressInput({
       return
     }
 
-    if (timeoutRef.current) {
-      clearTimeout(timeoutRef.current)
-    }
+    if (value.length < 3) return
 
     timeoutRef.current = setTimeout(async () => {
+      setIsLoading(true)
       try {
-        setIsLoading(true)
         const results = await googleMapsService.getAddressPredictions(value)
         setPredictions(results)
         setShowDropdown(results.length > 0)
-        setValidationError(null)
       } catch (error) {
         console.error('Address prediction error:', error)
         setPredictions([])
-        setShowDropdown(false)
       } finally {
         setIsLoading(false)
       }
@@ -111,7 +110,6 @@ export function AddressInput({
     
     try {
       const details = await googleMapsService.getPlaceDetails(prediction.place_id)
-      
       if (details) {
         const zone = googleMapsService.determineGeographicZone(details.coordinates)
         
@@ -170,7 +168,7 @@ export function AddressInput({
 
   const getValidationIcon = () => {
     if (isValidating) {
-      return <Loader2 className="w-4 h-4 animate-spin text-blue-500" />
+      return <CircleNotch className="w-4 h-4 animate-spin text-blue-500" />
     }
     if (isValidated) {
       return <CheckCircle className="w-4 h-4 text-green-500" />
@@ -211,7 +209,7 @@ export function AddressInput({
           {value && !isValidated && !isValidating && (
             <Button
               type="button"
-              variant="ghost"
+              variant="outline"
               size="sm"
               onClick={handleManualValidation}
               className="h-6 px-2 text-xs"
@@ -221,14 +219,14 @@ export function AddressInput({
           )}
         </div>
 
-        {showDropdown && (
+        {showDropdown && (predictions.length > 0 || isLoading) && (
           <div
             ref={dropdownRef}
             className="absolute z-50 w-full mt-1 bg-white border border-gray-200 rounded-md shadow-lg max-h-60 overflow-y-auto"
           >
             {isLoading && (
-              <div className="p-4 text-center text-sm text-muted-foreground">
-                <Loader2 className="w-4 h-4 animate-spin mx-auto mb-2" />
+              <div className="flex items-center justify-center p-4 text-sm text-muted-foreground">
+                <CircleNotch className="w-4 h-4 animate-spin mx-auto mb-2" />
                 Searching addresses...
               </div>
             )}
@@ -273,7 +271,7 @@ export function AddressInput({
           {validationError && (
             <div className="flex items-center gap-1">
               <Badge variant="destructive">
-                ✗ Invalid
+                ✗ Error
               </Badge>
               <span className="text-xs text-red-600">{validationError}</span>
             </div>

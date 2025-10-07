@@ -10,6 +10,7 @@ import { BookingRequest, SAMPLE_AGENTS, SHOOT_COMPLEXITIES } from '@/lib/types'
 import { formatDate, formatDateTime } from '@/lib/date-utils'
 import { BookingForm } from '@/components/booking/BookingForm'
 import { CalendarExportButton } from '@/components/calendar/CalendarExportButton'
+import { CalendarNotificationCenter } from '@/components/calendar/CalendarNotificationCenter'
 import { useNotifications } from '@/hooks/useNotifications'
 
 interface AgentDashboardProps {
@@ -178,6 +179,7 @@ export function AgentDashboard({ currentUserId }: AgentDashboardProps) {
           <TabsTrigger value="overview">Overview</TabsTrigger>
           <TabsTrigger value="pending">Pending ({pendingBookings.length})</TabsTrigger>
           <TabsTrigger value="approved">Approved ({approvedBookings.length})</TabsTrigger>
+          <TabsTrigger value="calendar">Calendar & Notifications</TabsTrigger>
           <TabsTrigger value="history">History</TabsTrigger>
         </TabsList>
 
@@ -368,6 +370,16 @@ export function AgentDashboard({ currentUserId }: AgentDashboardProps) {
               </Card>
             )}
           </div>
+        </TabsContent>
+
+        <TabsContent value="calendar">
+          <CalendarNotificationCenter
+            currentUser={currentAgent}
+            userBookings={myBookings}
+            upcomingBookings={approvedBookings.filter(b => 
+              b.scheduled_date && new Date(b.scheduled_date) >= new Date()
+            )}
+          />
         </TabsContent>
 
         <TabsContent value="history">
