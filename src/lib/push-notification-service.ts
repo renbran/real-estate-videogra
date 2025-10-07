@@ -488,7 +488,19 @@ export class PushNotificationService {
       isSupported,
       isPermissionGranted: this.isPermissionGranted,
       permission,
-      hasSubscription: !!this.subscription
+      hasSubscription: !!this.subscription,
+      isSubscribed: !!this.subscription // Alias for backward compatibility
+    }
+  }
+
+  /**
+   * Get notification settings (alias for getStatus for backward compatibility)
+   */
+  getNotificationSettings() {
+    return {
+      isSupported: this.checkSupport(),
+      isPermissionGranted: this.isPermissionGranted,
+      isSubscribed: !!this.subscription
     }
   }
 }
@@ -549,3 +561,6 @@ export class NotificationUtils {
     return persistentTypes.includes(type)
   }
 }
+
+// Export singleton instance for easy access
+export const pushNotificationService = PushNotificationService.getInstance()

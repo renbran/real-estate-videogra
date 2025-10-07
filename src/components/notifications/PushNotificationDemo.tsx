@@ -42,7 +42,7 @@ export function PushNotificationDemo() {
       urgent: true
     },
     {
-      type: 'optimization_opportunity',
+      type: 'batch_optimization',
       title: 'Optimization Available',
       description: 'Test batching opportunity alert',
       urgent: false
@@ -84,7 +84,7 @@ export function PushNotificationDemo() {
         type,
         sampleBooking,
         sampleUser,
-        { urgent }
+        {}
       )
 
       toast.success('Test notification sent!')
