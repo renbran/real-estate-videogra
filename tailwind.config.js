@@ -24,32 +24,32 @@ const defaultTheme = {
       pwa: { raw: "(display-mode: standalone)" },
     },
     colors: {
-      // OSUS Brand Colors
+      // OSUS Brand Colors - Burgundy/Maroon Palette
       'osus-primary': {
-        50: '#f0f9ff',
-        100: '#e0f2fe',
-        200: '#bae6fd',
-        300: '#7dd3fc',
-        400: '#38bdf8',
-        500: '#0ea5e9', // Primary OSUS Blue
-        600: '#0284c7',
-        700: '#0369a1',
-        800: '#075985',
-        900: '#0c4a6e',
-        950: '#082f49'
+        50: '#fdf2f4',
+        100: '#fce7ea', 
+        200: '#f9d4db',
+        300: '#f4b3c0',
+        400: '#ec8ea0',
+        500: '#7d1538', // Primary Burgundy RGB(125, 21, 56)
+        600: '#6b1230',
+        700: '#5a0f28',
+        800: '#4a0c20',
+        900: '#3d0a1b',
+        950: '#2c0713'
       },
       'osus-secondary': {
-        50: '#fff7ed',
-        100: '#ffedd5',
-        200: '#fed7aa',
-        300: '#fdba74',
-        400: '#fb923c',
-        500: '#f97316', // OSUS Orange accent
-        600: '#ea580c',
-        700: '#c2410c',
-        800: '#9a3412',
-        900: '#7c2d12',
-        950: '#431407'
+        50: '#fffcf0',
+        100: '#fef7d9',
+        200: '#fdedb3', 
+        300: '#fbdf83',
+        400: '#f9cc52',
+        500: '#d4af37', // Gold accent for luxury feel
+        600: '#b8941f',
+        700: '#9c7b1a',
+        800: '#806315',
+        900: '#654c11',
+        950: '#4a360c'
       },
       // Existing color system (preserved)
       neutral: {
@@ -119,11 +119,13 @@ const defaultTheme = {
         overlay: "var(--color-bg-overlay)",
       },
       "focus-ring": "var(--color-focus-ring)",
-      // OSUS specific utility colors
-      'osus-success': '#10b981',
-      'osus-warning': '#f59e0b',
-      'osus-error': '#ef4444',
-      'osus-info': '#3b82f6',
+      // OSUS specific utility colors - Updated for luxury theme
+      'osus-success': '#228b22',
+      'osus-warning': '#c9a810', 
+      'osus-error': '#b22234',
+      'osus-info': '#9a355d',
+      'osus-gold': '#d4af37',
+      'osus-burgundy': '#7d1538',
     },
     borderRadius: {
       sm: "var(--radius-sm)",

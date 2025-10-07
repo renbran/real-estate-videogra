@@ -105,13 +105,13 @@ export function AgentDashboard({ currentUserId }: AgentDashboardProps) {
   }
 
   return (
-    <div className="p-6 max-w-7xl mx-auto bg-gradient-to-br from-osus-primary-50/30 via-white to-osus-secondary-50/20 min-h-screen">
+    <div className="p-6 max-w-7xl mx-auto bg-gradient-to-br from-osus-primary-50/40 via-white to-osus-secondary-50/30 min-h-screen">
       {/* Header */}
       <div className="mb-8">
         <div className="flex items-center justify-between">
           <div>
             <div className="relative">
-              <h1 className="text-3xl font-bold bg-gradient-to-r from-osus-primary-600 to-osus-primary-800 bg-clip-text text-transparent">
+              <h1 className="text-3xl font-bold bg-gradient-to-r from-osus-burgundy to-osus-primary-800 bg-clip-text text-transparent">
                 Welcome back, {currentAgent.name}
               </h1>
               <div className="absolute -top-1 -right-4">
@@ -130,7 +130,7 @@ export function AgentDashboard({ currentUserId }: AgentDashboardProps) {
             <CalendarExportButton bookings={approvedBookings} />
             <Button 
               onClick={() => setActiveTab('new-booking')} 
-              className="flex items-center gap-2 bg-gradient-to-r from-osus-primary-500 to-osus-primary-600 hover:from-osus-primary-600 hover:to-osus-primary-700 text-white border-0 shadow-lg hover:shadow-xl transition-all duration-200"
+              className="flex items-center gap-2 bg-gradient-to-r from-osus-burgundy to-osus-primary-700 hover:from-osus-primary-700 hover:to-osus-primary-800 text-white border-0 shadow-lg hover:shadow-xl transition-all duration-200"
             >
               <Plus className="w-4 h-4" />
               New Booking

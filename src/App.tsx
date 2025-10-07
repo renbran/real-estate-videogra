@@ -5,12 +5,15 @@ import { Header } from '@/components/navigation/Header'
 import { AgentDashboard } from '@/components/dashboard/AgentDashboard'
 import { ManagerDashboard } from '@/components/dashboard/ManagerDashboard'
 import { VideographerDashboard } from '@/components/dashboard/VideographerDashboard'
+import { LuxuryPropertyShowcase } from '@/components/property/LuxuryPropertyCard'
+import { BrandingShowcase } from '@/components/branding/BusinessCard'
 import { User } from '@/lib/types'
 import { useAuth } from '@/hooks/useClientAPI'
 
 function App() {
   const [currentUser, setCurrentUser] = useState<User | null>(null)
   const [isLoading, setIsLoading] = useState(true)
+  const [showMode, setShowMode] = useState<'app' | 'properties' | 'branding'>('app')
   const { getCurrentUser } = useAuth()
 
   useEffect(() => {
@@ -57,17 +60,92 @@ function App() {
     )
   }
 
-  if (!currentUser) {
+  // Special showcase mode for design samples
+  if (showMode === 'properties') {
     return (
       <>
-        <LoginForm onLogin={handleLogin} />
+        <div className="fixed top-4 right-4 z-50 flex gap-2">
+          <button 
+            onClick={() => setShowMode('app')} 
+            className="px-4 py-2 bg-osus-burgundy text-white rounded-lg text-sm hover:bg-osus-primary-800 transition-colors"
+          >
+            Back to App
+          </button>
+          <button 
+            onClick={() => setShowMode('branding')} 
+            className="px-4 py-2 bg-osus-gold text-white rounded-lg text-sm hover:bg-osus-secondary-600 transition-colors"
+          >
+            View Branding
+          </button>
+        </div>
+        <LuxuryPropertyShowcase />
         <Toaster />
       </>
     )
   }
 
+  if (showMode === 'branding') {
+    return (
+      <>
+        <div className="fixed top-4 right-4 z-50 flex gap-2">
+          <button 
+            onClick={() => setShowMode('app')} 
+            className="px-4 py-2 bg-osus-burgundy text-white rounded-lg text-sm hover:bg-osus-primary-800 transition-colors"
+          >
+            Back to App
+          </button>
+          <button 
+            onClick={() => setShowMode('properties')} 
+            className="px-4 py-2 bg-osus-gold text-white rounded-lg text-sm hover:bg-osus-secondary-600 transition-colors"
+          >
+            View Properties
+          </button>
+        </div>
+        <BrandingShowcase />
+        <Toaster />
+      </>
+    )
+  }
+
+  if (!currentUser) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-osus-primary-50/40 via-white to-osus-secondary-50/30">
+        <div className="fixed top-4 right-4 z-50 flex gap-2">
+          <button 
+            onClick={() => setShowMode('properties')} 
+            className="px-4 py-2 bg-osus-burgundy text-white rounded-lg text-sm hover:bg-osus-primary-800 transition-colors"
+          >
+            View Properties
+          </button>
+          <button 
+            onClick={() => setShowMode('branding')} 
+            className="px-4 py-2 bg-osus-gold text-white rounded-lg text-sm hover:bg-osus-secondary-600 transition-colors"
+          >
+            View Branding
+          </button>
+        </div>
+        <LoginForm onLogin={handleLogin} />
+        <Toaster />
+      </div>
+    )
+  }
+
   return (
     <div className="min-h-screen bg-background">
+      <div className="fixed top-4 right-4 z-50 flex gap-2">
+        <button 
+          onClick={() => setShowMode('properties')} 
+          className="px-3 py-1 bg-osus-burgundy text-white rounded text-xs hover:bg-osus-primary-800 transition-colors"
+        >
+          Properties
+        </button>
+        <button 
+          onClick={() => setShowMode('branding')} 
+          className="px-3 py-1 bg-osus-gold text-white rounded text-xs hover:bg-osus-secondary-600 transition-colors"
+        >
+          Branding
+        </button>
+      </div>
       <Header user={currentUser} onLogout={handleLogout} />
       <main>
         {renderDashboard()}

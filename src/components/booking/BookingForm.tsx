@@ -214,12 +214,12 @@ export function BookingForm({ currentUserId, onSubmit }: BookingFormProps) {
   return (
     <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
       <div className="lg:col-span-2">
-        <Card className="border-osus-primary-200/50 shadow-lg bg-gradient-to-br from-white to-osus-primary-50/20">
+        <Card className="border-osus-primary-200/50 shadow-lg bg-gradient-to-br from-white to-osus-primary-50/30">
           <CardHeader className="bg-gradient-to-r from-osus-primary-50 to-osus-secondary-50 border-b border-osus-primary-200/30">
-            <CardTitle className="text-osus-primary-800 flex items-center gap-2">
-              <CalendarBlank size={20} className="text-osus-secondary-500" />
+            <CardTitle className="text-osus-burgundy flex items-center gap-2">
+              <CalendarBlank size={20} className="text-osus-gold" />
               New Property Videography Booking
-              <Sparkle className="w-5 h-5 text-osus-secondary-500 animate-pulse" />
+              <Sparkle className="w-5 h-5 text-osus-gold animate-pulse" />
             </CardTitle>
           </CardHeader>
           <CardContent>
