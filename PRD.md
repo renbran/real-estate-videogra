@@ -1,104 +1,89 @@
-# Videography Booking & Optimization System PRD
+# VideoPro - Real Estate Videography Booking Platform
 
-Real estate videography booking platform that optimizes scheduling through geographic clustering, intelligent routing, and performance-based allocation to maximize efficiency and service quality.
+VideoPro streamlines the booking and scheduling process for real estate agents to request professional videography services for their property listings and business needs.
 
-**Experience Qualities**:
-1. **Efficient** - Streamlines complex scheduling with intelligent automation and route optimization
-2. **Transparent** - Clear priority scoring and capacity indicators keep all stakeholders informed  
-3. **Adaptive** - Learning algorithms continuously improve estimates and suggestions based on historical data
+**Experience Qualities**: 
+1. Efficient - Simple and fast booking process with clear priority feedback
+2. Professional - Clean, business-focused interface that builds trust and confidence
+3. Transparent - Clear visibility into booking status, priority scoring, and scheduling logic
 
 **Complexity Level**: Complex Application (advanced functionality, accounts)
-- Multiple user roles with different permissions and dashboards
-- Real-time optimization algorithms and geographic clustering
-- Historical data analysis and machine learning for continuous improvement
+- Multiple user roles with distinct dashboards and permissions
+- Advanced scheduling optimization with route planning
+- Priority scoring system with first-come-first-serve implementation for property shoots
+- Real-time notifications and booking management
 
 ## Essential Features
 
-**Booking Request System**
-- Functionality: Comprehensive form capturing property details, shoot complexity, and scheduling preferences
-- Purpose: Streamline agent requests with all necessary information for optimization
-- Trigger: Agent selects "Book Videography" from dashboard
-- Progression: Property details → Shoot complexity → Dates → Special requirements → Priority calculation → Auto-approve or queue
-- Success criteria: 90% of bookings have complete information; priority score accurately predicts approval
+### Property Shoot Booking with Enhanced Requirements
+- **Functionality**: Agents can request videography for property listings with detailed property information
+- **Purpose**: Ensures videographers have all necessary information and implements fair scheduling
+- **Trigger**: Agent selects "Property Shoot" category and fills required fields
+- **Progression**: Category selection → Property details (type, value, bedrooms) → Address → Scheduling → Priority calculation → Submission confirmation
+- **Success criteria**: All required fields completed, first-come-first-serve priority assigned based on creation timestamp
 
-**Geographic Clustering & Route Optimization**
-- Functionality: Google Maps integration for real-time address validation, geocoding, and optimized routing
-- Purpose: Minimize travel time and maximize daily productivity with accurate location data
-- Trigger: New booking submitted with address validation, or manager reviews weekly schedule for route optimization
-- Progression: Real-time address autocomplete → Google Maps geocoding → Travel time calculation → Proximity clustering → Route optimization with live traffic
-- Success criteria: 40% reduction in travel time; 25% increase in daily capacity utilization; 95% address accuracy
+### First-Come-First-Serve Priority System
+- **Functionality**: Property shoots are prioritized based on booking creation time combined with other factors
+- **Purpose**: Ensures fair treatment of booking requests while maintaining business priorities
+- **Trigger**: Property booking submission with timestamp recording
+- **Progression**: Booking created → Timestamp recorded → Priority score calculated with time-based bonus → Queue position determined
+- **Success criteria**: Earlier bookings receive higher priority scores, clear indication to users of scheduling method
 
-**Dynamic Scheduling Engine**
-- Functionality: Flexible time-based scheduling with capacity management and buffer allocation
-- Purpose: Prevent overbooking while maximizing schedule efficiency
-- Trigger: Booking approval or schedule modification
-- Progression: Capacity check → Time block allocation → Buffer insertion → Conflict detection → Schedule confirmation
-- Success criteria: Zero overbooking incidents; 95% on-time performance
+### Multi-Role Dashboard System
+- **Functionality**: Role-based access with Agent, Manager, Videographer, and Admin views
+- **Purpose**: Each user type has appropriate tools and information for their responsibilities
+- **Trigger**: User login with role determination
+- **Progression**: Login → Role identification → Dashboard routing → Role-specific features displayed
+- **Success criteria**: Users can only access appropriate features, efficient workflow for each role
 
-**Multi-Role Dashboard System**
-- Functionality: Customized interfaces for agents, managers, videographers with role-specific data
-- Purpose: Provide relevant information and controls for each user type
-- Trigger: User login with role-based routing
-- Progression: Authentication → Role detection → Dashboard loading → Real-time data updates
-- Success criteria: 100% feature accessibility per role; sub-2-second load times
-
-**Performance Tracking & Accountability**
-- Functionality: Scoring system tracking estimate accuracy, compliance, and service quality
-- Purpose: Incentivize accurate bookings and identify improvement opportunities
-- Trigger: Shoot completion or performance milestone
-- Progression: Data collection → Score calculation → Pattern analysis → Performance alerts → Coaching recommendations
-- Success criteria: 30% improvement in estimate accuracy; 20% reduction in access issues
+### Intelligent Priority Scoring
+- **Functionality**: Automated scoring system considering property value, agent tier, usage history, and booking timing
+- **Purpose**: Fair and transparent allocation of videography resources
+- **Trigger**: Booking form completion with all required information
+- **Progression**: Data collection → Score calculation → Approval determination → User notification
+- **Success criteria**: Consistent scoring, clear explanation of score factors, appropriate approval routing
 
 ## Edge Case Handling
-
-**Overbooking Prevention** - Real-time capacity checks with buffer allocation prevent scheduling conflicts
-**Internet Connectivity** - Offline mode stores form data locally until connection restored
-**Invalid Addresses** - Address validation with manual override option for new construction
-**Emergency Bookings** - Reserved emergency slots with manager override capabilities
-**Cancellation Cascades** - Automatic rescheduling suggestions when cancellations create optimization opportunities
-**Performance Outliers** - Flag unusual scores for manual review before applying penalties
-**Geographic Boundary Issues** - Manual zone assignment override for edge cases
+- **Invalid Property Data**: Form validation prevents submission with missing required fields
+- **Scheduling Conflicts**: Priority system automatically handles conflicting requests based on scores
+- **Address Validation**: Google Maps integration validates and standardizes location data
+- **Role Permissions**: Access control prevents unauthorized actions across user types
+- **Network Issues**: Loading states and error handling for API calls and data persistence
 
 ## Design Direction
-
-Professional, data-driven interface that conveys efficiency and reliability while remaining approachable for mobile users. Clean, dashboard-style layout with strategic use of color coding for status indicators and priority visualization.
+The design should feel professional and efficient, conveying trust and reliability expected in real estate business tools, with clean lines and clear information hierarchy that prioritizes task completion over visual flourish.
 
 ## Color Selection
+Complementary (opposite colors) - Professional blue paired with warm accent orange to create trust and energy while maintaining business credibility.
 
-Triadic color scheme emphasizing trust, efficiency, and clear status communication with professional blue as anchor.
-
-- **Primary Color**: Professional Blue (oklch(0.55 0.15 250)) - Conveys trust and competence for primary actions
-- **Secondary Colors**: Neutral Gray (oklch(0.7 0.02 270)) for supporting elements and backgrounds  
-- **Accent Color**: Energizing Orange (oklch(0.75 0.15 45)) for optimization suggestions and positive actions
+- **Primary Color**: Deep Professional Blue (oklch(0.4 0.15 240)) - Conveys trust, reliability, and business professionalism
+- **Secondary Colors**: Light Blue Gray (oklch(0.95 0.02 240)) for backgrounds and Charcoal (oklch(0.25 0.02 240)) for text
+- **Accent Color**: Warm Orange (oklch(0.65 0.15 45)) - Creates energy and draws attention to important actions and status indicators
 - **Foreground/Background Pairings**: 
-  - Background (Light Gray oklch(0.98 0.01 270)): Dark Blue text (oklch(0.25 0.08 250)) - Ratio 8.2:1 ✓
-  - Card (White oklch(1 0 0)): Primary text (oklch(0.25 0.08 250)) - Ratio 9.1:1 ✓  
-  - Primary (Blue oklch(0.55 0.15 250)): White text (oklch(1 0 0)) - Ratio 4.7:1 ✓
-  - Accent (Orange oklch(0.75 0.15 45)): Dark Blue text (oklch(0.25 0.08 250)) - Ratio 5.2:1 ✓
+  - Background Light (oklch(0.98 0.01 240)): Dark Text (oklch(0.2 0.02 240)) - Ratio 14.8:1 ✓
+  - Primary Blue (oklch(0.4 0.15 240)): White text (oklch(1 0 0)) - Ratio 8.2:1 ✓
+  - Accent Orange (oklch(0.65 0.15 45)): White text (oklch(1 0 0)) - Ratio 4.9:1 ✓
 
 ## Font Selection
+Professional and highly legible typefaces that work well in data-heavy interfaces while maintaining modern appeal - Inter for its excellent screen readability and business-appropriate character.
 
-Clear, professional typography emphasizing hierarchy and readability across devices with emphasis on data presentation and form clarity.
-
-- **Typographic Hierarchy**:
-  - H1 (Dashboard Titles): Inter Bold/32px/tight letter spacing
-  - H2 (Section Headers): Inter Semibold/24px/normal spacing  
-  - H3 (Card Titles): Inter Medium/18px/normal spacing
-  - Body (Content): Inter Regular/16px/relaxed line height
-  - Caption (Status/Meta): Inter Regular/14px/compact spacing
+- **Typographic Hierarchy**: 
+  - H1 (Dashboard Titles): Inter Bold/28px/tight letter spacing
+  - H2 (Section Headers): Inter Semibold/20px/normal letter spacing  
+  - H3 (Subsection Headers): Inter Medium/16px/normal letter spacing
+  - Body Text: Inter Regular/14px/relaxed line height (1.5)
+  - Small Text (Labels, Captions): Inter Medium/12px/normal letter spacing
 
 ## Animations
+Subtle and purposeful animations enhance usability without distraction, focusing on state transitions and providing feedback for user actions in a business-professional context.
 
-Subtle, purposeful animations that guide attention during optimization suggestions and provide feedback for complex scheduling interactions without delaying workflow efficiency.
-
-- **Purposeful Meaning**: Route optimization animations show geographic connections; scheduling animations indicate time relationships
-- **Hierarchy of Movement**: Priority indicators pulse gently; route lines animate to show optimization; calendar slots highlight during drag operations
+- **Purposeful Meaning**: Motion reinforces the efficiency and reliability of the platform while guiding attention to important status changes
+- **Hierarchy of Movement**: Priority given to booking status changes, form validation feedback, and navigation between different dashboard sections
 
 ## Component Selection
-
-- **Components**: Cards for bookings and properties, Tabs for role-based dashboards, Forms for booking requests, Calendar for scheduling, Maps for geographic visualization, Tables for performance data
-- **Customizations**: Custom map markers for property types, specialized calendar component with drag-drop optimization, performance score visualization components
-- **States**: Interactive booking cards (pending/approved/declined), dynamic capacity meters, real-time availability indicators
-- **Icon Selection**: MapPin for locations, Calendar for scheduling, TrendingUp for optimization, Users for agents, Clock for time management
-- **Spacing**: Consistent 16px base unit with 24px for section separation, 8px for tight groupings
-- **Mobile**: Responsive navigation with bottom tabs, collapsible filters, simplified booking form with progressive disclosure
+- **Components**: Dialog for booking forms, Card for booking displays, Table for data management, Badge for status indicators, Select and Input components for form controls with Tailwind focus states
+- **Customizations**: Custom property type selector, first-come-first-serve indicators, priority score visualizations, role-based navigation components
+- **States**: Clear visual distinction for booking statuses (pending/approved/declined), form validation states, loading states for API operations
+- **Icon Selection**: Phosphor icons for consistent business-focused iconography - Calendar for scheduling, MapPin for locations, TrendUp for priority
+- **Spacing**: Consistent 1rem (16px) base spacing with 0.5rem for tight spacing and 2rem for section separation
+- **Mobile**: Responsive grid layout that stacks property details vertically, collapsible navigation for smaller screens, touch-friendly form controls with minimum 44px touch targets
