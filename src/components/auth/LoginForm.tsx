@@ -87,6 +87,28 @@ export function LoginForm({ onLogin, onShowRegister, onShowSimplifiedSignup }: L
             </Button>
           </form>
 
+          {/* Admin Quick Access for Testing */}
+          <div className="mt-4 p-3 bg-purple-50 rounded-lg border border-purple-200">
+            <p className="text-xs text-purple-700 font-semibold mb-2 flex items-center gap-1">
+              <span>🔧</span> Testing Credentials:
+            </p>
+            <div className="grid grid-cols-1 gap-2 text-xs">
+              <div className="flex justify-between items-center">
+                <span className="text-purple-600 font-medium">👑 Admin:</span>
+                <code className="bg-white px-2 py-1 rounded text-purple-800 font-mono">admin@osusproperties.com</code>
+              </div>
+              <div className="flex justify-between items-center">
+                <span className="text-blue-600 font-medium">👨‍💼 Manager:</span>
+                <code className="bg-white px-2 py-1 rounded text-blue-800 font-mono">robert@osusproperties.com</code>
+              </div>
+              <div className="flex justify-between items-center">
+                <span className="text-green-600 font-medium">🏠 Agent:</span>
+                <code className="bg-white px-2 py-1 rounded text-green-800 font-mono">sarah@osusproperties.com</code>
+              </div>
+            </div>
+            <p className="text-xs text-purple-600 mt-2 italic">Any password works in development mode</p>
+          </div>
+
           <div className="mt-4 space-y-3 text-center">
             {onShowSimplifiedSignup && (
               <div>

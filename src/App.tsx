@@ -6,6 +6,7 @@ import { Header } from '@/components/navigation/Header'
 import { AgentDashboard } from '@/components/dashboard/AgentDashboard'
 import { ManagerDashboard } from '@/components/dashboard/ManagerDashboard'
 import { VideographerDashboard } from '@/components/dashboard/VideographerDashboard'
+import { AdminDashboard } from '@/components/dashboard/AdminDashboard'
 import { LoadingScreen } from '@/components/ui/loading/LoadingScreen'
 import { PageTransition } from '@/components/ui/animations/PageTransition'
 import { User } from '@/lib/types'
@@ -52,7 +53,7 @@ function App() {
       case 'videographer':
         return <VideographerDashboard />
       case 'admin':
-        return <ManagerDashboard /> // Admins see manager view for now
+        return <AdminDashboard currentUserId={currentUser.id} />
       default:
         return <div className="p-6 text-center">Role not supported</div>
     }
