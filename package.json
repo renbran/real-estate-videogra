@@ -1,15 +1,22 @@
 {
-    "name": "spark-template",
+    "name": "osus-videography-booking",
     "private": true,
-    "version": "0.0.0",
+    "version": "2.0.0",
     "type": "module",
     "scripts": {
         "dev": "vite",
         "kill": "fuser -k 5000/tcp",
         "build": "tsc -b --noCheck && vite build",
+        "build:prod": "NODE_ENV=production npm run build",
         "lint": "eslint .",
         "optimize": "vite optimize",
-        "preview": "vite preview"
+        "preview": "vite preview",
+        "serve": "npx serve -l 3000 dist",
+        "install:legacy": "npm install --legacy-peer-deps",
+        "deploy:netlify": "npm run build && netlify deploy --prod --dir=dist",
+        "deploy:vercel": "npm run build && vercel --prod",
+        "validate": "node scripts/validate-build.js",
+        "test": "echo \"No tests specified\" && exit 0"
     },
     "dependencies": {
         "@github/spark": "^0.39.0",
@@ -94,6 +101,21 @@
         "typescript-eslint": "^8.38.0",
         "vite": "^6.3.5"
     },
+    "engines": {
+        "node": ">=16.0.0",
+        "npm": ">=8.0.0"
+    },
+    "keywords": [
+        "videography",
+        "booking",
+        "real-estate",
+        "osus",
+        "react",
+        "typescript",
+        "vite"
+    ],
+    "author": "OSUS",
+    "license": "MIT",
     "workspaces": {
         "packages": [
             "packages/*"
