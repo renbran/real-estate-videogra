@@ -9,9 +9,10 @@ import { User } from '@/lib/types'
 interface LoginFormProps {
   onLogin: (user: User) => void
   onShowRegister: () => void
+  onShowSimplifiedSignup?: () => void
 }
 
-export function LoginForm({ onLogin, onShowRegister }: LoginFormProps) {
+export function LoginForm({ onLogin, onShowRegister, onShowSimplifiedSignup }: LoginFormProps) {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [error, setError] = useState('')
@@ -86,13 +87,26 @@ export function LoginForm({ onLogin, onShowRegister }: LoginFormProps) {
             </Button>
           </form>
 
-          <div className="mt-4 text-center">
-            <button
-              onClick={onShowRegister}
-              className="text-sm text-muted-foreground hover:text-primary transition-colors"
-            >
-              Don't have an account? Create one
-            </button>
+          <div className="mt-4 space-y-3 text-center">
+            {onShowSimplifiedSignup && (
+              <div>
+                <Button
+                  variant="outline"
+                  onClick={onShowSimplifiedSignup}
+                  className="w-full border-osus-primary-300 text-osus-primary-700 hover:bg-osus-primary-50 font-semibold"
+                >
+                  Quick Sign Up - Get Started in 2 Minutes
+                </Button>
+              </div>
+            )}
+            <div>
+              <button
+                onClick={onShowRegister}
+                className="text-sm text-muted-foreground hover:text-primary transition-colors"
+              >
+                Don't have an account? Create one
+              </button>
+            </div>
           </div>
         </CardContent>
       </Card>
