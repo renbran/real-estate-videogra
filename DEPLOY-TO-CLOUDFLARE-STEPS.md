@@ -35,7 +35,7 @@ Since you have a full-stack app, we'll deploy in two steps:
 Project name: videography-booking (or your preferred name)
 Production branch: main
 Framework preset: Vite
-Build command: npm run build
+Build command: npm install --legacy-peer-deps && npm run build
 Build output directory: dist
 Root directory: (leave empty)
 ```
@@ -50,6 +50,7 @@ NODE_ENV = production
 NODE_OPTIONS = --max-old-space-size=4096
 SKIP_PREFLIGHT_CHECK = true
 CI = false
+NPM_FLAGS = --legacy-peer-deps
 ```
 
 **App Configuration:**
@@ -128,9 +129,16 @@ Your backend will get a URL like: `https://your-project.railway.app`
 ## 🔧 Troubleshooting
 
 ### Build Failures
+
+**Error: "npm ci requires package-lock.json"**
+- ✅ **Solution**: Use build command: `npm install --legacy-peer-deps && npm run build`
+- ✅ **Add Environment Variable**: `NPM_FLAGS = --legacy-peer-deps`
+
+**Other Build Issues:**
 - Check Node.js version is set to 18
 - Verify all environment variables are added
 - Check build logs in Cloudflare dashboard
+- Ensure GitHub repository is up to date
 
 ### API Connection Issues
 - Verify REACT_APP_API_URL points to your Railway backend
