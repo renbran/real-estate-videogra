@@ -35,7 +35,7 @@ Since you have a full-stack app, we'll deploy in two steps:
 Project name: videography-booking (or your preferred name)
 Production branch: main
 Framework preset: Vite
-Build command: npm install --legacy-peer-deps && npm run build
+Build command: rm -rf node_modules package-lock.json && npm install --legacy-peer-deps && npm run build
 Build output directory: dist
 Root directory: (leave empty)
 ```
@@ -51,6 +51,8 @@ NODE_OPTIONS = --max-old-space-size=4096
 SKIP_PREFLIGHT_CHECK = true
 CI = false
 NPM_FLAGS = --legacy-peer-deps
+PLATFORM = linux
+ARCH = x64
 ```
 
 **App Configuration:**
@@ -130,9 +132,15 @@ Your backend will get a URL like: `https://your-project.railway.app`
 
 ### Build Failures
 
-**Error: "npm ci requires package-lock.json"**
-- ✅ **Solution**: Use build command: `npm install --legacy-peer-deps && npm run build`
+**Error: "npm ci requires package-lock.json" or Rollup platform errors**
+- ✅ **Solution**: Use build command: `rm -rf node_modules package-lock.json && npm install --legacy-peer-deps && npm run build`
 - ✅ **Add Environment Variable**: `NPM_FLAGS = --legacy-peer-deps`
+- ✅ **Explanation**: This removes Windows-specific lockfiles and reinstalls dependencies for Linux
+
+**Error: "Cannot find module @rollup/rollup-linux-x64-gnu"**
+- ✅ **Root Cause**: Windows package-lock.json contains platform-specific dependencies
+- ✅ **Solution**: Build command removes lockfile and reinstalls for Linux
+- ✅ **Add Environment Variables**: `PLATFORM = linux` and `ARCH = x64`
 
 **Other Build Issues:**
 - Check Node.js version is set to 18
