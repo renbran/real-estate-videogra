@@ -8,25 +8,26 @@
 }
 
 :root {
-  --background: oklch(28.6% 0.066 53.813);
-  --foreground: oklch(98.4% 0.003 247.858);
-  --card: oklch(1 0 0);
-  --card-foreground: oklch(0.25 0.08 250);
-  --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.25 0.08 250);
-  --primary: oklch(63.7% 0.237 25.331);
-  --primary-foreground: oklch(1 0 0);
-  --secondary: oklch(79.5% 0.184 86.047);
-  --secondary-foreground: oklch(98.4% 0.003 247.858);
-  --muted: oklch(0.95 0.01 270);
-  --muted-foreground: oklch(0.5 0.05 250);
-  --accent: oklch(57.7% 0.245 27.325);
-  --accent-foreground: oklch(98.4% 0.003 247.858);
-  --destructive: oklch(0.65 0.2 25);
-  --destructive-foreground: oklch(1 0 0);
-  --border: oklch(0.9 0.01 270);
-  --input: oklch(0.9 0.01 270);
-  --ring: oklch(0.55 0.15 250);
+  /* Elegant Burgundy + Gold + Soft Blush Palette */
+  --background: oklch(98% 0.005 320); /* Soft cream white */
+  --foreground: oklch(25% 0.05 355); /* Deep burgundy text */
+  --card: oklch(99% 0.002 320); /* Pure white cards */
+  --card-foreground: oklch(25% 0.05 355);
+  --popover: oklch(99% 0.002 320);
+  --popover-foreground: oklch(25% 0.05 355);
+  --primary: oklch(35% 0.15 355); /* Deep Wine Burgundy #722F37 */
+  --primary-foreground: oklch(98% 0.005 320);
+  --secondary: oklch(70% 0.12 75); /* Rich Gold #B8860B */
+  --secondary-foreground: oklch(98% 0.005 320);
+  --muted: oklch(92% 0.02 320); /* Soft blush background */
+  --muted-foreground: oklch(45% 0.03 355);
+  --accent: oklch(85% 0.04 320); /* Soft blush accent #E8C5C5 */
+  --accent-foreground: oklch(35% 0.15 355);
+  --destructive: oklch(55% 0.2 15); /* Warm red for errors */
+  --destructive-foreground: oklch(98% 0.005 320);
+  --border: oklch(88% 0.03 320); /* Subtle blush borders */
+  --input: oklch(95% 0.02 320); /* Light blush inputs */
+  --ring: oklch(35% 0.15 355); /* Burgundy focus rings */
   --radius: 0.5rem;
 }
 

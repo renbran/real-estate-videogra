@@ -46,10 +46,12 @@ function App() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
+      <div className="min-h-screen bg-gradient-to-br from-blush-50 via-background to-blush-100 flex items-center justify-center">
         <div className="text-center">
-          <div className="text-xl font-bold text-primary mb-2">VideoPro</div>
-          <div className="text-sm text-muted-foreground">Loading...</div>
+          <div className="text-3xl font-bold bg-gradient-to-r from-burgundy-500 to-burgundy-700 bg-clip-text text-transparent mb-4">
+            VideoPro
+          </div>
+          <div className="text-burgundy-600 animate-pulse">Loading your booking system...</div>
         </div>
       </div>
     )
@@ -57,7 +59,7 @@ function App() {
 
   if (!currentUser) {
     return (
-      <div className="min-h-screen bg-white">
+      <div className="min-h-screen bg-gradient-to-br from-blush-50 via-background to-blush-100">
         <AuthContainer onAuth={handleLogin} />
         <Toaster />
       </div>
@@ -65,7 +67,7 @@ function App() {
   }
 
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen bg-gradient-to-br from-blush-50 via-background to-blush-100">
       <Header user={currentUser} onLogout={handleLogout} />
       <main>
         {renderDashboard()}

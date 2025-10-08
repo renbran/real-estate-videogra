@@ -24,32 +24,45 @@ const defaultTheme = {
       pwa: { raw: "(display-mode: standalone)" },
     },
     colors: {
-      // OSUS Brand Colors - Burgundy/Maroon Palette
-      'osus-primary': {
-        50: '#fdf2f4',
-        100: '#fce7ea', 
-        200: '#f9d4db',
-        300: '#f4b3c0',
-        400: '#ec8ea0',
-        500: '#7d1538', // Primary Burgundy RGB(125, 21, 56)
-        600: '#6b1230',
-        700: '#5a0f28',
-        800: '#4a0c20',
-        900: '#3d0a1b',
-        950: '#2c0713'
+      // Elegant Burgundy + Gold + Soft Blush Palette
+      'burgundy': {
+        50: '#fdf2f4',   // Very light blush
+        100: '#fce7ea',  // Light blush
+        200: '#f9d0d8',  // Soft blush
+        300: '#f4aac0',  // Medium blush
+        400: '#e8759c',  // Warm blush
+        500: '#722f37',  // Deep Wine Burgundy (Primary)
+        600: '#5f262c',  // Darker burgundy
+        700: '#4f1f23',  // Deep burgundy
+        800: '#3f191b',  // Very deep burgundy
+        900: '#331416',  // Darkest burgundy
+        950: '#1f0c0d'   // Almost black burgundy
       },
-      'osus-secondary': {
-        50: '#fffcf0',
-        100: '#fef7d9',
-        200: '#fdedb3', 
-        300: '#fbdf83',
-        400: '#f9cc52',
-        500: '#d4af37', // Gold accent for luxury feel
-        600: '#b8941f',
-        700: '#9c7b1a',
-        800: '#806315',
-        900: '#654c11',
-        950: '#4a360c'
+      'gold': {
+        50: '#fffdf0',   // Cream white
+        100: '#fefae6',  // Light cream
+        200: '#fef3cc',  // Soft gold
+        300: '#fde68a',  // Light gold
+        400: '#fcd34d',  // Medium gold
+        500: '#d4af37',  // Rich Gold (Secondary)
+        600: '#b8941f',  // Darker gold
+        700: '#9c7b1a',  // Deep gold
+        800: '#806315',  // Very deep gold
+        900: '#654c11',  // Darkest gold
+        950: '#4a360c'   // Almost black gold
+      },
+      'blush': {
+        50: '#fefefe',   // Pure white
+        100: '#fdf9f9',  // Barely there blush
+        200: '#faf2f2',  // Very light blush
+        300: '#f5e6e6',  // Light blush
+        400: '#edc5c5',  // Soft Blush (Accent)
+        500: '#d4a4a4',  // Medium blush
+        600: '#b88888',  // Deeper blush
+        700: '#9c6f6f',  // Deep blush
+        800: '#7d5959',  // Very deep blush
+        900: '#5f4646',  // Darkest blush
+        950: '#3d2f2f'   // Almost black blush
       },
       // Existing color system (preserved)
       neutral: {

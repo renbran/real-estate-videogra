@@ -27,26 +27,28 @@ export function Header({ user, onLogout }: HeaderProps) {
   const getRoleBadge = () => {
     switch (user.role) {
       case 'agent':
-        return <Badge variant="secondary">{user.agent_tier ? user.agent_tier.toUpperCase() : 'AGENT'}</Badge>
+        return <Badge className="bg-gold-100 text-gold-700 border-gold-200">{user.agent_tier ? user.agent_tier.toUpperCase() : 'AGENT'}</Badge>
       case 'manager':
-        return <Badge className="bg-blue-100 text-blue-800">MANAGER</Badge>
+        return <Badge className="bg-burgundy-100 text-burgundy-800 border-burgundy-200">MANAGER</Badge>
       case 'videographer':
-        return <Badge className="bg-purple-100 text-purple-800">VIDEOGRAPHER</Badge>
+        return <Badge className="bg-blush-200 text-burgundy-700 border-blush-300">VIDEOGRAPHER</Badge>
       case 'admin':
-        return <Badge className="bg-red-100 text-red-800">ADMIN</Badge>
+        return <Badge className="bg-burgundy-500 text-white border-burgundy-600">ADMIN</Badge>
       default:
-        return <Badge variant="outline">USER</Badge>
+        return <Badge variant="outline" className="border-blush-300 text-burgundy-600">USER</Badge>
     }
   }
 
   return (
     <>
-      <header className="border-b bg-card">
+      <header className="border-b border-blush-200 bg-white/80 backdrop-blur-sm shadow-sm">
         <div className="flex h-16 items-center justify-between px-6">
           <div className="flex items-center gap-4">
-            <h1 className="text-xl font-bold text-primary">VideoPro</h1>
-            <Badge variant="outline" className="text-xs">
-              Production Demo
+            <h1 className="text-2xl font-bold bg-gradient-to-r from-burgundy-500 to-burgundy-700 bg-clip-text text-transparent">
+              VideoPro
+            </h1>
+            <Badge variant="outline" className="text-xs border-gold-300 text-gold-600 bg-gold-50">
+              Professional System
             </Badge>
           </div>
           

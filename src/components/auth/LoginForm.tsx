@@ -39,12 +39,14 @@ export function LoginForm({ onLogin, onShowRegister }: LoginFormProps) {
   }
 
   return (
-    <div className="min-h-screen bg-background flex items-center justify-center p-4">
-      <Card className="w-full max-w-md">
-        <CardHeader className="text-center">
-          <CardTitle className="text-2xl font-bold text-primary">VideoPro</CardTitle>
-          <CardDescription>
-            Real Estate Videography Booking System
+    <div className="min-h-screen flex items-center justify-center p-4">
+      <Card className="w-full max-w-md border-blush-200 shadow-xl bg-white/95 backdrop-blur-sm">
+        <CardHeader className="text-center pb-8">
+          <CardTitle className="text-3xl font-bold bg-gradient-to-r from-burgundy-500 to-burgundy-700 bg-clip-text text-transparent mb-2">
+            VideoPro
+          </CardTitle>
+          <CardDescription className="text-burgundy-600 text-base">
+            Professional Videography Booking System
           </CardDescription>
         </CardHeader>
         <CardContent>
