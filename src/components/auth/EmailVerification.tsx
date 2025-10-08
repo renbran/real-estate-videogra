@@ -78,8 +78,29 @@ export function EmailVerification({
         <Card className="w-full max-w-md border-osus-primary-200/50 shadow-xl bg-white/95 backdrop-blur-sm">
           <CardHeader className="text-center pb-6">
             <ScaleIn delay={0.2}>
-              <div className="mx-auto mb-4 w-16 h-16 bg-gradient-to-r from-osus-primary-500 to-osus-secondary-500 rounded-full flex items-center justify-center">
-                <Envelope className="w-8 h-8 text-white" />
+              <div className="mx-auto mb-4 w-20 h-20 bg-white rounded-full flex items-center justify-center relative shadow-lg border-2 border-osus-primary-200">
+                <img 
+                  src="https://osusproperties.com/wp-content/uploads/2025/02/Logo-Icon.svg" 
+                  alt="OSUS Properties Logo"
+                  className="w-12 h-12 object-contain"
+                  onError={(e) => {
+                    // Fallback to Envelope icon if logo fails to load
+                    const target = e.target as HTMLImageElement
+                    target.style.display = 'none'
+                    const fallback = target.nextElementSibling as HTMLElement
+                    if (fallback) fallback.style.display = 'block'
+                  }}
+                />
+                <div className="w-8 h-8 bg-gradient-to-r from-osus-primary-500 to-osus-secondary-500 rounded-full flex items-center justify-center" style={{ display: 'none' }}>
+                  <Envelope className="w-4 h-4 text-white" />
+                </div>
+                <motion.div
+                  className="absolute -bottom-1 -right-1 w-6 h-6 bg-gradient-to-r from-osus-primary-500 to-osus-secondary-500 rounded-full flex items-center justify-center"
+                  animate={{ scale: [1, 1.1, 1] }}
+                  transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
+                >
+                  <Envelope className="w-3 h-3 text-white" />
+                </motion.div>
               </div>
             </ScaleIn>
             
@@ -92,7 +113,7 @@ export function EmailVerification({
                 Verify Your Email
               </CardTitle>
               <CardDescription className="text-osus-primary-600 text-sm">
-                We've sent a 6-digit verification code to
+                OSUS Real Estate Brokerage has sent a 6-digit verification code to
               </CardDescription>
               <Badge variant="outline" className="mt-2 border-osus-primary-300 text-osus-primary-700 bg-osus-primary-50">
                 {email}

@@ -36,6 +36,7 @@ export function AuthContainer({ onAuth }: AuthContainerProps) {
     email: string
     password: string
     tier: string
+    company: string
   }) => {
     setIsLoading(true)
     setError('')
@@ -73,7 +74,8 @@ export function AuthContainer({ onAuth }: AuthContainerProps) {
           name: pendingUserData.name,
           email: pendingUserData.email,
           password: pendingUserData.password,
-          tier: pendingUserData.tier
+          tier: pendingUserData.tier,
+          company: pendingUserData.company || 'OSUS Real Estate Brokerage'
         })
         
         if (registerResult && registerResult.user) {

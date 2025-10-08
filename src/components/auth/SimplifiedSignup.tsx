@@ -16,6 +16,7 @@ interface SimplifiedSignupProps {
     email: string
     password: string
     tier: string
+    company: string
   }) => void
   onBackToLogin: () => void
   isLoading?: boolean
@@ -32,12 +33,16 @@ export function SimplifiedSignup({
     name: '',
     email: '',
     password: '',
-    tier: 'standard'
+    tier: 'standard',
+    company: 'OSUS Real Estate Brokerage'
   })
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
-    onSignup(formData)
+    onSignup({
+      ...formData,
+      company: 'OSUS Real Estate Brokerage' // Always default to OSUS
+    })
   }
 
   const handleInputChange = (field: string, value: string) => {
@@ -71,8 +76,20 @@ export function SimplifiedSignup({
         <Card className="w-full max-w-md border-osus-primary-200/50 shadow-xl bg-white/95 backdrop-blur-sm">
           <CardHeader className="text-center pb-6">
             <ScaleIn delay={0.2}>
-              <div className="mx-auto mb-4 w-16 h-16 bg-gradient-to-r from-osus-primary-500 to-osus-secondary-500 rounded-full flex items-center justify-center relative">
-                <User className="w-8 h-8 text-white" />
+              <div className="mx-auto mb-4 w-20 h-20 bg-white rounded-full flex items-center justify-center relative shadow-lg border-2 border-osus-primary-200">
+                <img 
+                  src="https://osusproperties.com/wp-content/uploads/2025/02/Logo-Icon.svg" 
+                  alt="OSUS Properties Logo"
+                  className="w-12 h-12 object-contain"
+                  onError={(e) => {
+                    // Fallback to User icon if logo fails to load
+                    const target = e.target as HTMLImageElement
+                    target.style.display = 'none'
+                    const fallback = target.nextElementSibling as HTMLElement
+                    if (fallback) fallback.style.display = 'block'
+                  }}
+                />
+                <User className="w-8 h-8 text-osus-primary-600" style={{ display: 'none' }} />
                 <motion.div
                   className="absolute -top-1 -right-1"
                   animate={{ 
@@ -99,7 +116,7 @@ export function SimplifiedSignup({
                 Join OSUS VideoPro
               </CardTitle>
               <CardDescription className="text-osus-primary-600 text-base">
-                Get started with professional videography booking in under 2 minutes
+                Join OSUS Real Estate Brokerage's professional videography platform
               </CardDescription>
             </motion.div>
           </CardHeader>
@@ -196,11 +213,11 @@ export function SimplifiedSignup({
                               </span>
                               {tier.popular && (
                                 <Badge className="bg-osus-secondary-100 text-osus-secondary-800 text-xs px-2 py-0.5">
-                                  Popular
+                                  🔥 Recommended
                                 </Badge>
                               )}
                             </div>
-                            <p className="text-sm text-osus-primary-600">{tier.subtitle}</p>
+                            <p className="text-sm text-osus-primary-600">{tier.subtitle} • OSUS Agent Plan</p>
                           </div>
                           
                           <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ${
@@ -278,7 +295,7 @@ export function SimplifiedSignup({
               <div className="p-3 bg-gradient-to-r from-osus-primary-50 to-osus-secondary-50 rounded-lg border border-osus-primary-200/50">
                 <p className="text-xs text-osus-primary-700 text-center font-medium">
                   <Shield className="w-3 h-3 inline mr-1" />
-                  Your data is protected with enterprise-grade security
+                  Joining OSUS Real Estate Brokerage's secure videography platform
                 </p>
               </div>
             </motion.div>

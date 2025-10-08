@@ -205,10 +205,10 @@ export function LoadingScreen({
           transition={{ delay: 0.3 }}
         >
           <h1 className="text-3xl font-bold bg-gradient-to-r from-osus-burgundy to-osus-primary-700 bg-clip-text text-transparent mb-2">
-            OSUS VideoPro
+            OSUS Real Estate Brokerage
           </h1>
           <p className="text-osus-primary-600 text-lg font-medium">
-            Professional Videography Booking
+            Professional Real Estate Videography
           </p>
         </motion.div>
 
