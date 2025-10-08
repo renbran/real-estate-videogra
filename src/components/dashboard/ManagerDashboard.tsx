@@ -21,7 +21,6 @@ import { FileManager } from '@/components/files/FileManager'
 import { RouteOptimizer as RouteOptimizerNew } from '@/components/optimization/RouteOptimizer'
 import { DEMO_ANALYTICS } from '@/lib/demo-data'
 import { OSUS_BRAND } from '@/lib/osus-brand'
-import { useBookingAPI } from '@/hooks/useClientAPI'
 import { DailyAIInsights } from '@/components/insights/DailyAIInsights'
 
 // Hook wrapper for compatibility

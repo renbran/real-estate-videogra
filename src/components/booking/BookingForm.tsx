@@ -27,7 +27,6 @@ import {
   SHOOT_COMPLEXITIES,
   User
 } from '@/lib/types'
-import { useBookingAPI } from '@/hooks/useClientAPI'
 
 interface BookingFormProps {
   currentUserId: string
