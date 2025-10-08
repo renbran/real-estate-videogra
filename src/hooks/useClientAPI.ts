@@ -158,15 +158,20 @@ const FALLBACK_BOOKINGS: BookingRequest[] = [
 
 // Fallback users data for development/testing
 const FALLBACK_USERS: User[] = [
-  { id: '1', name: 'Sarah Johnson', email: 'sarah@realestate.com', role: 'agent', agent_tier: 'elite' as AgentTier, monthly_quota: 6, monthly_used: 2, performance_score: 95, created_at: '2024-01-01' },
-  { id: '2', name: 'Mike Chen', email: 'mike@realestate.com', role: 'agent', agent_tier: 'premium' as AgentTier, monthly_quota: 4, monthly_used: 1, performance_score: 88, created_at: '2024-01-01' },
-  { id: '3', name: 'Lisa Rodriguez', email: 'lisa@realestate.com', role: 'agent', agent_tier: 'standard' as AgentTier, monthly_quota: 2, monthly_used: 0, performance_score: 82, created_at: '2024-01-01' },
-  { id: '4', name: 'David Thompson', email: 'david@realestate.com', role: 'agent', agent_tier: 'premium' as AgentTier, monthly_quota: 4, monthly_used: 3, performance_score: 91, created_at: '2024-01-01' },
-  { id: '5', name: 'Emily Wilson', email: 'emily@realestate.com', role: 'agent', agent_tier: 'standard' as AgentTier, monthly_quota: 2, monthly_used: 1, performance_score: 79, created_at: '2024-01-01' },
-  { id: '6', name: 'Robert Martinez', email: 'robert@videopromanager.com', role: 'manager', created_at: '2024-01-01' },
-  { id: '7', name: 'Jennifer Lee', email: 'jennifer@videopromanager.com', role: 'manager', created_at: '2024-01-01' },
-  { id: '8', name: 'Alex Kim', email: 'alex@videopro.com', role: 'videographer', created_at: '2024-01-01' },
-  { id: '9', name: 'Maria Gonzalez', email: 'maria@videopro.com', role: 'videographer', created_at: '2024-01-01' }
+  // ADMIN USER FOR TESTING
+  { id: 'admin-1', name: 'OSUS Admin', email: 'admin@osusproperties.com', role: 'admin', created_at: '2024-01-01' },
+  // AGENT USERS
+  { id: '1', name: 'Sarah Johnson', email: 'sarah@osusproperties.com', role: 'agent', agent_tier: 'elite' as AgentTier, monthly_quota: 8, monthly_used: 3, performance_score: 95, created_at: '2024-01-01' },
+  { id: '2', name: 'Mike Chen', email: 'mike@osusproperties.com', role: 'agent', agent_tier: 'premium' as AgentTier, monthly_quota: 4, monthly_used: 2, performance_score: 88, created_at: '2024-01-01' },
+  { id: '3', name: 'Lisa Rodriguez', email: 'lisa@osusproperties.com', role: 'agent', agent_tier: 'standard' as AgentTier, monthly_quota: 2, monthly_used: 1, performance_score: 82, created_at: '2024-01-01' },
+  { id: '4', name: 'David Thompson', email: 'david@osusproperties.com', role: 'agent', agent_tier: 'premium' as AgentTier, monthly_quota: 4, monthly_used: 3, performance_score: 91, created_at: '2024-01-01' },
+  { id: '5', name: 'Emily Wilson', email: 'emily@osusproperties.com', role: 'agent', agent_tier: 'standard' as AgentTier, monthly_quota: 2, monthly_used: 0, performance_score: 79, created_at: '2024-01-01' },
+  // MANAGER USERS
+  { id: '6', name: 'Robert Martinez', email: 'robert@osusproperties.com', role: 'manager', created_at: '2024-01-01' },
+  { id: '7', name: 'Jennifer Lee', email: 'jennifer@osusproperties.com', role: 'manager', created_at: '2024-01-01' },
+  // VIDEOGRAPHER USERS
+  { id: '8', name: 'Alex Kim', email: 'alex@osusvideopro.com', role: 'videographer', created_at: '2024-01-01' },
+  { id: '9', name: 'Maria Gonzalez', email: 'maria@osusvideopro.com', role: 'videographer', created_at: '2024-01-01' }
 ]
 
 // Production-ready authentication hook
