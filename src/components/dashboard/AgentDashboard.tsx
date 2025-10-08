@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { motion, AnimatePresence } from 'framer-motion'
 import { useBookingAPI } from '@/hooks/useClientAPI'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
@@ -16,6 +17,16 @@ import { PushNotificationDemo } from '@/components/notifications/PushNotificatio
 import { useNotifications } from '@/hooks/useNotifications'
 import { OSUS_BRAND } from '@/lib/osus-brand'
 import { DailyAIInsights } from '@/components/insights/DailyAIInsights'
+import { 
+  PageTransition, 
+  FadeInUp, 
+  StaggerChildren, 
+  StaggerChild, 
+  CardAnimation, 
+  HoverScale, 
+  FloatingAnimation,
+  PulseAnimation 
+} from '@/components/ui/animations/PageTransition'
 
 interface AgentDashboardProps {
   currentUserId: string
@@ -108,116 +119,225 @@ export function AgentDashboard({ currentUserId }: AgentDashboardProps) {
   }
 
   return (
-    <div className="p-6 max-w-7xl mx-auto bg-white min-h-screen">
+    <PageTransition type="fade" className="p-6 max-w-7xl mx-auto bg-white min-h-screen">
       {/* Header */}
-      <div className="mb-8">
+      <FadeInUp className="mb-8">
         <div className="flex items-center justify-between">
           <div>
             <div className="relative">
-              <h1 className="text-3xl font-bold bg-gradient-to-r from-osus-burgundy to-osus-primary-800 bg-clip-text text-transparent">
+              <motion.h1 
+                className="text-3xl font-bold bg-gradient-to-r from-osus-burgundy to-osus-primary-800 bg-clip-text text-transparent"
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.6, delay: 0.2 }}
+              >
                 Welcome back, {currentAgent.name}
-              </h1>
-              <div className="absolute -top-1 -right-4">
-                <Sparkle className="w-6 h-6 text-osus-secondary-500 animate-pulse" />
-              </div>
+              </motion.h1>
+              <FloatingAnimation className="absolute -top-1 -right-4">
+                <Sparkle className="w-6 h-6 text-osus-secondary-500" />
+              </FloatingAnimation>
             </div>
-            <p className="text-osus-primary-700/80 mt-2 font-medium">
+            <motion.p 
+              className="text-osus-primary-700/80 mt-2 font-medium"
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, delay: 0.4 }}
+            >
               {currentAgent.tier ? (currentAgent.tier.charAt(0).toUpperCase() + currentAgent.tier.slice(1)) : 'Standard'} Agent • 
               <span className="inline-flex items-center gap-1 text-osus-secondary-600">
-                <Target className="w-4 h-4" />
+                <motion.div
+                  animate={{ rotate: [0, 360] }}
+                  transition={{ duration: 8, repeat: Infinity, ease: "linear" }}
+                >
+                  <Target className="w-4 h-4" />
+                </motion.div>
                 Performance Score: {currentAgent.performance_score}/100
               </span>
-            </p>
+            </motion.p>
           </div>
-          <div className="flex items-center gap-2">
-            <CalendarExportButton bookings={approvedBookings} />
-            <Button 
-              onClick={() => setActiveTab('new-booking')} 
-              className="flex items-center gap-2 bg-osus-burgundy hover:bg-osus-primary-700 text-white border-0 shadow-md hover:shadow-lg transition-all duration-200 px-6 py-3 text-base font-semibold"
-            >
-              <Plus className="w-5 h-5" />
-              New Booking
-            </Button>
-          </div>
+          <motion.div 
+            className="flex items-center gap-2"
+            initial={{ opacity: 0, x: 20 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ duration: 0.5, delay: 0.6 }}
+          >
+            <HoverScale>
+              <CalendarExportButton bookings={approvedBookings} />
+            </HoverScale>
+            <HoverScale>
+              <Button 
+                onClick={() => setActiveTab('new-booking')} 
+                className="flex items-center gap-2 bg-osus-burgundy hover:bg-osus-primary-700 text-white border-0 shadow-md hover:shadow-lg transition-all duration-200 px-6 py-3 text-base font-semibold"
+              >
+                <Plus className="w-5 h-5" />
+                New Booking
+              </Button>
+            </HoverScale>
+          </motion.div>
         </div>
-      </div>
+      </FadeInUp>
 
       {/* Stats Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-        <Card className="border-osus-primary-200/50 shadow-md hover:shadow-lg transition-all duration-200 bg-white">
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-osus-primary-700 flex items-center gap-2">
-              <Target className="w-4 h-4" />
-              Monthly Quota
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-osus-primary-800">{currentAgent.monthly_used || 0}/{currentAgent.monthly_quota || 0}</div>
-            <Progress 
-              value={((currentAgent.monthly_used || 0) / (currentAgent.monthly_quota || 1)) * 100} 
-              className="mt-2 [&>div]:bg-gradient-to-r [&>div]:from-osus-primary-500 [&>div]:to-osus-secondary-500"
-            />
-            <p className="text-xs text-osus-primary-600 mt-1 font-medium">
-              {(currentAgent.monthly_quota || 0) - (currentAgent.monthly_used || 0)} slots remaining
-            </p>
-          </CardContent>
-        </Card>
+      <StaggerChildren className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+        <StaggerChild>
+          <CardAnimation>
+            <Card className="border-osus-primary-200/50 shadow-md hover:shadow-lg transition-all duration-200 bg-white">
+              <CardHeader className="pb-2">
+                <CardTitle className="text-sm font-medium text-osus-primary-700 flex items-center gap-2">
+                  <motion.div
+                    animate={{ rotate: [0, 360] }}
+                    transition={{ duration: 8, repeat: Infinity, ease: "linear" }}
+                  >
+                    <Target className="w-4 h-4" />
+                  </motion.div>
+                  Monthly Quota
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <motion.div 
+                  className="text-2xl font-bold text-osus-primary-800"
+                  initial={{ scale: 0 }}
+                  animate={{ scale: 1 }}
+                  transition={{ duration: 0.5, delay: 0.2, type: "spring" }}
+                >
+                  {currentAgent.monthly_used || 0}/{currentAgent.monthly_quota || 0}
+                </motion.div>
+                <motion.div
+                  initial={{ width: 0 }}
+                  animate={{ width: '100%' }}
+                  transition={{ duration: 0.8, delay: 0.4 }}
+                >
+                  <Progress 
+                    value={((currentAgent.monthly_used || 0) / (currentAgent.monthly_quota || 1)) * 100} 
+                    className="mt-2 [&>div]:bg-gradient-to-r [&>div]:from-osus-primary-500 [&>div]:to-osus-secondary-500"
+                  />
+                </motion.div>
+                <p className="text-xs text-osus-primary-600 mt-1 font-medium">
+                  {(currentAgent.monthly_quota || 0) - (currentAgent.monthly_used || 0)} slots remaining
+                </p>
+              </CardContent>
+            </Card>
+          </CardAnimation>
+        </StaggerChild>
 
-        <Card className="border-osus-secondary-200/50 shadow-md hover:shadow-lg transition-all duration-200 bg-white">
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-osus-secondary-700 flex items-center gap-2">
-              <Clock className="w-4 h-4" />
-              Pending Requests
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-osus-secondary-800">{pendingBookings.length}</div>
-            <p className="text-xs text-osus-secondary-600 mt-1 font-medium">Awaiting approval</p>
-          </CardContent>
-        </Card>
+        <StaggerChild>
+          <CardAnimation delay={0.1}>
+            <Card className="border-osus-secondary-200/50 shadow-md hover:shadow-lg transition-all duration-200 bg-white">
+              <CardHeader className="pb-2">
+                <CardTitle className="text-sm font-medium text-osus-secondary-700 flex items-center gap-2">
+                  <PulseAnimation>
+                    <Clock className="w-4 h-4" />
+                  </PulseAnimation>
+                  Pending Requests
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <motion.div 
+                  className="text-2xl font-bold text-osus-secondary-800"
+                  initial={{ scale: 0 }}
+                  animate={{ scale: 1 }}
+                  transition={{ duration: 0.5, delay: 0.3, type: "spring" }}
+                >
+                  {pendingBookings.length}
+                </motion.div>
+                <p className="text-xs text-osus-secondary-600 mt-1 font-medium">Awaiting approval</p>
+              </CardContent>
+            </Card>
+          </CardAnimation>
+        </StaggerChild>
 
-        <Card className="border-emerald-200/50 shadow-md hover:shadow-lg transition-all duration-200 bg-white">
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-emerald-700 flex items-center gap-2">
-              <Lightning className="w-4 h-4" />
-              Upcoming Shoots
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-emerald-800">{approvedBookings.length}</div>
-            <p className="text-xs text-emerald-600 mt-1 font-medium">Confirmed bookings</p>
-          </CardContent>
-        </Card>
+        <StaggerChild>
+          <CardAnimation delay={0.2}>
+            <Card className="border-emerald-200/50 shadow-md hover:shadow-lg transition-all duration-200 bg-white">
+              <CardHeader className="pb-2">
+                <CardTitle className="text-sm font-medium text-emerald-700 flex items-center gap-2">
+                  <motion.div
+                    animate={{ scale: [1, 1.2, 1] }}
+                    transition={{ duration: 1, repeat: Infinity, ease: "easeInOut" }}
+                  >
+                    <Lightning className="w-4 h-4" />
+                  </motion.div>
+                  Upcoming Shoots
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <motion.div 
+                  className="text-2xl font-bold text-emerald-800"
+                  initial={{ scale: 0 }}
+                  animate={{ scale: 1 }}
+                  transition={{ duration: 0.5, delay: 0.4, type: "spring" }}
+                >
+                  {approvedBookings.length}
+                </motion.div>
+                <p className="text-xs text-emerald-600 mt-1 font-medium">Confirmed bookings</p>
+              </CardContent>
+            </Card>
+          </CardAnimation>
+        </StaggerChild>
 
-        <Card className="border-osus-primary-200/50 shadow-md hover:shadow-lg transition-all duration-200 bg-white">
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-osus-primary-700 flex items-center gap-2">
-              <TrendUp className="w-4 h-4" />
-              Performance Score
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold flex items-center gap-2 text-osus-primary-800">
-              {currentAgent.performance_score}
-              <div className="w-2 h-2 bg-gradient-to-r from-osus-primary-500 to-osus-secondary-500 rounded-full animate-pulse" />
-            </div>
-            <p className="text-xs text-osus-secondary-600 mt-1 font-medium">+5 this month</p>
-          </CardContent>
-        </Card>
-      </div>
+        <StaggerChild>
+          <CardAnimation delay={0.3}>
+            <Card className="border-osus-primary-200/50 shadow-md hover:shadow-lg transition-all duration-200 bg-white">
+              <CardHeader className="pb-2">
+                <CardTitle className="text-sm font-medium text-osus-primary-700 flex items-center gap-2">
+                  <motion.div
+                    animate={{ y: [0, -3, 0] }}
+                    transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
+                  >
+                    <TrendUp className="w-4 h-4" />
+                  </motion.div>
+                  Performance Score
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold flex items-center gap-2 text-osus-primary-800">
+                  <motion.span
+                    initial={{ scale: 0 }}
+                    animate={{ scale: 1 }}
+                    transition={{ duration: 0.5, delay: 0.5, type: "spring" }}
+                  >
+                    {currentAgent.performance_score}
+                  </motion.span>
+                  <motion.div 
+                    className="w-2 h-2 bg-gradient-to-r from-osus-primary-500 to-osus-secondary-500 rounded-full"
+                    animate={{ scale: [1, 1.2, 1] }}
+                    transition={{ duration: 1.5, repeat: Infinity, ease: "easeInOut" }}
+                  />
+                </div>
+                <p className="text-xs text-osus-secondary-600 mt-1 font-medium">+5 this month</p>
+              </CardContent>
+            </Card>
+          </CardAnimation>
+        </StaggerChild>
+      </StaggerChildren>
 
       {/* Tabs */}
-      <Tabs value={activeTab} onValueChange={setActiveTab}>
-        <TabsList className="mb-6 bg-white border-2 border-osus-primary-300 shadow-sm">
-          <TabsTrigger value="overview">Overview</TabsTrigger>
-          <TabsTrigger value="pending">Pending ({pendingBookings.length})</TabsTrigger>
-          <TabsTrigger value="approved">Approved ({approvedBookings.length})</TabsTrigger>
-          <TabsTrigger value="calendar">Calendar & Notifications</TabsTrigger>
-          <TabsTrigger value="notifications">Push Notifications</TabsTrigger>
-          <TabsTrigger value="history">History</TabsTrigger>
-        </TabsList>
+      <FadeInUp delay={0.8}>
+        <Tabs value={activeTab} onValueChange={setActiveTab}>
+          <motion.div
+            initial={{ y: 20, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            transition={{ duration: 0.5, delay: 0.9 }}
+          >
+            <TabsList className="mb-6 bg-white border-2 border-osus-primary-300 shadow-sm">
+              <TabsTrigger value="overview">Overview</TabsTrigger>
+              <TabsTrigger value="pending">Pending ({pendingBookings.length})</TabsTrigger>
+              <TabsTrigger value="approved">Approved ({approvedBookings.length})</TabsTrigger>
+              <TabsTrigger value="calendar">Calendar & Notifications</TabsTrigger>
+              <TabsTrigger value="notifications">Push Notifications</TabsTrigger>
+              <TabsTrigger value="history">History</TabsTrigger>
+            </TabsList>
+          </motion.div>
 
-        <TabsContent value="overview">
+          <AnimatePresence mode="wait">
+            <motion.div
+              key={activeTab}
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -20 }}
+              transition={{ duration: 0.3 }}
+            >
+              <TabsContent value="overview">
           {/* Daily AI Insights */}
           <div className="mb-6">
             <DailyAIInsights 
@@ -227,9 +347,11 @@ export function AgentDashboard({ currentUserId }: AgentDashboardProps) {
             />
           </div>
           
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <StaggerChildren className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             {/* Recent Bookings */}
-            <Card className="border-osus-primary-200/50 shadow-lg bg-white">
+            <StaggerChild>
+              <CardAnimation>
+                <Card className="border-osus-primary-200/50 shadow-lg bg-white">
               <CardHeader className="bg-osus-primary-100 border-b border-osus-primary-200">
                 <CardTitle className="text-osus-primary-900 font-semibold flex items-center gap-2">
                   <CalendarBlank className="w-5 h-5" />
@@ -280,10 +402,14 @@ export function AgentDashboard({ currentUserId }: AgentDashboardProps) {
                   )}
                 </div>
               </CardContent>
-            </Card>
+                </Card>
+              </CardAnimation>
+            </StaggerChild>
 
             {/* Performance Insights */}
-            <Card className="border-osus-primary-200/50 shadow-lg bg-white">
+            <StaggerChild>
+              <CardAnimation delay={0.2}>
+                <Card className="border-osus-primary-200/50 shadow-lg bg-white">
               <CardHeader className="bg-osus-primary-100 border-b border-osus-primary-200">
                 <CardTitle className="text-osus-primary-900 font-semibold flex items-center gap-2">
                   <TrendUp className="w-5 h-5" />
@@ -336,14 +462,18 @@ export function AgentDashboard({ currentUserId }: AgentDashboardProps) {
                   </div>
                 </div>
               </CardContent>
-            </Card>
-          </div>
-        </TabsContent>
+                </Card>
+              </CardAnimation>
+            </StaggerChild>
+          </StaggerChildren>
+              </TabsContent>
 
-        <TabsContent value="pending">
-          <div className="space-y-4">
-            {pendingBookings.map((booking) => (
-              <Card key={booking.id}>
+              <TabsContent value="pending">
+                <StaggerChildren className="space-y-4">
+                  {pendingBookings.map((booking, index) => (
+                    <StaggerChild key={booking.id}>
+                      <CardAnimation delay={index * 0.1}>
+                        <Card>
                 <CardContent className="p-6">
                   <div className="flex items-start justify-between">
                     <div className="flex-1">
@@ -379,23 +509,31 @@ export function AgentDashboard({ currentUserId }: AgentDashboardProps) {
                     </div>
                   </div>
                 </CardContent>
-              </Card>
-            ))}
-            {pendingBookings.length === 0 && (
-              <Card>
-                <CardContent className="p-8 text-center">
-                  <CalendarBlank className="w-12 h-12 mx-auto mb-3 opacity-50" />
-                  <p className="text-muted-foreground">No pending requests</p>
-                </CardContent>
-              </Card>
-            )}
-          </div>
-        </TabsContent>
+                        </Card>
+                      </CardAnimation>
+                    </StaggerChild>
+                  ))}
+                  {pendingBookings.length === 0 && (
+                    <StaggerChild>
+                      <CardAnimation>
+                        <Card>
+                          <CardContent className="p-8 text-center">
+                            <CalendarBlank className="w-12 h-12 mx-auto mb-3 opacity-50" />
+                            <p className="text-muted-foreground">No pending requests</p>
+                          </CardContent>
+                        </Card>
+                      </CardAnimation>
+                    </StaggerChild>
+                  )}
+                </StaggerChildren>
+              </TabsContent>
 
-        <TabsContent value="approved">
-          <div className="space-y-4">
-            {approvedBookings.map((booking) => (
-              <Card key={booking.id}>
+              <TabsContent value="approved">
+                <StaggerChildren className="space-y-4">
+                  {approvedBookings.map((booking, index) => (
+                    <StaggerChild key={booking.id}>
+                      <CardAnimation delay={index * 0.1}>
+                        <Card>
                 <CardContent className="p-6">
                   <div className="flex items-start justify-between">
                     <div className="flex-1">
@@ -420,40 +558,58 @@ export function AgentDashboard({ currentUserId }: AgentDashboardProps) {
                     </div>
                   </div>
                 </CardContent>
-              </Card>
-            ))}
-            {approvedBookings.length === 0 && (
-              <Card>
-                <CardContent className="p-8 text-center">
-                  <CalendarBlank className="w-12 h-12 mx-auto mb-3 opacity-50" />
-                  <p className="text-muted-foreground">No approved bookings</p>
-                </CardContent>
-              </Card>
-            )}
-          </div>
-        </TabsContent>
+                        </Card>
+                      </CardAnimation>
+                    </StaggerChild>
+                  ))}
+                  {approvedBookings.length === 0 && (
+                    <StaggerChild>
+                      <CardAnimation>
+                        <Card>
+                          <CardContent className="p-8 text-center">
+                            <CalendarBlank className="w-12 h-12 mx-auto mb-3 opacity-50" />
+                            <p className="text-muted-foreground">No approved bookings</p>
+                          </CardContent>
+                        </Card>
+                      </CardAnimation>
+                    </StaggerChild>
+                  )}
+                </StaggerChildren>
+              </TabsContent>
 
-        <TabsContent value="calendar">
-          <CalendarNotificationCenter
-            currentUser={currentAgent}
-            userBookings={myBookings}
-            upcomingBookings={approvedBookings.filter(b => 
-              b.scheduled_date && new Date(b.scheduled_date) >= new Date()
-            )}
-          />
-        </TabsContent>
+              <TabsContent value="calendar">
+                <FadeInUp>
+                  <CalendarNotificationCenter
+                    currentUser={currentAgent}
+                    userBookings={myBookings}
+                    upcomingBookings={approvedBookings.filter(b => 
+                      b.scheduled_date && new Date(b.scheduled_date) >= new Date()
+                    )}
+                  />
+                </FadeInUp>
+              </TabsContent>
 
-        <TabsContent value="notifications">
-          <div className="space-y-6">
-            <PushNotificationSettings />
-            <PushNotificationDemo />
-          </div>
-        </TabsContent>
+              <TabsContent value="notifications">
+                <StaggerChildren className="space-y-6">
+                  <StaggerChild>
+                    <CardAnimation>
+                      <PushNotificationSettings />
+                    </CardAnimation>
+                  </StaggerChild>
+                  <StaggerChild>
+                    <CardAnimation delay={0.2}>
+                      <PushNotificationDemo />
+                    </CardAnimation>
+                  </StaggerChild>
+                </StaggerChildren>
+              </TabsContent>
 
-        <TabsContent value="history">
-          <div className="space-y-4">
-            {completedBookings.map((booking) => (
-              <Card key={booking.id}>
+              <TabsContent value="history">
+                <StaggerChildren className="space-y-4">
+                  {completedBookings.map((booking, index) => (
+                    <StaggerChild key={booking.id}>
+                      <CardAnimation delay={index * 0.1}>
+                        <Card>
                 <CardContent className="p-6">
                   <div className="flex items-start justify-between">
                     <div className="flex-1">
@@ -479,19 +635,28 @@ export function AgentDashboard({ currentUserId }: AgentDashboardProps) {
                     </div>
                   </div>
                 </CardContent>
-              </Card>
-            ))}
-            {completedBookings.length === 0 && (
-              <Card>
-                <CardContent className="p-8 text-center">
-                  <CalendarBlank className="w-12 h-12 mx-auto mb-3 opacity-50" />
-                  <p className="text-muted-foreground">No completed bookings</p>
-                </CardContent>
-              </Card>
-            )}
-          </div>
-        </TabsContent>
-      </Tabs>
-    </div>
+                        </Card>
+                      </CardAnimation>
+                    </StaggerChild>
+                  ))}
+                  {completedBookings.length === 0 && (
+                    <StaggerChild>
+                      <CardAnimation>
+                        <Card>
+                          <CardContent className="p-8 text-center">
+                            <CalendarBlank className="w-12 h-12 mx-auto mb-3 opacity-50" />
+                            <p className="text-muted-foreground">No completed bookings</p>
+                          </CardContent>
+                        </Card>
+                      </CardAnimation>
+                    </StaggerChild>
+                  )}
+                </StaggerChildren>
+              </TabsContent>
+            </motion.div>
+          </AnimatePresence>
+        </Tabs>
+      </FadeInUp>
+    </PageTransition>
   )
 }
