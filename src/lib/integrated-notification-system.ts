@@ -1,4 +1,4 @@
-import { BookingRequest, User, SAMPLE_AGENTS, SHOOT_COMPLEXITIES, PROPERTY_VALUES } from './types'
+import { BookingRequest, User, SHOOT_COMPLEXITIES, PROPERTY_VALUES } from './types'
 import { formatDate, formatTime } from './date-utils'
 import { generateICalEvent, createCalendarEventFromBooking, sendBookingNotification } from './notification-service'
 import { generateCalendarLinks } from './calendar-utils'

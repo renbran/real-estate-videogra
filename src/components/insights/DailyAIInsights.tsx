@@ -10,7 +10,7 @@ import {
   MapPin, 
   Clock, 
   Users,
-  BrainCircuit,
+  Brain,
   ChartLineUp,
   Lightbulb
 } from '@phosphor-icons/react'
@@ -202,7 +202,7 @@ export function DailyAIInsights({ bookings = [], currentUser, userRole = 'agent'
   const getTypeIcon = (type: string) => {
     switch (type) {
       case 'optimization': return MapPin
-      case 'prediction': return BrainCircuit
+      case 'prediction': return Brain
       case 'recommendation': return Lightbulb
       case 'alert': return Lightning
       default: return Sparkle
@@ -214,7 +214,7 @@ export function DailyAIInsights({ bookings = [], currentUser, userRole = 'agent'
       <CardHeader className="bg-gradient-to-r from-osus-primary-50 to-osus-secondary-50 border-b border-osus-primary-200/30">
         <div className="flex items-center justify-between">
           <CardTitle className="text-osus-burgundy flex items-center gap-2">
-            <BrainCircuit className="w-5 h-5" />
+            <Brain className="w-5 h-5" />
             Daily AI Insights
             <Sparkle className="w-4 h-4 text-osus-gold animate-pulse" />
           </CardTitle>
@@ -237,7 +237,7 @@ export function DailyAIInsights({ bookings = [], currentUser, userRole = 'agent'
       <CardContent className="p-6">
         {insights.length === 0 ? (
           <div className="text-center py-6">
-            <BrainCircuit className="w-8 h-8 mx-auto mb-2 text-osus-primary-400" />
+            <Brain className="w-8 h-8 mx-auto mb-2 text-osus-primary-400" />
             <p className="text-osus-primary-600 text-sm">Analyzing patterns to generate insights...</p>
           </div>
         ) : (

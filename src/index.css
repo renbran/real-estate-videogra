@@ -51,7 +51,8 @@
   --color-border: var(--border);
   --color-input: var(--input);
   --color-ring: var(--ring);
-  
+
+  /* Map radius variables to create a consistent rounding system */
   --radius-sm: calc(var(--radius) * 0.5);
   --radius-md: var(--radius);
   --radius-lg: calc(var(--radius) * 1.5);
@@ -60,6 +61,37 @@
   --radius-full: 9999px;
 }
 
+/* Global styles */
 body {
   font-family: 'Inter', sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Loading animation */
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}
+
+.animate-pulse {
+  animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+/* Custom gradient backgrounds */
+.bg-gradient-elegant {
+  background: linear-gradient(135deg, var(--background) 0%, var(--muted) 100%);
+}
+
+/* Custom shadow for cards */
+.shadow-elegant {
+  box-shadow: 0 4px 6px -1px rgba(114, 47, 55, 0.1), 0 2px 4px -1px rgba(114, 47, 55, 0.06);
+}
+
+/* Burgundy custom gradient text */
+.text-gradient-burgundy {
+  background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
 }
