@@ -1,10 +1,8 @@
 import { BookingRequest, User } from './types'
 
-const env = import.meta.env as Record<string, string | undefined>
-
 // Production API configuration
-const API_BASE_URL = env.VITE_API_URL ?? env.REACT_APP_API_URL ?? '/api'
-const API_KEY = env.VITE_API_KEY ?? env.REACT_APP_API_KEY
+const API_BASE_URL = process.env.REACT_APP_API_URL || '/api'
+const API_KEY = process.env.REACT_APP_API_KEY
 
 interface ApiResponse<T> {
   success: boolean
@@ -74,20 +72,6 @@ class ProductionAPI {
 
   async getCurrentUser(): Promise<ApiResponse<User>> {
     return this.request('/auth/me')
-  }
-
-  async register(userData: {
-    name: string
-    email: string
-    password: string
-    phone?: string
-    company?: string
-    tier?: string
-  }): Promise<ApiResponse<{ user: User; token?: string }>> {
-    return this.request('/auth/signup', {
-      method: 'POST',
-      body: JSON.stringify(userData)
-    })
   }
 
   // Bookings
@@ -190,16 +174,6 @@ export const productionAPI = new ProductionAPI()
 
 // Environment check - returns true if we should use production API
 export function useProductionAPI(): boolean {
-  const mode = env.MODE ?? env.VITE_NODE_ENV ?? 'development'
-  if (mode === 'production') {
-    return true
-  }
-
-  const rawFlag = env.VITE_USE_PRODUCTION_API ?? env.REACT_APP_USE_PRODUCTION_API
-  if (!rawFlag) {
-    return false
-  }
-
-  const normalized = rawFlag.toLowerCase()
-  return normalized === 'true' || normalized === '1' || normalized === 'yes' || normalized === 'on'
+  return process.env.NODE_ENV === 'production' || 
+         process.env.REACT_APP_USE_PRODUCTION_API === 'true'
 }

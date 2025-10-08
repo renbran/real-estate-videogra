@@ -3,28 +3,17 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { useAuth } from '@/hooks/useClientAPI'
+import { authenticateUser, setCurrentUser } from '@/lib/auth'
 import { User } from '@/lib/types'
-import { GmailSignupButton } from '@/components/auth/GmailSignupButton'
 
 interface LoginFormProps {
   onLogin: (user: User) => void
-  onShowRegister: () => void
-  onShowSimplifiedSignup?: () => void
-  onGmailSignup?: (userData: {
-    name: string
-    email: string
-    company: string
-    tier: string
-  }) => void
 }
 
-export function LoginForm({ onLogin, onShowRegister, onShowSimplifiedSignup, onGmailSignup }: LoginFormProps) {
+export function LoginForm({ onLogin }: LoginFormProps) {
   const [email, setEmail] = useState('')
-  const [password, setPassword] = useState('')
   const [error, setError] = useState('')
   const [isLoading, setIsLoading] = useState(false)
-  const { login } = useAuth()
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -32,29 +21,33 @@ export function LoginForm({ onLogin, onShowRegister, onShowSimplifiedSignup, onG
     setError('')
 
     try {
-      const user = await login(email, password)
+      const user = authenticateUser(email)
       if (user) {
+        setCurrentUser(user)
         onLogin(user)
       } else {
-        setError('Invalid email or password')
+        setError('User not found. Try one of the demo accounts.')
       }
     } catch (err) {
       setError('Login failed. Please try again.')
-      console.error('Login error:', err)
     } finally {
       setIsLoading(false)
     }
   }
 
+  const demoUsers = [
+    { email: 'sarah.j@realty.com', role: 'Agent (Elite Tier)' },
+    { email: 'manager@realty.com', role: 'Manager' },
+    { email: 'video@realty.com', role: 'Videographer' }
+  ]
+
   return (
-    <div className="min-h-screen flex items-center justify-center p-4">
-      <Card className="w-full max-w-md border-blush-200 shadow-xl bg-white/95 backdrop-blur-sm">
-        <CardHeader className="text-center pb-8">
-          <CardTitle className="text-3xl font-bold bg-gradient-to-r from-burgundy-500 to-burgundy-700 bg-clip-text text-transparent mb-2">
-            VideoPro
-          </CardTitle>
-          <CardDescription className="text-burgundy-600 text-base">
-            Professional Videography Booking System
+    <div className="min-h-screen bg-background flex items-center justify-center p-4">
+      <Card className="w-full max-w-md">
+        <CardHeader className="text-center">
+          <CardTitle className="text-2xl font-bold text-primary">VideoPro</CardTitle>
+          <CardDescription>
+            Real Estate Videography Booking System
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -71,18 +64,6 @@ export function LoginForm({ onLogin, onShowRegister, onShowSimplifiedSignup, onG
               />
             </div>
 
-            <div className="space-y-2">
-              <Label htmlFor="password">Password</Label>
-              <Input
-                id="password"
-                type="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                placeholder="Enter your password"
-                required
-              />
-            </div>
-
             {error && (
               <div className="text-destructive text-sm bg-destructive/10 p-3 rounded-md">
                 {error}
@@ -94,68 +75,21 @@ export function LoginForm({ onLogin, onShowRegister, onShowSimplifiedSignup, onG
             </Button>
           </form>
 
-          {/* Gmail Login Option */}
-          {onGmailSignup && (
-            <div className="mt-4">
-              <div className="relative">
-                <div className="absolute inset-0 flex items-center">
-                  <div className="w-full border-t border-gray-200" />
-                </div>
-                <div className="relative flex justify-center text-sm">
-                  <span className="bg-white px-4 text-gray-600">or</span>
-                </div>
-              </div>
-              
-              <div className="mt-4">
-                <GmailSignupButton 
-                  onGoogleSignup={onGmailSignup}
-                  isLoading={isLoading}
-                />
-              </div>
+          <div className="mt-6">
+            <div className="text-sm font-medium text-muted-foreground mb-3">
+              Demo Accounts:
             </div>
-          )}
-
-          {/* Admin Quick Access for Testing */}
-          <div className="mt-4 p-3 bg-purple-50 rounded-lg border border-purple-200">
-            <p className="text-xs text-purple-700 font-semibold mb-2 flex items-center gap-1">
-              <span>🔧</span> Testing Credentials:
-            </p>
-            <div className="grid grid-cols-1 gap-2 text-xs">
-              <div className="flex justify-between items-center">
-                <span className="text-purple-600 font-medium">👑 Admin:</span>
-                <code className="bg-white px-2 py-1 rounded text-purple-800 font-mono">admin@osusproperties.com</code>
-              </div>
-              <div className="flex justify-between items-center">
-                <span className="text-blue-600 font-medium">👨‍💼 Manager:</span>
-                <code className="bg-white px-2 py-1 rounded text-blue-800 font-mono">robert@osusproperties.com</code>
-              </div>
-              <div className="flex justify-between items-center">
-                <span className="text-green-600 font-medium">🏠 Agent:</span>
-                <code className="bg-white px-2 py-1 rounded text-green-800 font-mono">sarah@osusproperties.com</code>
-              </div>
-            </div>
-            <p className="text-xs text-purple-600 mt-2 italic">Any password works in development mode</p>
-          </div>
-
-          <div className="mt-4 space-y-3 text-center">
-            {onShowSimplifiedSignup && (
-              <div>
-                <Button
-                  variant="outline"
-                  onClick={onShowSimplifiedSignup}
-                  className="w-full border-osus-primary-300 text-osus-primary-700 hover:bg-osus-primary-50 font-semibold"
+            <div className="space-y-2">
+              {demoUsers.map((user) => (
+                <button
+                  key={user.email}
+                  onClick={() => setEmail(user.email)}
+                  className="w-full text-left p-2 text-sm bg-muted/50 hover:bg-muted rounded-md transition-colors"
                 >
-                  🏢 Join OSUS Real Estate - Quick Signup
-                </Button>
-              </div>
-            )}
-            <div>
-              <button
-                onClick={onShowRegister}
-                className="text-sm text-muted-foreground hover:text-primary transition-colors"
-              >
-                Don't have an account? Create one
-              </button>
+                  <div className="font-medium">{user.email}</div>
+                  <div className="text-muted-foreground text-xs">{user.role}</div>
+                </button>
+              ))}
             </div>
           </div>
         </CardContent>

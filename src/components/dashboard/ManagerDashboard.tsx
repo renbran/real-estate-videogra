@@ -1,97 +1,74 @@
 import { useState } from 'react'
-import { useBookingAPI } from '@/hooks/useClientAPI'
+import { useKV } from '@github/spark/hooks'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { Progress } from '@/components/ui/progress'
-import { CheckCircle, XCircle, MapPin, Clock, Users, Bell, TrendUp, CurrencyDollar, Star, Calendar, BarChart3, FileText, Settings, Route, Lightning, Sparkle, Target, Crown } from '@phosphor-icons/react'
+import { CheckCircle, XCircle, MapPin, Clock, Users, Bell } from '@phosphor-icons/react'
 import { toast } from 'sonner'
-import { BookingRequest, SHOOT_COMPLEXITIES, User } from '@/lib/types'
+import { BookingRequest, SAMPLE_AGENTS, SHOOT_COMPLEXITIES } from '@/lib/types'
 import { formatDate, formatDateTime } from '@/lib/date-utils'
 import { NotificationCenter } from '@/components/notifications/NotificationCenter'
 import { CalendarExportButton } from '@/components/calendar/CalendarExportButton'
 import { NotificationTest } from '@/components/notifications/NotificationTest'
 import { RouteOptimizer } from './RouteOptimizer'
 import { AddressBatchValidator } from '@/components/maps/AddressBatchValidator'
-import { AnalyticsDashboard } from '@/components/analytics/AnalyticsDashboard'
-import { FileManager } from '@/components/files/FileManager'
-import { RouteOptimizer as RouteOptimizerNew } from '@/components/optimization/RouteOptimizer'
-import { DEMO_ANALYTICS } from '@/lib/demo-data'
-import { OSUS_BRAND } from '@/lib/osus-brand'
-import { DailyAIInsights } from '@/components/insights/DailyAIInsights'
-
-// Hook wrapper for compatibility
-function useBookings() {
-  const api = useBookingAPI()
-  return {
-    bookings: api.getBookings(),
-    loading: false,
-    updateBooking: api.updateBooking
-  }
-}
 
 export function ManagerDashboard() {
-  const { bookings, loading, updateBooking } = useBookings()
+  const [bookings, setBookings] = useKV<BookingRequest[]>('bookings', [])
   const [activeTab, setActiveTab] = useState('pending')
   const [selectedOptimizationDate, setSelectedOptimizationDate] = useState(
     new Date().toISOString().split('T')[0]
   )
-
-  const approveBooking = async (id: string) => {
-    await updateBooking(id, { status: 'approved' as const })
-    toast.success('Booking approved successfully')
-  }
-
-  const declineBooking = async (id: string) => {
-    await updateBooking(id, { status: 'declined' as const })
-    toast.success('Booking declined')
-  }
   
   const pendingBookings = (bookings || []).filter(b => b.status === 'pending')
   const approvedBookings = (bookings || []).filter(b => b.status === 'approved')
   const allBookings = bookings || []
 
-  if (loading) {
-    return (
-      <div className="p-6 max-w-7xl mx-auto">
-        <div className="text-center py-12">
-          <div className="text-lg">Loading bookings...</div>
-        </div>
-      </div>
+  const handleApprove = (bookingId: string, notes?: string) => {
+    setBookings(current => 
+      (current || []).map(booking => 
+        booking.id === bookingId 
+          ? { 
+              ...booking, 
+              status: 'approved',
+              updated_at: new Date().toISOString(),
+              manager_notes: notes,
+              scheduled_date: booking.scheduled_date || booking.preferred_date,
+              scheduled_time: booking.scheduled_time || '09:00'
+            }
+          : booking
+      )
     )
+    toast.success('Booking approved successfully')
   }
 
-  const handleApprove = async (bookingId: string, notes?: string) => {
-    try {
-      await approveBooking(bookingId, notes)
-      toast.success('Booking approved successfully')
-    } catch (error) {
-      toast.error('Failed to approve booking')
-      console.error('Approve booking error:', error)
-    }
-  }
-
-  const handleDecline = async (bookingId: string, notes?: string) => {
-    try {
-      await declineBooking(bookingId, notes)
-      toast.success('Booking declined')
-    } catch (error) {
-      toast.error('Failed to decline booking')
-      console.error('Decline booking error:', error)
-    }
+  const handleDecline = (bookingId: string, notes?: string) => {
+    setBookings(current => 
+      (current || []).map(booking => 
+        booking.id === bookingId 
+          ? { 
+              ...booking, 
+              status: 'declined', 
+              updated_at: new Date().toISOString(),
+              manager_notes: notes
+            }
+          : booking
+      )
+    )
+    toast.success('Booking declined')
   }
 
   const getStatusBadge = (status: string) => {
     switch (status) {
       case 'pending':
-        return <Badge variant="outline" className="border-osus-secondary-300 text-osus-secondary-800 bg-osus-secondary-50">Pending</Badge>
+        return <Badge variant="outline" className="border-yellow-300 text-yellow-800">Pending</Badge>
       case 'approved':
-        return <Badge className="bg-emerald-100 text-emerald-800 hover:bg-emerald-200">Approved</Badge>
+        return <Badge className="bg-green-100 text-green-800">Approved</Badge>
       case 'completed':
-        return <Badge className="bg-osus-primary-100 text-osus-primary-800 hover:bg-osus-primary-200">Completed</Badge>
+        return <Badge className="bg-blue-100 text-blue-800">Completed</Badge>
       case 'declined':
         return <Badge variant="destructive">Declined</Badge>
       default:
@@ -102,47 +79,31 @@ export function ManagerDashboard() {
   const getComplexityBadge = (complexity: string) => {
     switch (complexity) {
       case 'quick':
-        return <Badge className="bg-emerald-100 text-emerald-800 hover:bg-emerald-200">Quick</Badge>
+        return <Badge className="bg-green-100 text-green-800">Quick</Badge>
       case 'standard':
-        return <Badge className="bg-osus-secondary-100 text-osus-secondary-800 hover:bg-osus-secondary-200">Standard</Badge>
+        return <Badge className="bg-yellow-100 text-yellow-800">Standard</Badge>
       case 'complex':
-        return <Badge className="bg-red-100 text-red-800 hover:bg-red-200">Complex</Badge>
+        return <Badge className="bg-red-100 text-red-800">Complex</Badge>
       default:
         return <Badge variant="outline">{complexity}</Badge>
     }
   }
 
   const getPriorityBadge = (score: number) => {
-    if (score >= 80) return (
-      <Badge className="bg-gradient-to-r from-osus-primary-100 to-emerald-100 text-osus-primary-800 hover:from-osus-primary-200 hover:to-emerald-200 flex items-center gap-1">
-        <Crown className="w-3 h-3" />
-        High Priority
-      </Badge>
-    )
-    if (score >= 60) return (
-      <Badge className="bg-osus-secondary-100 text-osus-secondary-800 hover:bg-osus-secondary-200 flex items-center gap-1">
-        <Target className="w-3 h-3" />
-        Medium Priority
-      </Badge>
-    )
+    if (score >= 80) return <Badge className="bg-green-100 text-green-800">High Priority</Badge>
+    if (score >= 60) return <Badge className="bg-yellow-100 text-yellow-800">Medium Priority</Badge>
     return <Badge variant="outline">Low Priority</Badge>
   }
 
   return (
-    <div className="p-6 max-w-7xl mx-auto bg-gradient-to-br from-osus-primary-50/40 via-white to-osus-secondary-50/30 min-h-screen">
+    <div className="p-6 max-w-7xl mx-auto">
       {/* Header */}
       <div className="mb-8">
         <div className="flex items-center justify-between">
           <div>
-            <div className="relative">
-              <h1 className="text-3xl font-bold bg-gradient-to-r from-osus-burgundy to-osus-primary-800 bg-clip-text text-transparent flex items-center gap-3">
-                <Crown className="w-8 h-8 text-osus-gold" />
-                Manager Dashboard
-                <Sparkle className="w-6 h-6 text-osus-gold animate-pulse" />
-              </h1>
-            </div>
-            <p className="text-osus-primary-700/80 mt-2 font-medium">
-              AI-Powered videography booking management and route optimization
+            <h1 className="text-3xl font-bold text-foreground">Manager Dashboard</h1>
+            <p className="text-muted-foreground mt-1">
+              Manage videography bookings and optimize schedules
             </p>
           </div>
           <CalendarExportButton bookings={approvedBookings} />
@@ -176,7 +137,7 @@ export function ManagerDashboard() {
             <CardTitle className="text-sm font-medium text-muted-foreground">Active Agents</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{getUsers().filter(u => u.role === 'agent').length}</div>
+            <div className="text-2xl font-bold">{SAMPLE_AGENTS.length}</div>
             <p className="text-xs text-muted-foreground mt-1">In system</p>
           </CardContent>
         </Card>
@@ -192,14 +153,6 @@ export function ManagerDashboard() {
         </Card>
       </div>
 
-      {/* Daily AI Insights */}
-      <div className="mb-8">
-        <DailyAIInsights 
-          bookings={allBookings}
-          userRole="manager"
-        />
-      </div>
-
       {/* Tabs */}
       <Tabs value={activeTab} onValueChange={setActiveTab}>
         <TabsList className="mb-6">
@@ -208,22 +161,11 @@ export function ManagerDashboard() {
           </TabsTrigger>
           <TabsTrigger value="approved">Approved ({approvedBookings.length})</TabsTrigger>
           <TabsTrigger value="all">All Bookings ({allBookings.length})</TabsTrigger>
-          <TabsTrigger value="analytics">
-            <BarChart3 className="w-4 h-4 mr-1" />
-            Analytics
-          </TabsTrigger>
-          <TabsTrigger value="optimization">
-            <Route className="w-4 h-4 mr-1" />
-            Route Optimization
-          </TabsTrigger>
-          <TabsTrigger value="files">
-            <FileText className="w-4 h-4 mr-1" />
-            File Manager
-          </TabsTrigger>
           <TabsTrigger value="notifications">
             <Bell className="w-4 h-4 mr-1" />
             Notifications
           </TabsTrigger>
+          <TabsTrigger value="optimization">Route Optimization</TabsTrigger>
           <TabsTrigger value="address-validation">Address Validation</TabsTrigger>
         </TabsList>
 
@@ -232,7 +174,7 @@ export function ManagerDashboard() {
             {pendingBookings
               .sort((a, b) => b.priority_score - a.priority_score)
               .map((booking) => {
-                const agent = getUsers().find(a => a.id === booking.agent_id)
+                const agent = SAMPLE_AGENTS.find(a => a.id === booking.agent_id)
                 return (
                   <Card key={booking.id}>
                     <CardContent className="p-6">
@@ -425,16 +367,35 @@ export function ManagerDashboard() {
           </div>
         </TabsContent>
 
-        <TabsContent value="analytics">
-          <AnalyticsDashboard />
-        </TabsContent>
-
         <TabsContent value="optimization">
-          <RouteOptimizerNew />
-        </TabsContent>
-
-        <TabsContent value="files">
-          <FileManager />
+          <div className="space-y-6">
+            <Card>
+              <CardHeader>
+                <CardTitle>Select Date for Route Optimization</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="max-w-xs">
+                  <Label htmlFor="optimization-date">Date</Label>
+                  <Input
+                    id="optimization-date"
+                    type="date"
+                    value={selectedOptimizationDate}
+                    onChange={(e) => setSelectedOptimizationDate(e.target.value)}
+                    min={new Date().toISOString().split('T')[0]}
+                  />
+                </div>
+              </CardContent>
+            </Card>
+            
+            <RouteOptimizer 
+              selectedDate={selectedOptimizationDate}
+              onOptimizationComplete={(result) => {
+                toast.success('Route optimization completed!', {
+                  description: `Optimized ${result.waypoints.length} properties`
+                })
+              }}
+            />
+          </div>
         </TabsContent>
 
         <TabsContent value="address-validation">

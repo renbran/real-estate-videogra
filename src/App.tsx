@@ -1,38 +1,22 @@
 import { useState, useEffect } from 'react'
-import { AnimatePresence } from 'framer-motion'
 import { Toaster } from '@/components/ui/sonner'
-import { AuthContainer } from '@/components/auth/AuthContainer'
+import { LoginForm } from '@/components/auth/LoginForm'
 import { Header } from '@/components/navigation/Header'
 import { AgentDashboard } from '@/components/dashboard/AgentDashboard'
 import { ManagerDashboard } from '@/components/dashboard/ManagerDashboard'
 import { VideographerDashboard } from '@/components/dashboard/VideographerDashboard'
-import { AdminDashboard } from '@/components/dashboard/AdminDashboard'
-import { LoadingScreen } from '@/components/ui/loading/LoadingScreen'
-import { PageTransition } from '@/components/ui/animations/PageTransition'
 import { User } from '@/lib/types'
-import { useAuth } from '@/hooks/useClientAPI'
+import { getCurrentUser } from '@/lib/auth'
 
 function App() {
   const [currentUser, setCurrentUser] = useState<User | null>(null)
   const [isLoading, setIsLoading] = useState(true)
-  const [showSplash, setShowSplash] = useState(true)
-  const { getCurrentUser, isLoading: authLoading } = useAuth()
 
   useEffect(() => {
-    // Simulate initial app loading with minimum splash screen time
-    const initApp = async () => {
-      const minLoadTime = new Promise(resolve => setTimeout(resolve, 2500))
-      const user = getCurrentUser()
-      
-      await minLoadTime // Ensure splash screen shows for at least 2.5 seconds
-      
-      setCurrentUser(user || null)
-      setShowSplash(false)
-      setIsLoading(false)
-    }
-    
-    initApp()
-  }, [getCurrentUser])
+    const user = getCurrentUser()
+    setCurrentUser(user)
+    setIsLoading(false)
+  }, [])
 
   const handleLogin = (user: User) => {
     setCurrentUser(user)
@@ -53,51 +37,40 @@ function App() {
       case 'videographer':
         return <VideographerDashboard />
       case 'admin':
-        return <AdminDashboard currentUserId={currentUser.id} />
+        return <ManagerDashboard /> // Admins see manager view for now
       default:
         return <div className="p-6 text-center">Role not supported</div>
     }
   }
 
-  // Show loading screen during initial app load
-  if (showSplash || isLoading || authLoading) {
+  if (isLoading) {
     return (
-      <LoadingScreen 
-        type="full"
-        message="Initializing your videography booking system"
-        showProgress={true}
-        duration={2000}
-      />
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <div className="text-center">
+          <div className="text-xl font-bold text-primary mb-2">VideoPro</div>
+          <div className="text-sm text-muted-foreground">Loading...</div>
+        </div>
+      </div>
     )
   }
 
   if (!currentUser) {
     return (
-      <AnimatePresence>
-        <PageTransition type="fade">
-          <div className="min-h-screen bg-white">
-            <AuthContainer onAuth={handleLogin} />
-            <Toaster />
-          </div>
-        </PageTransition>
-      </AnimatePresence>
+      <>
+        <LoginForm onLogin={handleLogin} />
+        <Toaster />
+      </>
     )
   }
 
   return (
-    <AnimatePresence>
-      <PageTransition type="slide">
-        <div className="min-h-screen bg-white">
-          <Header user={currentUser} onLogout={handleLogout} />
-          <main>
-            <PageTransition type="fade">
-              {renderDashboard()}
-            </PageTransition>
-          </main>
-          <Toaster />
-        </div>
-      </PageTransition>
-    </AnimatePresence>
+    <div className="min-h-screen bg-background">
+      <Header user={currentUser} onLogout={handleLogout} />
+      <main>
+        {renderDashboard()}
+      </main>
+      <Toaster />
+    </div>
   )
 }
 
