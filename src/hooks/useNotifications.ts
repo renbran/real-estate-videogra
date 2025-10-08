@@ -1,5 +1,5 @@
 import { useCallback } from 'react'
-import { useKV } from '@github/spark/hooks'
+import { useKV } from './useKV'
 import { toast } from 'sonner'
 import { 
   sendBookingNotification, 

@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { useKV } from '@github/spark/hooks'
+import { useKV } from './useKV'
 import { BookingRequest, User, AgentTier } from '@/lib/types'
 import { productionAPI, useProductionAPI } from '@/lib/production-api'
 
@@ -184,7 +184,7 @@ export function useAuth() {
       // In development, auto-login as first fallback user
       setCurrentUser(FALLBACK_USERS[0])
     }
-  }, [currentUser, setCurrentUser, isProduction])
+  }, [currentUser, isProduction, setCurrentUser])
 
   const getCurrentUserFromAPI = async () => {
     setIsLoading(true)

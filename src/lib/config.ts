@@ -1,21 +1,50 @@
 // Production configuration for OSUS Videography Booking System
 
+const env = import.meta.env as Record<string, string | undefined>
+
+const MODE = env.MODE ?? env.VITE_NODE_ENV ?? 'development'
+const bool = (value: string | undefined, fallback = false) => {
+  if (!value) return fallback
+  switch (value.toLowerCase()) {
+    case 'true':
+    case '1':
+    case 'yes':
+    case 'on':
+      return true
+    case 'false':
+    case '0':
+    case 'no':
+    case 'off':
+      return false
+    default:
+      return fallback
+  }
+}
+
+const apiBaseUrl = env.VITE_API_URL ?? env.REACT_APP_API_URL ?? '/api'
+const apiKey = env.VITE_API_KEY ?? env.REACT_APP_API_KEY
+const useProductionAPIFlag = bool(env.VITE_USE_PRODUCTION_API ?? env.REACT_APP_USE_PRODUCTION_API, MODE === 'production')
+const mapsApiKey = env.VITE_GOOGLE_MAPS_API_KEY ?? env.REACT_APP_GOOGLE_MAPS_API_KEY ?? 'AIzaSyDNJ-Jl4d4KFTxTJP_g5WW3_K9pL9tOq0g'
+const emailServiceUrl = env.VITE_EMAIL_SERVICE_URL ?? env.REACT_APP_EMAIL_SERVICE_URL
+const emailApiKey = env.VITE_EMAIL_API_KEY ?? env.REACT_APP_EMAIL_API_KEY
+const vapidPublicKey = env.VITE_VAPID_PUBLIC_KEY ?? env.REACT_APP_VAPID_PUBLIC_KEY
+
 export const config = {
   // Environment
-  isDevelopment: process.env.NODE_ENV === 'development',
-  isProduction: process.env.NODE_ENV === 'production',
+  isDevelopment: MODE === 'development',
+  isProduction: MODE === 'production',
   
   // API Configuration
   api: {
-    baseUrl: process.env.REACT_APP_API_URL || '/api',
-    key: process.env.REACT_APP_API_KEY,
+    baseUrl: apiBaseUrl,
+    key: apiKey,
     timeout: 30000, // 30 seconds
-    useProductionAPI: process.env.REACT_APP_USE_PRODUCTION_API === 'true' || process.env.NODE_ENV === 'production'
+    useProductionAPI: useProductionAPIFlag
   },
   
   // Google Maps Configuration
   maps: {
-    apiKey: process.env.REACT_APP_GOOGLE_MAPS_API_KEY || 'AIzaSyDNJ-Jl4d4KFTxTJP_g5WW3_K9pL9tOq0g',
+    apiKey: mapsApiKey,
     defaultLocation: {
       lat: 34.0522, // Los Angeles, CA
       lng: -118.2437
@@ -53,14 +82,14 @@ export const config = {
   notifications: {
     email: {
       enabled: true,
-      serviceUrl: process.env.REACT_APP_EMAIL_SERVICE_URL,
-      apiKey: process.env.REACT_APP_EMAIL_API_KEY,
+      serviceUrl: emailServiceUrl,
+      apiKey: emailApiKey,
       fromAddress: 'noreply@osus.com',
       fromName: 'OSUS Videography'
     },
     push: {
       enabled: true,
-      vapidPublicKey: process.env.REACT_APP_VAPID_PUBLIC_KEY,
+      vapidPublicKey: vapidPublicKey,
       showBrowserPrompt: true
     }
   },
