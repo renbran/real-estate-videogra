@@ -95,7 +95,7 @@ export function LoginForm({ onLogin, onShowRegister, onShowSimplifiedSignup }: L
                   onClick={onShowSimplifiedSignup}
                   className="w-full border-osus-primary-300 text-osus-primary-700 hover:bg-osus-primary-50 font-semibold"
                 >
-                  Quick Sign Up - Get Started in 2 Minutes
+                  🏢 Join OSUS Real Estate - Quick Signup
                 </Button>
               </div>
             )}
