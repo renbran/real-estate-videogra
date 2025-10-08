@@ -46,7 +46,7 @@ export function RegisterForm({ onRegister, onBackToLogin }: RegisterFormProps) {
     }
 
     try {
-      const { user } = await register({
+      const result = await register({
         name: formData.name,
         email: formData.email,
         password: formData.password,
@@ -54,7 +54,12 @@ export function RegisterForm({ onRegister, onBackToLogin }: RegisterFormProps) {
         company: formData.company,
         tier: formData.tier
       })
-      onRegister(user)
+      
+      if (result && result.user) {
+        onRegister(result.user)
+      } else {
+        setError('Registration failed. Please try again.')
+      }
     } catch (err: any) {
       setError(err.message || 'Registration failed. Please try again.')
       console.error('Registration error:', err)

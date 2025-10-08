@@ -15,9 +15,7 @@ function App() {
 
   useEffect(() => {
     const user = getCurrentUser()
-    if (user !== undefined) {
-      setCurrentUser(user)
-    }
+    setCurrentUser(user || null) // Ensure we pass null instead of undefined
     setIsLoading(false)
   }, [getCurrentUser])
 
