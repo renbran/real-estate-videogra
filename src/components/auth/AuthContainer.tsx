@@ -103,6 +103,37 @@ export function AuthContainer({ onAuth }: AuthContainerProps) {
     }
   }
 
+  const handleGmailSignup = async (userData: {
+    name: string
+    email: string
+    company: string
+    tier: string
+  }) => {
+    setIsLoading(true)
+    setError('')
+    
+    try {
+      // For Gmail signup, we skip email verification since Google has already verified the email
+      const registerResult = await register({
+        name: userData.name,
+        email: userData.email,
+        password: Math.random().toString(36), // Generate random password for OAuth users
+        tier: userData.tier,
+        company: userData.company
+      })
+      
+      if (registerResult && registerResult.user) {
+        onAuth(registerResult.user)
+      } else {
+        throw new Error('Gmail signup failed')
+      }
+    } catch (err: any) {
+      setError(err.message || 'Gmail signup failed')
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
   if (mode === 'register') {
     return (
       <RegisterForm 
@@ -116,6 +147,7 @@ export function AuthContainer({ onAuth }: AuthContainerProps) {
     return (
       <SimplifiedSignup
         onSignup={handleSimplifiedSignup}
+        onGmailSignup={handleGmailSignup}
         onBackToLogin={handleShowLogin}
         isLoading={isLoading}
         error={error}
@@ -140,6 +172,7 @@ export function AuthContainer({ onAuth }: AuthContainerProps) {
       onLogin={onAuth}
       onShowRegister={handleShowRegister}
       onShowSimplifiedSignup={handleShowSimplifiedSignup}
+      onGmailSignup={handleGmailSignup}
     />
   )
 }

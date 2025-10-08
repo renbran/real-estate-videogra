@@ -5,14 +5,21 @@ import { Label } from '@/components/ui/label'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { useAuth } from '@/hooks/useClientAPI'
 import { User } from '@/lib/types'
+import { GmailSignupButton } from '@/components/auth/GmailSignupButton'
 
 interface LoginFormProps {
   onLogin: (user: User) => void
   onShowRegister: () => void
   onShowSimplifiedSignup?: () => void
+  onGmailSignup?: (userData: {
+    name: string
+    email: string
+    company: string
+    tier: string
+  }) => void
 }
 
-export function LoginForm({ onLogin, onShowRegister, onShowSimplifiedSignup }: LoginFormProps) {
+export function LoginForm({ onLogin, onShowRegister, onShowSimplifiedSignup, onGmailSignup }: LoginFormProps) {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [error, setError] = useState('')
@@ -86,6 +93,27 @@ export function LoginForm({ onLogin, onShowRegister, onShowSimplifiedSignup }: L
               {isLoading ? 'Signing in...' : 'Sign In'}
             </Button>
           </form>
+
+          {/* Gmail Login Option */}
+          {onGmailSignup && (
+            <div className="mt-4">
+              <div className="relative">
+                <div className="absolute inset-0 flex items-center">
+                  <div className="w-full border-t border-gray-200" />
+                </div>
+                <div className="relative flex justify-center text-sm">
+                  <span className="bg-white px-4 text-gray-600">or</span>
+                </div>
+              </div>
+              
+              <div className="mt-4">
+                <GmailSignupButton 
+                  onGoogleSignup={onGmailSignup}
+                  isLoading={isLoading}
+                />
+              </div>
+            </div>
+          )}
 
           {/* Admin Quick Access for Testing */}
           <div className="mt-4 p-3 bg-purple-50 rounded-lg border border-purple-200">

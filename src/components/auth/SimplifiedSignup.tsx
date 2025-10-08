@@ -275,11 +275,35 @@ export function SimplifiedSignup({
               </StaggerChildren>
             </form>
 
+            {/* Gmail Signup Option */}
+            <motion.div 
+              className="mt-6"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ duration: 0.5, delay: 0.7 }}
+            >
+              <div className="relative">
+                <div className="absolute inset-0 flex items-center">
+                  <div className="w-full border-t border-osus-primary-200" />
+                </div>
+                <div className="relative flex justify-center text-sm">
+                  <span className="bg-white px-4 text-osus-primary-600 font-medium">or continue with</span>
+                </div>
+              </div>
+              
+              <div className="mt-4">
+                <GmailSignupButton 
+                  onGoogleSignup={onGmailSignup}
+                  isLoading={isLoading}
+                />
+              </div>
+            </motion.div>
+
             <motion.div 
               className="mt-6 space-y-3"
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
-              transition={{ duration: 0.5, delay: 0.8 }}
+              transition={{ duration: 0.5, delay: 0.9 }}
             >
               <div className="text-center">
                 <Button
