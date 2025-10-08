@@ -74,6 +74,20 @@ class ProductionAPI {
     return this.request('/auth/me')
   }
 
+  async register(userData: {
+    name: string
+    email: string
+    password: string
+    phone?: string
+    company?: string
+    tier?: string
+  }): Promise<ApiResponse<{ user: User; token?: string }>> {
+    return this.request('/auth/signup', {
+      method: 'POST',
+      body: JSON.stringify(userData)
+    })
+  }
+
   // Bookings
   async getBookings(filters?: {
     agent_id?: string

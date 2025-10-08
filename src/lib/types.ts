@@ -50,6 +50,10 @@ export interface User {
   monthly_quota?: number
   monthly_used?: number
   performance_score?: number
+  phone?: string
+  company?: string
+  is_active?: boolean
+  email_verified?: boolean
   created_at: string
 }
 

@@ -1,11 +1,15 @@
 const bcrypt = require('bcryptjs');
-const { pool } = require('../config/database');
-const { createTables } = require('./migrate');
+const { query, pool } = require('../config/database');
+
+// Use appropriate migration based on database type
+const usePostgres = process.env.DATABASE_URL || process.env.DB_HOST;
+const { createTables } = usePostgres ? require('./migrate') : require('./migrate-sqlite');
 
 const seedData = async () => {
   console.log('🌱 Seeding database with initial data...');
   
-  const client = await pool.connect();
+  // Handle both SQLite and PostgreSQL
+  const client = pool ? await pool.connect() : { query };
   
   try {
     // First run migrations
@@ -120,7 +124,10 @@ const seedData = async () => {
     console.error('❌ Error seeding database:', error);
     throw error;
   } finally {
-    client.release();
+    // Only release if using PostgreSQL pool
+    if (pool && client.release) {
+      client.release();
+    }
   }
 };
 

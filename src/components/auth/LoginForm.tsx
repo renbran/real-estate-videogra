@@ -8,10 +8,12 @@ import { User } from '@/lib/types'
 
 interface LoginFormProps {
   onLogin: (user: User) => void
+  onShowRegister: () => void
 }
 
-export function LoginForm({ onLogin }: LoginFormProps) {
+export function LoginForm({ onLogin, onShowRegister }: LoginFormProps) {
   const [email, setEmail] = useState('')
+  const [password, setPassword] = useState('')
   const [error, setError] = useState('')
   const [isLoading, setIsLoading] = useState(false)
   const { login } = useAuth()
@@ -22,8 +24,12 @@ export function LoginForm({ onLogin }: LoginFormProps) {
     setError('')
 
     try {
-      const { user } = await login(email)
-      onLogin(user)
+      const user = await login(email, password)
+      if (user) {
+        onLogin(user)
+      } else {
+        setError('Invalid email or password')
+      }
     } catch (err) {
       setError('Login failed. Please try again.')
       console.error('Login error:', err)
@@ -31,12 +37,6 @@ export function LoginForm({ onLogin }: LoginFormProps) {
       setIsLoading(false)
     }
   }
-
-  const demoUsers = [
-    { email: 'sarah.j@realty.com', role: 'Agent (Elite Tier)' },
-    { email: 'manager@realty.com', role: 'Manager' },
-    { email: 'video@realty.com', role: 'Videographer' }
-  ]
 
   return (
     <div className="min-h-screen bg-background flex items-center justify-center p-4">
@@ -61,6 +61,18 @@ export function LoginForm({ onLogin }: LoginFormProps) {
               />
             </div>
 
+            <div className="space-y-2">
+              <Label htmlFor="password">Password</Label>
+              <Input
+                id="password"
+                type="password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                placeholder="Enter your password"
+                required
+              />
+            </div>
+
             {error && (
               <div className="text-destructive text-sm bg-destructive/10 p-3 rounded-md">
                 {error}
@@ -72,22 +84,13 @@ export function LoginForm({ onLogin }: LoginFormProps) {
             </Button>
           </form>
 
-          <div className="mt-6">
-            <div className="text-sm font-medium text-muted-foreground mb-3">
-              Demo Accounts:
-            </div>
-            <div className="space-y-2">
-              {demoUsers.map((user) => (
-                <button
-                  key={user.email}
-                  onClick={() => setEmail(user.email)}
-                  className="w-full text-left p-2 text-sm bg-muted/50 hover:bg-muted rounded-md transition-colors"
-                >
-                  <div className="font-medium">{user.email}</div>
-                  <div className="text-muted-foreground text-xs">{user.role}</div>
-                </button>
-              ))}
-            </div>
+          <div className="mt-4 text-center">
+            <button
+              onClick={onShowRegister}
+              className="text-sm text-muted-foreground hover:text-primary transition-colors"
+            >
+              Don't have an account? Create one
+            </button>
           </div>
         </CardContent>
       </Card>

@@ -324,4 +324,73 @@ router.post('/change-password', authenticateToken, async (req, res) => {
   }
 });
 
+// POST /api/auth/signup - Public registration for new users
+router.post('/signup', registerValidation, async (req, res) => {
+  try {
+    const { email, password, name, role = 'agent', tier = 'standard', phone, company } = req.body;
+    
+    // Check if registration is enabled
+    const settingResult = await query(
+      'SELECT setting_value FROM system_settings WHERE setting_key = $1',
+      ['registration_enabled']
+    );
+    
+    if (settingResult.rows.length === 0 || settingResult.rows[0].setting_value !== 'true') {
+      return res.status(403).json({ error: 'Registration is currently disabled' });
+    }
+    
+    // Check if user already exists
+    const existingUser = await query(
+      'SELECT id FROM users WHERE email = $1',
+      [email]
+    );
+    
+    if (existingUser.rows.length > 0) {
+      return res.status(400).json({ error: 'User with this email already exists' });
+    }
+    
+    // Validate role (only allow agent registration for public signup)
+    const allowedRoles = ['agent'];
+    if (!allowedRoles.includes(role)) {
+      return res.status(400).json({ error: 'Invalid role for registration' });
+    }
+    
+    // Hash password
+    const passwordHash = await bcrypt.hash(password, parseInt(process.env.BCRYPT_ROUNDS) || 12);
+    
+    // Set default values based on tier
+    const defaultQuota = tier === 'elite' ? 8 : tier === 'premium' ? 4 : 2;
+    
+    // Create user
+    const result = await query(`
+      INSERT INTO users (email, password_hash, name, role, tier, monthly_quota, phone, company, is_active, email_verified)
+      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
+      RETURNING id, email, name, role, tier, created_at
+    `, [email, passwordHash, name, role, tier, defaultQuota, phone, company, true, false]);
+    
+    const newUser = result.rows[0];
+    
+    // Generate tokens for immediate login
+    const tokens = generateTokens(newUser.id);
+    
+    res.status(201).json({
+      message: 'Account created successfully! Welcome to VideoPro.',
+      user: {
+        id: newUser.id,
+        email: newUser.email,
+        name: newUser.name,
+        role: newUser.role,
+        tier: newUser.tier
+      },
+      accessToken: tokens.accessToken,
+      refreshToken: tokens.refreshToken,
+      expiresIn: '30 minutes'
+    });
+    
+  } catch (error) {
+    console.error('Registration error:', error);
+    res.status(500).json({ error: 'Account creation failed' });
+  }
+});
+
 module.exports = router;

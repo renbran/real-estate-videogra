@@ -239,6 +239,57 @@ export function useAuth() {
     }
   }
 
+  const register = async (userData: {
+    name: string
+    email: string
+    password: string
+    phone?: string
+    company?: string
+    tier?: string
+  }): Promise<{ user: User } | null> => {
+    setIsLoading(true)
+    setError(null)
+    
+    try {
+      if (isProduction) {
+        const response = await productionAPI.register(userData)
+        if (response.success && response.data) {
+          const { user, token } = response.data
+          if (token) {
+            localStorage.setItem('auth_token', token)
+          }
+          setCurrentUser(user)
+          return { user }
+        } else {
+          setError(response.error || 'Registration failed')
+          return null
+        }
+      } else {
+        // For development, create a mock user
+        const newUser: User = {
+          id: Math.random().toString(36).substr(2, 9),
+          email: userData.email,
+          name: userData.name,
+          role: 'agent',
+          tier: userData.tier as AgentTier || 'standard',
+          phone: userData.phone || '',
+          company: userData.company || '',
+          monthly_quota: userData.tier === 'elite' ? 8 : userData.tier === 'premium' ? 4 : 2,
+          current_month_bookings: 0,
+          is_active: true,
+          created_at: new Date().toISOString()
+        }
+        setCurrentUser(newUser)
+        return { user: newUser }
+      }
+    } catch (err: any) {
+      setError(err.message || 'Registration failed - network error')
+      return null
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
   const logout = async () => {
     setIsLoading(true)
     
@@ -261,6 +312,7 @@ export function useAuth() {
   return {
     currentUser,
     login,
+    register,
     logout,
     getCurrentUser,
     isLoading,

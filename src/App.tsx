@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { Toaster } from '@/components/ui/sonner'
-import { LoginForm } from '@/components/auth/LoginForm'
+import { AuthContainer } from '@/components/auth/AuthContainer'
 import { Header } from '@/components/navigation/Header'
 import { AgentDashboard } from '@/components/dashboard/AgentDashboard'
 import { ManagerDashboard } from '@/components/dashboard/ManagerDashboard'
@@ -60,7 +60,7 @@ function App() {
   if (!currentUser) {
     return (
       <div className="min-h-screen bg-white">
-        <LoginForm onLogin={handleLogin} />
+        <AuthContainer onAuth={handleLogin} />
         <Toaster />
       </div>
     )

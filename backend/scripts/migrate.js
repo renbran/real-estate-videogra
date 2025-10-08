@@ -1,7 +1,8 @@
-const { pool } = require('../config/database');
+const { query, pool } = require('../config/database');
 
 const createTables = async () => {
-  const client = await pool.connect();
+  // Handle both SQLite and PostgreSQL
+  const client = pool ? await pool.connect() : { query };
   
   try {
     console.log('🏗️  Creating database tables...');
@@ -414,7 +415,10 @@ const createTables = async () => {
     console.error('❌ Error creating tables:', error);
     throw error;
   } finally {
-    client.release();
+    // Only release if using PostgreSQL pool
+    if (pool && client.release) {
+      client.release();
+    }
   }
 };
 
