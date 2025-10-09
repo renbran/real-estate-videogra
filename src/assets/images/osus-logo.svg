@@ -1,0 +1,8 @@
+<svg width="120" height="40" viewBox="0 0 120 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- OSUS Properties Logo Placeholder -->
+  <rect width="120" height="40" rx="4" fill="#1a365d"/>
+  <text x="10" y="16" font-family="Arial, sans-serif" font-size="12" font-weight="bold" fill="white">OSUS</text>
+  <text x="10" y="30" font-family="Arial, sans-serif" font-size="8" fill="#cbd5e0">PROPERTIES</text>
+  <circle cx="95" cy="20" r="8" fill="#4299e1"/>
+  <path d="M91 20l3 3 6-6" stroke="white" stroke-width="2" fill="none"/>
+</svg>
