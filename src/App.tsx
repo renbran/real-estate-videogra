@@ -3,6 +3,7 @@ import { Toaster } from '@/components/ui/sonner'
 import { ErrorBoundary } from '@/components/ErrorBoundary'
 import { LoadingScreen } from '@/components/Loading'
 import { LoginForm } from '@/components/auth/LoginForm'
+import { RegisterForm } from '@/components/auth/RegisterForm'
 import { Header } from '@/components/navigation/Header'
 import { AgentDashboard } from '@/components/dashboard/AgentDashboard'
 import { ManagerDashboard } from '@/components/dashboard/ManagerDashboard'
@@ -13,6 +14,7 @@ import { getCurrentUser } from '@/lib/auth'
 function App() {
   const [currentUser, setCurrentUser] = useState<User | null>(null)
   const [isLoading, setIsLoading] = useState(true)
+  const [showRegister, setShowRegister] = useState(false)
 
   useEffect(() => {
     const user = getCurrentUser()
@@ -22,10 +24,17 @@ function App() {
 
   const handleLogin = (user: User) => {
     setCurrentUser(user)
+    setShowRegister(false)
+  }
+
+  const handleRegister = (user: User) => {
+    setCurrentUser(user)
+    setShowRegister(false)
   }
 
   const handleLogout = () => {
     setCurrentUser(null)
+    setShowRegister(false)
   }
 
   const renderDashboard = () => {
@@ -52,7 +61,17 @@ function App() {
   if (!currentUser) {
     return (
       <ErrorBoundary>
-        <LoginForm onLogin={handleLogin} />
+        {showRegister ? (
+          <RegisterForm 
+            onRegister={handleRegister}
+            onSwitchToLogin={() => setShowRegister(false)}
+          />
+        ) : (
+          <LoginForm 
+            onLogin={handleLogin}
+            onSwitchToRegister={() => setShowRegister(true)}
+          />
+        )}
         <Toaster />
       </ErrorBoundary>
     )

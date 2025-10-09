@@ -8,10 +8,12 @@ import { User } from '@/lib/types'
 
 interface LoginFormProps {
   onLogin: (user: User) => void
+  onSwitchToRegister?: () => void
 }
 
-export function LoginForm({ onLogin }: LoginFormProps) {
+export function LoginForm({ onLogin, onSwitchToRegister }: LoginFormProps) {
   const [email, setEmail] = useState('')
+  const [password, setPassword] = useState('')
   const [error, setError] = useState('')
   const [isLoading, setIsLoading] = useState(false)
 
@@ -21,25 +23,28 @@ export function LoginForm({ onLogin }: LoginFormProps) {
     setError('')
 
     try {
-      const user = authenticateUser(email)
-      if (user) {
-        setCurrentUser(user)
-        onLogin(user)
-      } else {
-        setError('User not found. Try one of the demo accounts.')
-      }
-    } catch (err) {
-      setError('Login failed. Please try again.')
+      const user = await authenticateUser(email, password)
+      setCurrentUser(user)
+      onLogin(user)
+    } catch (err: any) {
+      console.error('Login error:', err)
+      setError(err.message || 'Login failed. Please check your credentials and try again.')
     } finally {
       setIsLoading(false)
     }
   }
 
   const demoUsers = [
-    { email: 'sarah.j@realty.com', role: 'Agent (Elite Tier)' },
-    { email: 'manager@realty.com', role: 'Manager' },
-    { email: 'video@realty.com', role: 'Videographer' }
+    { email: 'sarah.j@realty.com', role: 'Agent (Elite Tier)', password: 'demo123' },
+    { email: 'manager@realty.com', role: 'Manager', password: 'demo123' },
+    { email: 'video@realty.com', role: 'Videographer', password: 'demo123' },
+    { email: 'admin@osusproperties.com', role: 'Admin', password: 'demo123' }
   ]
+
+  const handleDemoLogin = (demoEmail: string, demoPassword: string) => {
+    setEmail(demoEmail)
+    setPassword(demoPassword)
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blush-50 via-background to-blush-100 flex items-center justify-center p-4">
@@ -82,6 +87,18 @@ export function LoginForm({ onLogin }: LoginFormProps) {
               />
             </div>
 
+            <div className="space-y-2">
+              <Label htmlFor="password">Password</Label>
+              <Input
+                id="password"
+                type="password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                placeholder="Enter your password"
+                required
+              />
+            </div>
+
             {error && (
               <div className="text-destructive text-sm bg-destructive/10 p-3 rounded-md">
                 {error}
@@ -93,15 +110,30 @@ export function LoginForm({ onLogin }: LoginFormProps) {
             </Button>
           </form>
 
+          {onSwitchToRegister && (
+            <div className="mt-6 text-center">
+              <p className="text-sm text-muted-foreground">
+                Don't have an account?{' '}
+                <button
+                  type="button"
+                  onClick={onSwitchToRegister}
+                  className="text-burgundy-600 hover:text-burgundy-700 font-medium hover:underline"
+                >
+                  Sign Up
+                </button>
+              </p>
+            </div>
+          )}
+
           <div className="mt-6">
             <div className="text-sm font-medium text-muted-foreground mb-3">
-              Demo Accounts:
+              Demo Accounts (Password: demo123):
             </div>
             <div className="space-y-2">
               {demoUsers.map((user) => (
                 <button
                   key={user.email}
-                  onClick={() => setEmail(user.email)}
+                  onClick={() => handleDemoLogin(user.email, user.password)}
                   className="w-full text-left p-2 text-sm bg-muted/50 hover:bg-muted rounded-md transition-colors"
                 >
                   <div className="font-medium">{user.email}</div>

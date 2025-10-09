@@ -4,16 +4,16 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
-import { registerUser, setCurrentUser } from '@/lib/auth'
+import { registerUser } from '@/lib/auth'
 import { User, UserRole, AgentTier } from '@/lib/types'
 import { AlertCircle, CheckCircle2 } from 'lucide-react'
 
-interface RegisterFormProps {
-  onRegister: (user: User) => void
-  onSwitchToLogin: () => void
+interface SignupFormProps {
+  onSignup: (user: User) => void
+  onSwitchToLogin?: () => void
 }
 
-export function RegisterForm({ onRegister, onSwitchToLogin }: RegisterFormProps) {
+export function SignupForm({ onSignup, onSwitchToLogin }: SignupFormProps) {
   const [formData, setFormData] = useState({
     name: '',
     email: '',
@@ -44,14 +44,13 @@ export function RegisterForm({ onRegister, onSwitchToLogin }: RegisterFormProps)
     })
   }
 
-  const isPasswordValid = () => {
-    return Object.values(passwordValidation).every(v => v === true)
+  const handlePasswordChange = (password: string) => {
+    setFormData({ ...formData, password })
+    validatePassword(password)
   }
 
-  const handlePasswordChange = (password: string) => {
-    setFormData(prev => ({ ...prev, password }))
-    validatePassword(password)
-    setError('')
+  const isPasswordValid = () => {
+    return Object.values(passwordValidation).every(v => v === true)
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -60,16 +59,21 @@ export function RegisterForm({ onRegister, onSwitchToLogin }: RegisterFormProps)
     setError('')
     setSuccess('')
 
-    // Validate passwords match
+    // Client-side validation
     if (formData.password !== formData.confirmPassword) {
       setError('Passwords do not match')
       setIsLoading(false)
       return
     }
 
-    // Validate password strength
     if (!isPasswordValid()) {
-      setError('Password does not meet all security requirements')
+      setError('Password does not meet security requirements')
+      setIsLoading(false)
+      return
+    }
+
+    if (formData.phone && !/^[\d\s\-\+\(\)]+$/.test(formData.phone)) {
+      setError('Please enter a valid phone number')
       setIsLoading(false)
       return
     }
@@ -83,15 +87,14 @@ export function RegisterForm({ onRegister, onSwitchToLogin }: RegisterFormProps)
         role: formData.role,
         tier: formData.role === 'agent' ? formData.tier : undefined
       })
+
+      setSuccess(`Account created successfully! Welcome, ${user.name}!`)
       
-      setSuccess(`Welcome, ${user.name}! Your account has been created successfully.`)
-      
-      // Auto-login after 1.5 seconds
+      // Automatically log in after 2 seconds
       setTimeout(() => {
-        setCurrentUser(user)
-        onRegister(user)
-      }, 1500)
-      
+        onSignup(user)
+      }, 2000)
+
     } catch (err: any) {
       console.error('Registration error:', err)
       setError(err.message || 'Registration failed. Please try again.')
@@ -100,14 +103,9 @@ export function RegisterForm({ onRegister, onSwitchToLogin }: RegisterFormProps)
     }
   }
 
-  const handleInputChange = (field: string, value: string) => {
-    setFormData(prev => ({ ...prev, [field]: value }))
-    setError('') // Clear error when user types
-  }
-
   return (
     <div className="min-h-screen bg-gradient-to-br from-blush-50 via-background to-blush-100 flex items-center justify-center p-4">
-      <Card className="w-full max-w-md shadow-xl border-burgundy-100">
+      <Card className="w-full max-w-2xl shadow-xl border-burgundy-100">
         <CardHeader className="text-center space-y-4 pt-8">
           {/* OSUS Properties Logo */}
           <div className="flex justify-center mb-2">
@@ -128,89 +126,89 @@ export function RegisterForm({ onRegister, onSwitchToLogin }: RegisterFormProps)
             Create Your Account
           </CardTitle>
           <CardDescription className="text-burgundy-600">
-            Join OSUS Properties Videography Services
+            Join OSUS Properties Videography Booking System
           </CardDescription>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="name">Full Name *</Label>
-              <Input
-                id="name"
-                type="text"
-                value={formData.name}
-                onChange={(e) => handleInputChange('name', e.target.value)}
-                placeholder="John Doe"
-                required
-              />
+            {/* Name and Email Row */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="name">Full Name *</Label>
+                <Input
+                  id="name"
+                  type="text"
+                  value={formData.name}
+                  onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                  placeholder="John Doe"
+                  required
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="email">Email *</Label>
+                <Input
+                  id="email"
+                  type="email"
+                  value={formData.email}
+                  onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                  placeholder="john@example.com"
+                  required
+                />
+              </div>
             </div>
 
+            {/* Phone */}
             <div className="space-y-2">
-              <Label htmlFor="email">Email *</Label>
-              <Input
-                id="email"
-                type="email"
-                value={formData.email}
-                onChange={(e) => handleInputChange('email', e.target.value)}
-                placeholder="john@example.com"
-                required
-              />
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="phone">Phone (Optional)</Label>
+              <Label htmlFor="phone">Phone Number</Label>
               <Input
                 id="phone"
                 type="tel"
                 value={formData.phone}
-                onChange={(e) => handleInputChange('phone', e.target.value)}
+                onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
                 placeholder="+1 (555) 123-4567"
               />
             </div>
 
-            <div className="space-y-2">
-              <Label htmlFor="role">I am a *</Label>
-              <Select 
-                value={formData.role} 
-                onValueChange={(value) => handleInputChange('role', value as UserRole)}
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="Select your role" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="agent">Real Estate Agent</SelectItem>
-                  <SelectItem value="videographer">Videographer</SelectItem>
-                </SelectContent>
-              </Select>
-              <p className="text-xs text-muted-foreground">
-                {formData.role === 'agent' 
-                  ? 'Book videography services for your property listings'
-                  : 'Receive and complete videography assignments'}
-              </p>
-            </div>
-
-            {formData.role === 'agent' && (
+            {/* Role and Tier Row */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label htmlFor="tier">Agent Tier *</Label>
-                <Select 
-                  value={formData.tier} 
-                  onValueChange={(value) => setFormData(prev => ({ ...prev, tier: value as AgentTier }))}
+                <Label htmlFor="role">Role *</Label>
+                <Select
+                  value={formData.role}
+                  onValueChange={(value: UserRole) => setFormData({ ...formData, role: value })}
                 >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select your tier" />
+                  <SelectTrigger id="role">
+                    <SelectValue placeholder="Select your role" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="standard">Standard - 4 bookings/month</SelectItem>
-                    <SelectItem value="premium">Premium - 6 bookings/month</SelectItem>
-                    <SelectItem value="elite">Elite - 8 bookings/month</SelectItem>
+                    <SelectItem value="agent">Real Estate Agent</SelectItem>
+                    <SelectItem value="videographer">Videographer</SelectItem>
                   </SelectContent>
                 </Select>
-                <p className="text-xs text-muted-foreground">
-                  Your tier determines monthly booking quota
-                </p>
               </div>
-            )}
 
+              {formData.role === 'agent' && (
+                <div className="space-y-2">
+                  <Label htmlFor="tier">Agent Tier *</Label>
+                  <Select
+                    value={formData.tier}
+                    onValueChange={(value: AgentTier) => setFormData({ ...formData, tier: value })}
+                  >
+                    <SelectTrigger id="tier">
+                      <SelectValue placeholder="Select tier" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="standard">Standard (4 bookings/month)</SelectItem>
+                      <SelectItem value="premium">Premium (6 bookings/month)</SelectItem>
+                      <SelectItem value="elite">Elite (8 bookings/month)</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              )}
+            </div>
+
+            {/* Password */}
             <div className="space-y-2">
               <Label htmlFor="password">Password *</Label>
               <Input
@@ -222,7 +220,7 @@ export function RegisterForm({ onRegister, onSwitchToLogin }: RegisterFormProps)
                 required
               />
               
-              {/* Password Requirements Checklist */}
+              {/* Password Requirements */}
               {formData.password && (
                 <div className="mt-2 space-y-1 text-sm">
                   <div className={`flex items-center gap-2 ${passwordValidation.length ? 'text-green-600' : 'text-muted-foreground'}`}>
@@ -243,36 +241,32 @@ export function RegisterForm({ onRegister, onSwitchToLogin }: RegisterFormProps)
                   </div>
                   <div className={`flex items-center gap-2 ${passwordValidation.special ? 'text-green-600' : 'text-muted-foreground'}`}>
                     {passwordValidation.special ? <CheckCircle2 className="h-4 w-4" /> : <AlertCircle className="h-4 w-4" />}
-                    <span>One special character (!@#$%...)</span>
+                    <span>One special character (!@#$%^&*...)</span>
                   </div>
                 </div>
               )}
             </div>
 
+            {/* Confirm Password */}
             <div className="space-y-2">
               <Label htmlFor="confirmPassword">Confirm Password *</Label>
               <Input
                 id="confirmPassword"
                 type="password"
                 value={formData.confirmPassword}
-                onChange={(e) => handleInputChange('confirmPassword', e.target.value)}
+                onChange={(e) => setFormData({ ...formData, confirmPassword: e.target.value })}
                 placeholder="Re-enter your password"
                 required
               />
               {formData.confirmPassword && formData.password !== formData.confirmPassword && (
-                <p className="text-sm text-destructive flex items-center gap-1 mt-1">
+                <p className="text-sm text-destructive flex items-center gap-1">
                   <AlertCircle className="h-4 w-4" />
                   Passwords do not match
                 </p>
               )}
-              {formData.confirmPassword && formData.password === formData.confirmPassword && formData.password.length > 0 && (
-                <p className="text-sm text-green-600 flex items-center gap-1 mt-1">
-                  <CheckCircle2 className="h-4 w-4" />
-                  Passwords match
-                </p>
-              )}
             </div>
 
+            {/* Error Message */}
             {error && (
               <div className="text-destructive text-sm bg-destructive/10 p-3 rounded-md flex items-start gap-2">
                 <AlertCircle className="h-5 w-5 flex-shrink-0 mt-0.5" />
@@ -280,6 +274,7 @@ export function RegisterForm({ onRegister, onSwitchToLogin }: RegisterFormProps)
               </div>
             )}
 
+            {/* Success Message */}
             {success && (
               <div className="text-green-600 text-sm bg-green-50 p-3 rounded-md flex items-start gap-2">
                 <CheckCircle2 className="h-5 w-5 flex-shrink-0 mt-0.5" />
@@ -287,6 +282,7 @@ export function RegisterForm({ onRegister, onSwitchToLogin }: RegisterFormProps)
               </div>
             )}
 
+            {/* Submit Button */}
             <Button 
               type="submit" 
               className="w-full" 
@@ -296,23 +292,22 @@ export function RegisterForm({ onRegister, onSwitchToLogin }: RegisterFormProps)
             </Button>
           </form>
 
+          {/* Switch to Login */}
           <div className="mt-6 text-center">
             <p className="text-sm text-muted-foreground">
               Already have an account?{' '}
               <button
-                type="button"
                 onClick={onSwitchToLogin}
-                className="text-burgundy-600 hover:text-burgundy-700 font-medium hover:underline"
+                className="text-burgundy-600 hover:text-burgundy-700 font-medium underline-offset-4 hover:underline"
               >
-                Sign In
+                Sign in here
               </button>
             </p>
           </div>
 
-          <div className="mt-6 pt-6 border-t border-muted">
-            <p className="text-xs text-center text-muted-foreground">
-              By creating an account, you agree to our Terms of Service and Privacy Policy
-            </p>
+          {/* Terms Notice */}
+          <div className="mt-4 text-xs text-center text-muted-foreground">
+            By creating an account, you agree to our Terms of Service and Privacy Policy
           </div>
         </CardContent>
       </Card>
