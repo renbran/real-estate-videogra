@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Progress } from '@/components/ui/progress'
 import { CalendarBlank, MapPin, Clock, TrendUp, Plus, Bell, Envelope } from '@phosphor-icons/react'
-import { BookingRequest, SAMPLE_AGENTS, SHOOT_COMPLEXITIES } from '@/lib/types'
+import { BookingRequest, SHOOT_COMPLEXITIES, AgentTier } from '@/lib/types'
 import { formatDate, formatDateTime } from '@/lib/date-utils'
 import { BookingForm } from '@/components/booking/BookingForm'
 import { CalendarExportButton } from '@/components/calendar/CalendarExportButton'
@@ -21,7 +21,8 @@ export function AgentDashboard({ currentUserId }: AgentDashboardProps) {
   const [activeTab, setActiveTab] = useState('overview')
   const { getNotificationHistory } = useNotifications()
   
-  const currentAgent = SAMPLE_AGENTS.find(a => a.id === currentUserId) || SAMPLE_AGENTS[0]
+  // Default agent tier
+  const defaultTier: AgentTier = 'standard'
   const myBookings = (bookings || []).filter(b => b.agent_id === currentUserId)
   const pendingBookings = myBookings.filter(b => b.status === 'pending')
   const approvedBookings = myBookings.filter(b => b.status === 'approved')

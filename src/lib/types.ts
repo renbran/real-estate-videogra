@@ -368,3 +368,18 @@ export const PROPERTY_TYPES: Record<PropertyType, { label: string }> = {
 }
 
 // Production-ready system - agents are loaded from API or created through admin interface
+// Demo sample agents for testing
+export const SAMPLE_AGENTS: Agent[] = [
+  {
+    id: '1',
+    name: 'Sarah Johnson',
+    email: 'sarah.j@realty.com',
+    role: 'agent',
+    agent_tier: 'elite',
+    tier: 'elite',
+    monthly_quota: 12,
+    monthly_used: 7,
+    performance_score: 92,
+    created_at: '2024-01-01'
+  }
+]

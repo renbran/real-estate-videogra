@@ -20,8 +20,7 @@ import {
   SHOOT_CATEGORIES,
   PROPERTY_VALUES,
   PROPERTY_TYPES,
-  SHOOT_COMPLEXITIES,
-  SAMPLE_AGENTS
+  SHOOT_COMPLEXITIES
 } from '@/lib/types'
 
 interface BookingFormProps {
@@ -57,8 +56,6 @@ export function BookingForm({ currentUserId, onSubmit }: BookingFormProps) {
     longitude: undefined as number | undefined
   })
 
-  const currentAgent = SAMPLE_AGENTS.find(a => a.id === currentUserId)
-
   const calculatePriorityScore = (): number => {
     let score = 0
     
@@ -68,10 +65,8 @@ export function BookingForm({ currentUserId, onSubmit }: BookingFormProps) {
       score += Math.min(daysInAdvance >= 7 ? 10 : daysInAdvance * 1.4, 10)
     }
     
-    // Agent tier bonus
-    if (currentAgent?.agent_tier === 'elite') score += 15
-    else if (currentAgent?.agent_tier === 'premium') score += 10
-    else score += 5
+    // Agent tier bonus (default standard tier)
+    score += 5
     
     // Property value bonus
     if (formData.property_value) {
@@ -436,8 +431,8 @@ export function BookingForm({ currentUserId, onSubmit }: BookingFormProps) {
 
               <div className="space-y-1">
                 <div className="flex justify-between text-xs">
-                  <span>Agent Tier ({currentAgent?.agent_tier})</span>
-                  <span>+{currentAgent?.agent_tier === 'elite' ? 15 : currentAgent?.agent_tier === 'premium' ? 10 : 5}</span>
+                  <span>Agent Tier (standard)</span>
+                  <span>+5</span>
                 </div>
                 {formData.is_flexible && (
                   <div className="flex justify-between text-xs">

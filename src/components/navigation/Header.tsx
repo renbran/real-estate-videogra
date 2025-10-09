@@ -31,10 +31,21 @@ export function Header({ user, onLogout }: HeaderProps) {
   }
 
   return (
-    <header className="border-b bg-card">
+    <header className="border-b bg-white shadow-sm">
       <div className="flex h-16 items-center justify-between px-6">
         <div className="flex items-center gap-4">
-          <h1 className="text-xl font-bold text-primary">VideoPro</h1>
+          <img 
+            src="https://osusproperties.com/wp-content/uploads/2025/02/Logo-Icon.svg" 
+            alt="OSUS Properties"
+            className="h-10 w-auto"
+            onError={(e) => {
+              e.currentTarget.style.display = 'none'
+              e.currentTarget.nextElementSibling?.classList.remove('hidden')
+            }}
+          />
+          <h1 className="hidden text-xl font-bold bg-gradient-to-r from-burgundy-600 to-burgundy-800 bg-clip-text text-transparent">
+            OSUS Booking
+          </h1>
         </div>
         
         <div className="flex items-center gap-4">

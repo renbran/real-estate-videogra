@@ -1,5 +1,7 @@
 import { useState, useEffect } from 'react'
 import { Toaster } from '@/components/ui/sonner'
+import { ErrorBoundary } from '@/components/ErrorBoundary'
+import { LoadingScreen } from '@/components/Loading'
 import { LoginForm } from '@/components/auth/LoginForm'
 import { Header } from '@/components/navigation/Header'
 import { AgentDashboard } from '@/components/dashboard/AgentDashboard'
@@ -44,33 +46,28 @@ function App() {
   }
 
   if (isLoading) {
-    return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
-        <div className="text-center">
-          <div className="text-xl font-bold text-primary mb-2">VideoPro</div>
-          <div className="text-sm text-muted-foreground">Loading...</div>
-        </div>
-      </div>
-    )
+    return <LoadingScreen />
   }
 
   if (!currentUser) {
     return (
-      <>
+      <ErrorBoundary>
         <LoginForm onLogin={handleLogin} />
         <Toaster />
-      </>
+      </ErrorBoundary>
     )
   }
 
   return (
-    <div className="min-h-screen bg-background">
-      <Header user={currentUser} onLogout={handleLogout} />
-      <main>
-        {renderDashboard()}
-      </main>
-      <Toaster />
-    </div>
+    <ErrorBoundary>
+      <div className="min-h-screen bg-background">
+        <Header user={currentUser} onLogout={handleLogout} />
+        <main>
+          {renderDashboard()}
+        </main>
+        <Toaster />
+      </div>
+    </ErrorBoundary>
   )
 }
 

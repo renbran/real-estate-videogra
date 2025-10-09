@@ -42,12 +42,30 @@ export function LoginForm({ onLogin }: LoginFormProps) {
   ]
 
   return (
-    <div className="min-h-screen bg-background flex items-center justify-center p-4">
-      <Card className="w-full max-w-md">
-        <CardHeader className="text-center">
-          <CardTitle className="text-2xl font-bold text-primary">VideoPro</CardTitle>
-          <CardDescription>
-            Real Estate Videography Booking System
+    <div className="min-h-screen bg-gradient-to-br from-blush-50 via-background to-blush-100 flex items-center justify-center p-4">
+      <Card className="w-full max-w-md shadow-xl border-burgundy-100">
+        <CardHeader className="text-center space-y-4 pt-8">
+          {/* OSUS Properties Logo */}
+          <div className="flex justify-center mb-2">
+            <img 
+              src="https://osusproperties.com/wp-content/uploads/2025/02/Logo-Icon.svg" 
+              alt="OSUS Properties"
+              className="h-20 w-auto"
+              onError={(e) => {
+                // Fallback if logo fails to load
+                e.currentTarget.style.display = 'none'
+                e.currentTarget.nextElementSibling?.classList.remove('hidden')
+              }}
+            />
+            <div className="hidden text-4xl font-bold bg-gradient-to-r from-burgundy-600 to-burgundy-800 bg-clip-text text-transparent">
+              OSUS
+            </div>
+          </div>
+          <CardTitle className="text-2xl font-bold text-burgundy-900">
+            Videography Booking System
+          </CardTitle>
+          <CardDescription className="text-burgundy-600">
+            Professional Real Estate Media Services
           </CardDescription>
         </CardHeader>
         <CardContent>
