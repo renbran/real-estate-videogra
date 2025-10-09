@@ -5,6 +5,7 @@ import { Label } from '@/components/ui/label'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { authenticateUser, setCurrentUser } from '@/lib/auth'
 import { User } from '@/lib/types'
+import { OSUSLogo } from '@/components/branding/OSUSLogo'
 
 interface LoginFormProps {
   onLogin: (user: User) => void
@@ -45,9 +46,9 @@ export function LoginForm({ onLogin }: LoginFormProps) {
     <div className="min-h-screen bg-background flex items-center justify-center p-4">
       <Card className="w-full max-w-md">
         <CardHeader className="text-center">
-          <CardTitle className="text-2xl font-bold text-primary">VideoPro</CardTitle>
+          <OSUSLogo size="md" className="mb-2" />
           <CardDescription>
-            Real Estate Videography Booking System
+            OSUS Properties - Videography Booking System
           </CardDescription>
         </CardHeader>
         <CardContent>

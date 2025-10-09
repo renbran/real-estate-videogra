@@ -3,6 +3,7 @@ import { Badge } from '@/components/ui/badge'
 import { SignOut, User } from '@phosphor-icons/react'
 import { User as UserType } from '@/lib/types'
 import { logout } from '@/lib/auth'
+import { OSUSLogo } from '@/components/branding/OSUSLogo'
 
 interface HeaderProps {
   user: UserType
@@ -34,7 +35,7 @@ export function Header({ user, onLogout }: HeaderProps) {
     <header className="border-b bg-card">
       <div className="flex h-16 items-center justify-between px-6">
         <div className="flex items-center gap-4">
-          <h1 className="text-xl font-bold text-primary">VideoPro</h1>
+          <OSUSLogo size="md" />
         </div>
         
         <div className="flex items-center gap-4">

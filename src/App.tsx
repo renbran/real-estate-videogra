@@ -7,6 +7,7 @@ import { ManagerDashboard } from '@/components/dashboard/ManagerDashboard'
 import { VideographerDashboard } from '@/components/dashboard/VideographerDashboard'
 import { User } from '@/lib/types'
 import { getCurrentUser } from '@/lib/auth'
+import { OSUSLogo } from '@/components/branding/OSUSLogo'
 
 function App() {
   const [currentUser, setCurrentUser] = useState<User | null>(null)
@@ -47,7 +48,7 @@ function App() {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
         <div className="text-center">
-          <div className="text-xl font-bold text-primary mb-2">VideoPro</div>
+          <OSUSLogo size="lg" className="mb-4" />
           <div className="text-sm text-muted-foreground">Loading...</div>
         </div>
       </div>
