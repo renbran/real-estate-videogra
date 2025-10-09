@@ -367,4 +367,82 @@ export const PROPERTY_TYPES: Record<PropertyType, { label: string }> = {
   land: { label: 'Land/Lot' }
 }
 
+// Sample data for development and testing
+export const SAMPLE_AGENTS: User[] = [
+  {
+    id: 'agent-1',
+    name: 'Sarah Johnson',
+    email: 'sarah@company.com',
+    role: 'agent',
+    tier: 'elite',
+    agent_tier: 'elite',
+    monthly_quota: 6,
+    monthly_used: 2,
+    performance_score: 95,
+    created_at: '2024-01-01T00:00:00Z'
+  },
+  {
+    id: 'agent-2',
+    name: 'Mike Chen',
+    email: 'mike@company.com',
+    role: 'agent',
+    tier: 'premium',
+    agent_tier: 'premium',
+    monthly_quota: 4,
+    monthly_used: 1,
+    performance_score: 88,
+    created_at: '2024-01-01T00:00:00Z'
+  },
+  {
+    id: 'agent-3',
+    name: 'Emma Rodriguez',
+    email: 'emma@company.com',
+    role: 'agent',
+    tier: 'standard',
+    agent_tier: 'standard',
+    monthly_quota: 2,
+    monthly_used: 0,
+    performance_score: 82,
+    created_at: '2024-01-01T00:00:00Z'
+  },
+  {
+    id: 'agent-4',
+    name: 'David Kim',
+    email: 'david@company.com',
+    role: 'agent',
+    tier: 'premium',
+    agent_tier: 'premium',
+    monthly_quota: 4,
+    monthly_used: 3,
+    performance_score: 91,
+    created_at: '2024-01-01T00:00:00Z'
+  },
+  {
+    id: 'agent-5',
+    name: 'Lisa Thompson',
+    email: 'lisa@company.com',
+    role: 'agent',
+    tier: 'elite',
+    agent_tier: 'elite',
+    monthly_quota: 6,
+    monthly_used: 4,
+    performance_score: 97,
+    created_at: '2024-01-01T00:00:00Z'
+  },
+  {
+    id: 'manager-1',
+    name: 'Alex Morgan',
+    email: 'alex@company.com',
+    role: 'manager',
+    created_at: '2024-01-01T00:00:00Z'
+  },
+  {
+    id: 'videographer-1',
+    name: 'Jordan Davis',
+    email: 'jordan@company.com',
+    role: 'videographer',
+    created_at: '2024-01-01T00:00:00Z'
+  }
+]
+
 // Production-ready system - agents are loaded from API or created through admin interface
