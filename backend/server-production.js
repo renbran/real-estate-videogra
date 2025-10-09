@@ -80,13 +80,17 @@ app.use((req, res, next) => {
 
 // Health Check
 app.get('/health', (req, res) => {
+  const databaseType = process.env.DATABASE_URL 
+    ? 'PostgreSQL (Production)' 
+    : 'SQLite (Development)';
+    
   res.json({
     status: 'healthy',
     timestamp: new Date().toISOString(),
     uptime: process.uptime(),
     version: '2.0.0',
     environment: process.env.NODE_ENV || 'development',
-    database: 'SQLite (Development)',
+    database: databaseType,
     memory: {
       used: `${Math.round(process.memoryUsage().heapUsed / 1024 / 1024)}MB`,
       total: `${Math.round(process.memoryUsage().heapTotal / 1024 / 1024)}MB`

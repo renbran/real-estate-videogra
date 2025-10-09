@@ -4,11 +4,12 @@
   "description": "OSUS Properties Videography Booking System - Backend API",
   "main": "server.js",
   "scripts": {
-    "start": "node server.js",
+    "start": "node server-production.js",
     "dev": "nodemon server.js",
     "test": "jest --coverage",
     "migrate": "node scripts/migrate.js",
     "migrate:sqlite": "node scripts/migrate-sqlite.js",
+    "migrate:postgres": "node scripts/migrate-postgres.js",
     "seed": "node scripts/seed.js",
     "create-admin": "node scripts/create-admin.js",
     "setup-production": "node scripts/setup-production-db.js",

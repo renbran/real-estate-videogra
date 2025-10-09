@@ -1,0 +1,50 @@
+# Frontend files (not needed for backend deployment)
+src/
+public/
+components.json
+index.html
+vite.config.ts
+tailwind.config.js
+tsconfig.json
+
+# Documentation
+*.md
+!backend/README.md
+
+# Development files
+.github/
+scripts/
+test-status.html
+
+# Build outputs
+dist/
+build/
+.vite/
+
+# Logs
+*.log
+logs/
+
+# Environment files (will be set via Railway dashboard)
+.env
+.env.local
+.env.production.local
+
+# Git
+.git/
+.gitignore
+
+# IDE
+.vscode/
+.idea/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Deployment configs for other platforms
+vercel.json
+netlify.toml
+cloudflare-package.json
+deploy-*.sh
+deploy-*.bat
