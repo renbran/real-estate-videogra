@@ -1,18 +1,20 @@
 # 🎯 QUICK DEPLOYMENT REFERENCE
 
-## 📍 START HERE
+## 📍 START HERE - UPDATED
 
-**Time**: 30 minutes  
-**Guide**: DEPLOY-NOW.md  
+**Platform**: Render.com (Railway no longer free)  
+**Time**: 15-20 minutes  
+**Guide**: RENDER-DEPLOYMENT.md ⭐  
 **Status**: Everything prepared ✅
 
 ---
 
 ## 🔗 Important Links
 
-### Railway
-- Dashboard: https://railway.app/dashboard
-- Docs: https://docs.railway.app/quick-start
+### Render.com (Recommended)
+- Dashboard: https://dashboard.render.com
+- Docs: https://render.com/docs
+- Sign up: https://render.com (free, no credit card)
 
 ### GitHub
 - Repository: https://github.com/renbran/real-estate-videogra
@@ -29,7 +31,7 @@
 
 ## 🔑 Copy-Paste Values
 
-### Railway Environment Variables
+### Render.com Environment Variables
 
 **NODE_ENV**
 ```
@@ -38,7 +40,7 @@ production
 
 **PORT**
 ```
-3001
+10000
 ```
 
 **JWT_SECRET**
@@ -63,39 +65,30 @@ https://renbran.github.io/real-estate-videogra
 
 **DATABASE_URL**
 ```
-${{Postgres.DATABASE_URL}}
+<PASTE_INTERNAL_DATABASE_URL_FROM_RENDER>
 ```
-(Use dropdown to reference PostgreSQL service)
+(Copy from Render PostgreSQL dashboard - Internal Database URL)
 
 ---
 
 ## 🧪 Test Commands
 
-### Test Railway Backend
+### Test Render Backend
 ```bash
 # Health check (shows database type)
-curl https://YOUR-APP-NAME.up.railway.app/health
+curl https://YOUR-APP-NAME.onrender.com/health
 
 # Login test
-curl https://YOUR-APP-NAME.up.railway.app/api/auth/login \
+curl https://YOUR-APP-NAME.onrender.com/api/auth/login \
   -X POST \
   -H "Content-Type: application/json" \
   -d '{"email":"admin@osusproperties.com","password":"demo123"}'
 ```
 
-### Run Migration (Railway CLI)
-```bash
-# Install CLI
-npm i -g @railway/cli
-
-# Login
-railway login
-
-# Link project
-railway link
-
-# Run migration
-railway run npm run migrate:postgres --dir backend
+### Migration (Automatic)
+Migration runs automatically on first deployment via start command:
+```
+npm run migrate:postgres && npm start
 ```
 
 ---
@@ -115,8 +108,8 @@ admin@osusproperties.com    → Admin
 
 ## ✅ Success Checklist
 
-### Railway Backend
-- [ ] Service status: "Active"
+### Render Backend
+- [ ] Service status: "Live" (green indicator)
 - [ ] Health endpoint: `"database": "PostgreSQL (Production)"`
 - [ ] Login returns access token
 - [ ] No errors in logs
@@ -133,41 +126,54 @@ admin@osusproperties.com    → Admin
 
 ### CORS Error
 ```
-Fix in Railway: CORS_ORIGIN=https://renbran.github.io
+Fix in Render: CORS_ORIGIN=https://renbran.github.io
 (NO trailing slash!)
 ```
 
 ### Build Fails
 ```
-Check: Railway logs
+Check: Render logs
 Verify: All environment variables set
+Verify: Root Directory = backend
 ```
 
 ### Database Error
 ```
-Verify: DATABASE_URL=${{Postgres.DATABASE_URL}}
-Check: PostgreSQL service running
-Run: Migration script
+Verify: DATABASE_URL is Internal Database URL from Render
+Check: PostgreSQL database is running
+Check: Same region for service and database
 ```
 
 ---
 
 ## 📚 Full Documentation
 
-1. **DEPLOY-NOW.md** - Visual step-by-step (⭐ START HERE)
-2. **DEPLOYMENT-STATUS.md** - Complete overview
-3. **RAILWAY-QUICK-START.md** - Detailed guide
-4. **RAILWAY-DEPLOYMENT.md** - Full reference
+1. **RENDER-DEPLOYMENT.md** - Complete step-by-step guide (⭐ START HERE)
+2. **FREE-BACKEND-ALTERNATIVES.md** - All free options comparison
+3. **DEPLOYMENT-STATUS.md** - Project overview
 
 ---
 
 ## ⏱️ Timeline
 
-1. Railway setup: 15 min
-2. GitHub Pages: 5 min
-3. Testing: 10 min
-4. **Total: 30 min**
+1. Render setup: 15 min
+2. GitHub Pages update: 3 min
+3. Testing: 5 min
+4. **Total: 20-25 min**
 
 ---
 
-**Ready? Open DEPLOY-NOW.md and start! 🚀**
+## 🆕 What Changed?
+
+**Railway is no longer free** - We've switched to Render.com which is:
+- ✅ Still 100% free
+- ✅ No credit card required
+- ✅ PostgreSQL included (free for 90 days)
+- ✅ Easy to use
+- ⚠️ Sleeps after 15min inactivity (wakes in 30-60 sec)
+
+**Alternative options** also available in FREE-BACKEND-ALTERNATIVES.md
+
+---
+
+**Ready? Open RENDER-DEPLOYMENT.md and start! 🚀**

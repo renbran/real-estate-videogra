@@ -1,211 +1,186 @@
-# 🎯 Render Deployment Guide (Railway Alternative)
+# 🎯 Render.com Deployment Guide - Step by Step
 
-**Platform**: Render.com (100% Free)  
-**Time**: 20 minutes  
-**Requirements**: GitHub account only (no credit card!)
-
----
-
-## ✅ What You Get (Free Tier)
-
-- ✅ **750 hours/month** of compute (enough for 1 app always-on)
-- ✅ **PostgreSQL database** with 256MB storage
-- ✅ **Automatic deploys** from GitHub
-- ✅ **Free SSL/HTTPS**
-- ✅ **Custom domains** (optional)
-- ⚠️ **Spins down after 15 min** inactivity (cold start ~30s)
-
-**Database Note**: Free PostgreSQL expires after 90 days. You'll need to backup and create a new one, or upgrade to paid.
+**Platform**: Render.com (Free Tier)  
+**Time**: 15-20 minutes  
+**Cost**: $0 (PostgreSQL free for 90 days)  
+**Difficulty**: Easy ⭐⭐
 
 ---
 
-## 🚀 Step-by-Step Deployment
+## ✅ Prerequisites
 
-### Step 1: Create Render Account (2 minutes)
+- GitHub account: @renbran ✅
+- Code pushed to GitHub ✅
+- No credit card required ✅
+
+---
+
+## 🚀 Step 1: Sign Up for Render (2 minutes)
 
 1. Go to https://render.com
-2. Click **"Get Started"** or **"Sign Up"**
-3. Choose **"Sign in with GitHub"**
+2. Click **"Get Started"**
+3. Select **"Sign in with GitHub"**
 4. Authorize Render to access your repositories
-5. Complete your profile (optional)
-
-✅ **Done!** You're in the Render dashboard.
+5. Complete profile setup
 
 ---
 
-### Step 2: Create PostgreSQL Database (3 minutes)
+## 🗄️ Step 2: Create PostgreSQL Database (3 minutes)
 
-1. In Render dashboard, click **"New +"** → **"PostgreSQL"**
-2. Configure database:
-   - **Name**: `real-estate-videogra-db`
-   - **Database**: `videography` (or leave default)
-   - **User**: `videography_user` (or leave default)
-   - **Region**: Choose closest to you (e.g., `Oregon (US West)`)
-   - **PostgreSQL Version**: 16 (or latest)
+1. **Click "New +"** in the top-right corner
+2. Select **"PostgreSQL"**
+
+3. **Configure Database:**
+   - **Name**: `osus-videography-db`
+   - **Database**: `osus_db`
+   - **User**: `osus_user`
+   - **Region**: **Oregon (US West)** ⚠️ Important: Choose closest to your users
    - **Plan**: **Free**
 
-3. Click **"Create Database"**
-4. Wait ~30 seconds for provisioning
-5. **IMPORTANT**: Copy the **Internal Database URL**
-   - Go to database page → **"Info"** tab
-   - Copy **"Internal Database URL"** (starts with `postgresql://`)
-   - Save it for Step 4
+4. Click **"Create Database"**
 
-Example URL:
-```
-postgresql://videography_user:password@dpg-xxxxx.oregon-postgres.render.com/videography
-```
+5. **Wait 30-60 seconds** for database to provision
 
-✅ **Done!** PostgreSQL is ready.
+6. **Copy Connection Strings:**
+   - Find **"Internal Database URL"** (starts with `postgresql://`)
+   - Keep this tab open - you'll need it in Step 4
+
+   Example:
+   ```
+   postgresql://osus_user:xxxxx@dpg-xxxxx-oregon-postgres.render.com/osus_db
+   ```
 
 ---
 
-### Step 3: Create Web Service (5 minutes)
+## 🌐 Step 3: Create Web Service (5 minutes)
 
-1. In Render dashboard, click **"New +"** → **"Web Service"**
-2. Click **"Connect a repository"**
-3. Find and select: **renbran/real-estate-videogra**
-   - If not listed, click "Configure account" and grant access
-4. Configure service:
+1. **Click "New +"** again
+2. Select **"Web Service"**
 
+3. **Connect Repository:**
+   - Select **"Build and deploy from a Git repository"**
+   - Click **"Connect account"** if needed
+   - Find and select: **renbran/real-estate-videogra**
+   - Click **"Connect"**
+
+4. **Configure Service:**
+   
    **Basic Settings:**
-   - **Name**: `real-estate-videogra-backend`
-   - **Region**: Same as database (e.g., `Oregon`)
+   - **Name**: `osus-videography-backend`
+   - **Region**: **Oregon (US West)** ⚠️ Same as database!
    - **Branch**: `main`
    - **Root Directory**: `backend`
-   - **Runtime**: `Node`
-
-   **Build & Deploy:**
+   
+   **Build Settings:**
+   - **Runtime**: **Node**
    - **Build Command**: `npm install`
-   - **Start Command**: `npm start`
-
+   - **Start Command**: `npm run migrate:postgres && npm start`
+   
    **Plan:**
-   - Select **"Free"**
+   - Select: **Free** ($0/month)
 
-5. **DON'T CLICK CREATE YET** - we need to add environment variables first
+5. **Don't click "Create Web Service" yet** - we need to add environment variables first!
 
 ---
 
-### Step 4: Add Environment Variables (5 minutes)
+## 🔐 Step 4: Add Environment Variables (5 minutes)
 
-Still on the "Create Web Service" page, scroll down to **"Environment Variables"** section:
+Scroll down to **"Environment Variables"** section:
 
 Click **"Add Environment Variable"** for each of these:
 
-#### 1. NODE_ENV
-```
-production
-```
+### Variable 1: NODE_ENV
+- **Key**: `NODE_ENV`
+- **Value**: `production`
 
-#### 2. PORT
-```
-10000
-```
-**Important**: Render uses port 10000, not 3001
+### Variable 2: PORT
+- **Key**: `PORT`
+- **Value**: `10000`
 
-#### 3. JWT_SECRET
-```
-b8e88830a1e91fc1c0d2e2cccda70d451c190a17a346a6e2cfbab36aa24cacb0a9c21d66acd26749e6874403d46aff4ef182af8469e7c87f88e2549e841e7a77
-```
+### Variable 3: DATABASE_URL
+- **Key**: `DATABASE_URL`
+- **Value**: Paste the **Internal Database URL** from Step 2
+  
+  Example:
+  ```
+  postgresql://osus_user:xxxxx@dpg-xxxxx-oregon-postgres.render.com/osus_db
+  ```
 
-#### 4. JWT_REFRESH_SECRET
-```
-d3a907db395eb800d39fa0cd0eb03970292b046accafc79a682d0e56dec7fddbbdb532885ddb8a42f5fb4eb403a0491c8f9f05b538da7172014412ba8a3dfeb3
-```
+### Variable 4: JWT_SECRET
+- **Key**: `JWT_SECRET`
+- **Value**: 
+  ```
+  b8e88830a1e91fc1c0d2e2cccda70d451c190a17a346a6e2cfbab36aa24cacb0a9c21d66acd26749e6874403d46aff4ef182af8469e7c87f88e2549e841e7a77
+  ```
 
-#### 5. CORS_ORIGIN
-```
-https://renbran.github.io
-```
+### Variable 5: JWT_REFRESH_SECRET
+- **Key**: `JWT_REFRESH_SECRET`
+- **Value**: 
+  ```
+  d3a907db395eb800d39fa0cd0eb03970292b046accafc79a682d0e56dec7fddbbdb532885ddb8a42f5fb4eb403a0491c8f9f05b538da7172014412ba8a3dfeb3
+  ```
 
-#### 6. FRONTEND_URL
-```
-https://renbran.github.io/real-estate-videogra
-```
+### Variable 6: CORS_ORIGIN
+- **Key**: `CORS_ORIGIN`
+- **Value**: `https://renbran.github.io`
 
-#### 7. DATABASE_URL
-```
-<PASTE YOUR INTERNAL DATABASE URL FROM STEP 2>
-```
-**Example**:
-```
-postgresql://videography_user:xxx@dpg-xxxxx.oregon-postgres.render.com/videography
-```
-
----
-
-### Step 5: Deploy! (2 minutes)
-
-1. Click **"Create Web Service"**
-2. Render will start building your app
-3. Watch the logs (automatic):
-   - Installing dependencies...
-   - Building...
-   - Starting server...
-4. Wait ~2-3 minutes for first deploy
-
-✅ **Success** when you see: `Your service is live 🎉`
-
-**Your Backend URL**: `https://real-estate-videogra-backend.onrender.com`
+### Variable 7: FRONTEND_URL
+- **Key**: `FRONTEND_URL`
+- **Value**: `https://renbran.github.io/real-estate-videogra`
 
 ---
 
-### Step 6: Run Database Migration (3 minutes)
+## 🚀 Step 5: Deploy (3 minutes)
 
-After successful deployment, we need to run the migration to create tables.
+1. **Review all settings**
+   - Root Directory: `backend` ✅
+   - Build Command: `npm install` ✅
+   - Start Command: `npm run migrate:postgres && npm start` ✅
+   - All 7 environment variables added ✅
 
-#### Option A: Using Render Shell (Easiest)
+2. **Click "Create Web Service"**
 
-1. Go to your web service in Render dashboard
-2. Click **"Shell"** tab (top right)
-3. Wait for shell to connect
-4. Run migration:
-   ```bash
-   npm run migrate:postgres
-   ```
-5. You should see:
-   ```
-   ✅ Users table created
-   ✅ Bookings table created
-   ✅ Notifications table created
-   ✅ Files table created
-   ✅ Audit logs table created
-   ✅ Calendar events table created
-   ✅ All indexes created
-   ✅ Created demo user: sarah.j@realty.com
-   ✅ Created demo user: manager@realty.com
-   ✅ Created demo user: video@realty.com
-   ✅ Created demo user: admin@osusproperties.com
-   ✅ Migration completed successfully!
-   ```
+3. **Monitor Deployment:**
+   - You'll see the **Logs** tab automatically
+   - Watch for:
+     ```
+     ==> Cloning from https://github.com/renbran/real-estate-videogra...
+     ==> Installing packages...
+     ==> Starting migration...
+     ==> Server started on port 10000
+     ```
 
-#### Option B: Using One-Time Job
-
-1. Dashboard → **"Jobs"** → **"New Job"**
-2. Configure:
-   - **Name**: `Database Migration`
-   - **Command**: `npm run migrate:postgres`
-   - **Plan**: Free
-3. Click **"Create Job"**
-4. Run once, check logs, then delete job
-
-✅ **Done!** Database is migrated with demo users.
+4. **Wait for deployment** (3-5 minutes for first build)
+   - Status will change from "Deploying" to "Live"
+   - Green "Live" indicator means success! ✅
 
 ---
 
-### Step 7: Test Your Backend (2 minutes)
+## 🔗 Step 6: Get Your Backend URL (1 minute)
 
-Get your backend URL from Render dashboard (e.g., `https://real-estate-videogra-backend.onrender.com`)
+1. **Find your URL** at the top of the page
+   - Format: `https://osus-videography-backend.onrender.com`
+   - Or: `https://osus-videography-backend-xxxx.onrender.com`
 
-#### Test 1: Health Check
+2. **Copy the full URL** - you'll need it for GitHub Pages
+
+---
+
+## 🧪 Step 7: Test Your Backend (2 minutes)
+
+### Test 1: Health Check
+
+Open a new terminal and run:
+
 ```bash
-curl https://real-estate-videogra-backend.onrender.com/health
+curl https://YOUR-RENDER-URL.onrender.com/health
 ```
 
-Expected response:
+**Expected Response:**
 ```json
 {
   "status": "healthy",
+  "timestamp": "2025-10-09T...",
   "database": "PostgreSQL (Production)",
   "environment": "production"
 }
@@ -213,254 +188,287 @@ Expected response:
 
 ✅ If you see `"database": "PostgreSQL (Production)"` - SUCCESS!
 
-#### Test 2: Login with Demo User
+### Test 2: Login with Demo User
+
 ```bash
-curl https://real-estate-videogra-backend.onrender.com/api/auth/login \
+curl https://YOUR-RENDER-URL.onrender.com/api/auth/login \
   -X POST \
   -H "Content-Type: application/json" \
   -d '{"email":"admin@osusproperties.com","password":"demo123"}'
 ```
 
-Expected: Returns `access_token` and `refresh_token`
+**Expected Response:**
+```json
+{
+  "success": true,
+  "user": { ... },
+  "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+  "refreshToken": "..."
+}
+```
 
-✅ **Success!** Your backend is live and working!
+✅ If you get tokens - SUCCESS!
 
 ---
 
-## 🔗 Step 8: Connect Frontend (5 minutes)
+## 🌐 Step 8: Update GitHub Pages Configuration (3 minutes)
 
-### Update GitHub Secret
+### Update GitHub Secret:
 
 1. Go to: https://github.com/renbran/real-estate-videogra/settings/secrets/actions
-2. Click **"New repository secret"**
-3. Add:
+
+2. Find `VITE_API_URL` or click **"New repository secret"**
+
+3. **Set:**
    - **Name**: `VITE_API_URL`
-   - **Value**: `https://real-estate-videogra-backend.onrender.com/api`
-4. Click **"Add secret"**
+   - **Value**: `https://YOUR-RENDER-URL.onrender.com/api`
+   
+   Example:
+   ```
+   https://osus-videography-backend.onrender.com/api
+   ```
 
-### Enable GitHub Pages (if not already)
+4. Click **"Add secret"** or **"Update secret"**
 
-1. Go to: https://github.com/renbran/real-estate-videogra/settings/pages
-2. **Source**: Select **"GitHub Actions"**
-3. Save
+---
 
-### Trigger New Deployment
+## 🔄 Step 9: Trigger Frontend Redeploy (2 minutes)
 
+### Option A: Make a small commit
 ```bash
-# Make a small change to trigger redeploy
 cd '/d/Booking System/real-estate-videogra'
 git commit --allow-empty -m "Update API URL to Render backend"
 git push origin main
 ```
 
-Wait 2-3 minutes, then your frontend will be live at:
-**https://renbran.github.io/real-estate-videogra/**
+### Option B: Manually trigger GitHub Actions
+1. Go to: https://github.com/renbran/real-estate-videogra/actions
+2. Click on **"Deploy to GitHub Pages"** workflow
+3. Click **"Run workflow"**
+4. Select branch: `main`
+5. Click **"Run workflow"**
+
+**Wait 2-3 minutes** for deployment to complete
 
 ---
 
-## ✅ Step 9: Verify Everything Works
+## ✅ Step 10: Verify Everything Works (3 minutes)
 
-### Test the Live App
+1. **Open your live app:**
+   - https://renbran.github.io/real-estate-videogra/
 
-1. Open: https://renbran.github.io/real-estate-videogra/
-2. Click **"Sign Up"**
-3. Create a test account
-4. Verify signup succeeds
-5. Login with demo user: `admin@osusproperties.com` / `demo123`
-6. Check dashboard loads
+2. **Test Signup:**
+   - Click **"Sign Up"**
+   - Create a test account
+   - Verify account creation succeeds ✅
 
-### Check Browser Console
+3. **Test Login:**
+   - Login with demo user:
+     - Email: `admin@osusproperties.com`
+     - Password: `demo123`
+   - Verify you reach the dashboard ✅
 
-- ✅ No CORS errors
-- ✅ API calls succeed
-- ✅ JWT tokens stored in localStorage
-
-### Check Network Tab
-
-- ✅ API calls go to: `https://real-estate-videogra-backend.onrender.com/api`
-- ✅ Status codes: 200 (success)
-- ✅ Responses contain data
+4. **Check Browser Console:**
+   - Press F12 → Console tab
+   - Verify no CORS errors ✅
+   - Check Network tab for API calls ✅
 
 ---
 
-## 🎉 Success Checklist
+## 🎉 SUCCESS INDICATORS
 
 Your deployment is successful when:
 
-- [x] Render service shows **"Live"** status (green dot)
-- [x] Health endpoint returns `"database": "PostgreSQL (Production)"`
-- [x] Demo login returns access token
-- [x] Frontend loads at GitHub Pages URL
-- [x] Signup creates new users
-- [x] Login works with new and demo accounts
-- [x] No CORS errors in browser console
-- [x] Dashboard displays correctly
+- ✅ Render service shows **"Live"** status
+- ✅ Health endpoint returns `"database": "PostgreSQL (Production)"`
+- ✅ Demo login returns access token
+- ✅ GitHub Pages loads without 404 errors
+- ✅ Signup creates new users
+- ✅ Login works with demo and new accounts
+- ✅ No CORS errors in browser console
+- ✅ Dashboard loads correctly
 
 ---
 
-## ⚠️ Important: Cold Starts
+## ⚙️ Understanding Render Free Tier
 
-**Free Tier Limitation**: Render spins down your service after 15 minutes of inactivity.
+### What Happens:
+- **Your service sleeps** after 15 minutes of inactivity
+- **Wake-up time**: 30-60 seconds on first request
+- **No data loss** - database stays active
 
-**What This Means**:
-- First request after inactivity takes ~30 seconds to wake up
-- Subsequent requests are instant
-- Service stays awake while receiving traffic
+### User Experience:
+- First user after idle period: 30-60 sec wait
+- Subsequent users: Normal speed
+- During business hours: Usually stays awake
 
-**Solutions**:
+### Solution: Keep-Alive Service (Optional)
 
-### Option 1: Accept Cold Starts (Recommended for MVP)
-- Inform users the first load may be slow
-- No action needed
+Use free uptime monitoring to ping your service:
 
-### Option 2: Keep-Alive Service (Free)
-Use a free cron service to ping your backend every 14 minutes:
+**Option 1: UptimeRobot** (Free)
+1. Sign up at https://uptimerobot.com
+2. Add monitor:
+   - URL: `https://YOUR-RENDER-URL.onrender.com/health`
+   - Interval: 10 minutes
+   - Monitor Type: HTTP(s)
 
-**Using Cron-Job.org** (free):
-1. Go to: https://cron-job.org
-2. Sign up (free)
-3. Create job:
-   - URL: `https://real-estate-videogra-backend.onrender.com/health`
-   - Schedule: `*/14 * * * *` (every 14 minutes)
-   - Save
-
-**Using UptimeRobot** (free):
-1. Go to: https://uptimerobot.com
-2. Sign up (free)
-3. Add monitor:
-   - Type: HTTP(s)
-   - URL: `https://real-estate-videogra-backend.onrender.com/health`
-   - Interval: 5 minutes (max on free tier)
-
-### Option 3: Upgrade to Paid ($7/mo)
-- No cold starts
-- Always-on
-- More resources
+**Option 2: Cron-job.org** (Free)
+1. Sign up at https://cron-job.org
+2. Create job:
+   - URL: `https://YOUR-RENDER-URL.onrender.com/health`
+   - Interval: Every 10 minutes
+   - Only during business hours: 8 AM - 8 PM
 
 ---
 
-## 🔧 Monitoring & Maintenance
+## 🔧 Auto-Deploy from GitHub
 
-### Check Logs
-- Dashboard → Your service → **"Logs"** tab
-- See real-time server logs
-- Monitor errors and requests
+Render automatically deploys when you push to main branch!
 
-### Auto-Deploy
-Every push to `main` branch automatically deploys:
-1. Render detects new commits
-2. Rebuilds the app
-3. Deploys new version
-4. Zero downtime
+**To trigger manual deployment:**
+1. Go to Render dashboard
+2. Select your service
+3. Click **"Manual Deploy"** → **"Deploy latest commit"**
 
-### Database Backup (IMPORTANT)
-Free PostgreSQL expires after 90 days:
+---
 
-**Backup Before 90 Days**:
-```bash
-# Using Render Shell
-pg_dump $DATABASE_URL > backup.sql
+## 📊 Monitoring Your Service
 
-# Or download from local terminal
-render db:backup real-estate-videogra-db
-```
+### View Logs:
+1. Go to Render dashboard
+2. Click on your service
+3. Click **"Logs"** tab
+4. See real-time logs of your app
 
-**After 90 days**:
-1. Create new free PostgreSQL
-2. Restore backup
-3. Update DATABASE_URL in service
+### View Metrics:
+1. Click **"Metrics"** tab
+2. See:
+   - CPU usage
+   - Memory usage
+   - Request count
+   - Response times
+
+### Set Up Notifications:
+1. Go to **Settings** → **Notifications**
+2. Add your email
+3. Get notified about:
+   - Deployment failures
+   - Service crashes
+   - Downtime
 
 ---
 
 ## 🆘 Troubleshooting
 
 ### Issue: Build Fails
-**Check**: Logs show error
-**Solutions**:
+**Check:**
+- Logs in Render dashboard
 - Verify `backend/package.json` exists
-- Check Node version compatibility
-- Review build logs for specific error
+- Check for syntax errors in code
 
-### Issue: Database Connection Error
-**Check**: Logs show `ECONNREFUSED` or `authentication failed`
-**Solutions**:
-- Verify DATABASE_URL is set correctly
-- Use **Internal Database URL**, not External
-- Check database is running (green dot)
+**Solution:**
+```bash
+# Test build locally
+cd backend
+npm install
+npm start
+```
 
-### Issue: CORS Errors on Frontend
-**Check**: Browser console shows CORS error
-**Solutions**:
-- Verify CORS_ORIGIN = `https://renbran.github.io` (no trailing slash)
-- Restart Render service after changing variables
-- Check logs for CORS configuration
+### Issue: Database Connection Fails
+**Check:**
+- DATABASE_URL is set correctly
+- Database is in same region as service
+- Internal Database URL used (not External)
 
-### Issue: Health Check Shows SQLite
-**Check**: `/health` returns `"database": "SQLite"`
-**Solutions**:
-- DATABASE_URL environment variable not set
-- Redeploy service after setting DATABASE_URL
+**Solution:**
+1. Go to database dashboard
+2. Copy **Internal Database URL** again
+3. Update DATABASE_URL in service
+4. Trigger manual deploy
 
-### Issue: Port Error
-**Check**: Logs show "Port already in use"
-**Solutions**:
-- Verify PORT environment variable = `10000`
-- Render requires port 10000, not 3001
+### Issue: Service Shows "Deploy failed"
+**Check:**
+- Start command is correct
+- All dependencies in package.json
+- Node version compatibility
 
----
+**Solution:**
+- Check logs for specific error
+- Verify start command: `npm run migrate:postgres && npm start`
 
-## 💰 Cost Summary
+### Issue: Migration Fails
+**Check:**
+- DATABASE_URL is accessible
+- Migration script has no syntax errors
 
-### Free Tier (Current)
-- **Cost**: $0/month
-- **Uptime**: 750 hours (~31 days)
-- **Database**: 256MB, expires in 90 days
-- **Cold starts**: Yes (15 min)
+**Solution:**
+1. Remove `npm run migrate:postgres &&` from start command
+2. Deploy successfully
+3. Run migration manually via Render shell:
+   - Click **"Shell"** tab
+   - Run: `npm run migrate:postgres`
+4. Add migration back to start command
 
-### Paid Tier ($7/mo for backend)
-- **Cost**: $7/month
-- **Uptime**: Always on
-- **Database**: Upgrade separately ($7/mo for 1GB)
-- **Cold starts**: No
+### Issue: CORS Errors
+**Check:**
+- CORS_ORIGIN in Render environment variables
+- No trailing slash in CORS_ORIGIN
 
-**Recommendation**: Start with free tier, upgrade if/when needed.
-
----
-
-## 📊 Your URLs
-
-**Frontend**: https://renbran.github.io/real-estate-videogra/  
-**Backend**: https://real-estate-videogra-backend.onrender.com  
-**Health Check**: https://real-estate-videogra-backend.onrender.com/health  
-**API Base**: https://real-estate-videogra-backend.onrender.com/api
-
----
-
-## 🎯 Next Steps
-
-After successful deployment:
-
-1. ✅ Test all features thoroughly
-2. ✅ Monitor logs for errors
-3. ✅ Set up keep-alive (optional)
-4. ✅ Add custom domain (optional)
-5. ✅ Set up database backup reminders (day 85)
-6. ✅ Consider paid tier if cold starts are an issue
+**Solution:**
+- CORS_ORIGIN should be: `https://renbran.github.io`
+- NOT: `https://renbran.github.io/`
+- Redeploy after changing
 
 ---
 
-## 📞 Support
+## 💰 Cost After 90 Days
 
-**Render Resources**:
+### PostgreSQL Database:
+- **First 90 days**: FREE ✅
+- **After 90 days**: $7/month
+
+### Options to Stay Free:
+1. **Migrate to Supabase PostgreSQL** (free forever)
+2. **Use Fly.io Postgres** (free, 3GB)
+3. **Use PlanetScale** (free tier, MySQL)
+
+I'll help you migrate when the time comes! 📅
+
+---
+
+## 📞 Get Help
+
+**Render Resources:**
+- Dashboard: https://dashboard.render.com
 - Docs: https://render.com/docs
-- Community: https://community.render.com
 - Status: https://status.render.com
-- Support: help@render.com
+- Community: https://community.render.com
 
-**Project Files**:
-- Quick Ref: QUICK-REF.md
-- Alternatives: FREE-BACKEND-ALTERNATIVES.md
+**Your Service URLs:**
+- Backend: `https://YOUR-SERVICE-NAME.onrender.com`
+- Database: Available in Render dashboard
+- Frontend: https://renbran.github.io/real-estate-videogra/
 
 ---
 
-**🎉 Congratulations! Your app is now live on Render!** 🚀
+## 🎯 Next Steps After Deployment
+
+### Immediate:
+- ✅ Test all functionality
+- ✅ Share live URL with stakeholders
+- ✅ Monitor logs for first 24 hours
+
+### This Week:
+- Set up UptimeRobot to prevent sleeping
+- Add error tracking (Sentry)
+- Test with real users
+
+### This Month:
+- Implement remaining features
+- Optimize performance
+- Plan database migration strategy (before 90 days)
+
+---
+
+**Deployment Complete! Your app is now live! 🎉**
